@@ -148,8 +148,12 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                         search_query = prompt
 
                 # ── Build context ─────────────────────────────────
+                # Typhoon รับได้มากกว่า, free models จำกัด ~32k tokens (~24k chars)
+                is_typhoon_available = bool(typhoon_key)
+                max_ctx = 40000 if is_typhoon_available else 18000
+
                 final_context = filter_relevant_content(
-                    st.session_state.file_context, search_query, max_chars=80000)
+                    st.session_state.file_context, search_query, max_chars=max_ctx)
                 if not final_context:
                     final_context = "ไม่พบข้อมูลในเอกสาร ตอบตามความรู้ทั่วไป"
 
@@ -157,8 +161,10 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                     "คุณคือ PA Assistant ผู้เชี่ยวชาญการตรวจสอบผลสัมฤทธิ์ภาครัฐ\n"
                     "ตอบคำถามโดยอ้างอิงเนื้อหาด้านล่าง ถ้าไม่พบให้บอกว่า 'ไม่พบข้อมูลในเอกสารที่เกี่ยวข้อง'\n"
                     f"คำถาม: {prompt}\n"
-                    "--- เนื้อหา ---\n" + final_context[:80000] + "\n---------------"
+                    "--- เนื้อหา ---\n" + final_context + "\n---------------"
                 )
+                # ตัด system prompt ไม่ให้เกิน limit ของแต่ละ model
+                # ~3 chars per token, leave 4096 tokens for output
                 messages_for_api = [
                     {"role":"system","content":system_prompt},
                     {"role":"user",  "content":prompt}
@@ -193,7 +199,27 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                 for name, key, base_url, model, extra_hdrs in providers:
                     try:
                         c = OpenAI(api_key=key, base_url=base_url)
-                        kwargs = dict(model=model, messages=messages_for_api, stream=True, max_tokens=2048)
+                        # ปรับ max_tokens และตัด context ตาม model
+                        if name == "typhoon":
+                            out_tokens = 2048
+                            ctx_limit  = 40000
+                        else:
+                            out_tokens = 1024
+                            ctx_limit  = 16000   # safe limit สำหรับ free models
+
+                        # สร้าง messages ใหม่ตัด context ให้พอดี
+                        trimmed_ctx = filter_relevant_content(
+                            st.session_state.file_context, search_query, max_chars=ctx_limit)
+                        if not trimmed_ctx:
+                            trimmed_ctx = "ไม่พบข้อมูลในเอกสาร ตอบตามความรู้ทั่วไป"
+                        sp = (
+                            "คุณคือ PA Assistant ผู้เชี่ยวชาญการตรวจสอบผลสัมฤทธิ์ภาครัฐ\n"
+                            "ตอบคำถามโดยอ้างอิงเนื้อหาด้านล่าง ถ้าไม่พบให้บอกว่า 'ไม่พบข้อมูล'\n"
+                            f"คำถาม: {prompt}\n--- เนื้อหา ---\n{trimmed_ctx}\n---------------"
+                        )
+                        msgs = [{"role":"system","content":sp},{"role":"user","content":prompt}]
+
+                        kwargs = dict(model=model, messages=msgs, stream=True, max_tokens=out_tokens)
                         if extra_hdrs:
                             kwargs["extra_headers"] = extra_hdrs
                         stream = c.chat.completions.create(**kwargs)
