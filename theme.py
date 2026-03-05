@@ -27,8 +27,8 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stSidebarNav"] a p,
 [data-testid="stSidebarNav"] li a {
     color:#ffffff !important;
-    border-radius:6px !important;
-    padding:2px 5px !important;
+    border-radius:4px !important;
+    padding:3px 6px !important;
     margin-bottom:0px !important;
     font-size:12.5px !important;
     opacity:0.88;
