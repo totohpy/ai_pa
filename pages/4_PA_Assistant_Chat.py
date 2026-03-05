@@ -175,12 +175,12 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                 if openrouter_key:
                     hdrs = {"HTTP-Referer":"https://streamlit.io/","X-Title":"PA Chat"}
                     providers += [
-                        ("gemini-flash",  openrouter_key, "https://openrouter.ai/api/v1",
-                         "google/gemini-flash-1.5", hdrs),
-                        ("qwen",          openrouter_key, "https://openrouter.ai/api/v1",
-                         "qwen/qwen-2.5-72b-instruct:free", hdrs),
-                        ("mistral",       openrouter_key, "https://openrouter.ai/api/v1",
-                         "mistralai/mistral-7b-instruct:free", hdrs),
+                        ("qwen-free",     openrouter_key, "https://openrouter.ai/api/v1",
+                         "qwen/qwen3-8b:free", hdrs),
+                        ("llama-free",    openrouter_key, "https://openrouter.ai/api/v1",
+                         "meta-llama/llama-3.1-8b-instruct:free", hdrs),
+                        ("gemma-free",    openrouter_key, "https://openrouter.ai/api/v1",
+                         "google/gemma-3-12b-it:free", hdrs),
                     ]
 
                 if not providers:
