@@ -46,7 +46,7 @@ st.markdown("""
     clip-path:polygon(50% 0%,100% 100%,0% 100%);
 }
 .banner-title {
-    font-size:22px; font-weight:700; color:#fff;
+    font-size:26px; font-weight:700; color:#fff;
     font-family:'Noto Serif Thai',serif; margin-bottom:6px;
     position:relative; z-index:1;
 }
