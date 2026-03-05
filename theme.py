@@ -27,12 +27,16 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stSidebarNav"] a p,
 [data-testid="stSidebarNav"] li a {
     color:#ffffff !important;
-    border-radius:8px !important;
-    padding:8px 14px !important;
-    margin-bottom:2px !important;
-    font-size:14px !important;
+    border-radius:6px !important;
+    padding:5px 8px !important;
+    margin-bottom:0px !important;
+    font-size:12.5px !important;
     opacity:0.88;
     transition:background 0.15s !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    display:block !important;
 }
 [data-testid="stSidebarNav"] a:hover { background:rgba(255,255,255,0.15) !important; opacity:1 !important; }
 [data-testid="stSidebarNav"] a[aria-current="page"] {
@@ -41,6 +45,9 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
     border:1px solid rgba(255,255,255,0.28) !important;
     opacity:1 !important;
 }
+/* ลด padding ของ sidebar โดยรวม */
+[data-testid="stSidebarNav"] ul { padding:0 6px !important; margin:0 !important; }
+[data-testid="stSidebarNav"] li { margin-bottom:2px !important; }
 
 /* ═══ FILE UPLOADER — force WHITE ═══ */
 /* ครอบคลุมทุก selector ที่ Streamlit ใช้ */
