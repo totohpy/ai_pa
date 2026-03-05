@@ -1,9 +1,6 @@
 [theme]
 base = "light"
-
-[server]
-headless = true
-enableCORS = false
-
-[browser]
-gatherUsageStats = false
+primaryColor = "#7A2020"
+backgroundColor = "#f8f9ee"
+secondaryBackgroundColor = "#7A2020"
+textColor = "#1a1a1a"
