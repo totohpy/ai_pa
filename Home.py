@@ -57,7 +57,7 @@ st.markdown("""
 
 /* ── Section label ── */
 .sec-lbl {
-    font-size:11px; font-weight:700; color:#7A2020;
+    font-size:14px; font-weight:700; color:#7A2020;
     letter-spacing:1.8px; text-transform:uppercase;
     margin-bottom:14px; display:flex; align-items:center; gap:10px;
 }
