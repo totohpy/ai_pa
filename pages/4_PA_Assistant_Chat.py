@@ -123,43 +123,100 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             try:
-                try: api_key = st.secrets["openrouter_api_key"]
-                except: api_key = ""
-                client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
+                # ── API keys ──────────────────────────────────────
+                try:    typhoon_key    = st.secrets["api_key"]
+                except: typhoon_key    = ""
+                try:    openrouter_key = st.secrets["openrouter_api_key"]
+                except: openrouter_key = ""
 
-                has_history = len(st.session_state.chatbot_messages) > 1
-                search_query = rewrite_query(prompt, st.session_state.chatbot_messages, client) if has_history else prompt
+                # ── Rewrite query (ใช้ Typhoon ถ้ามี key) ─────────
+                has_history  = len(st.session_state.chatbot_messages) > 1
+                search_query = prompt
+                if has_history and typhoon_key:
+                    try:
+                        rw_client = OpenAI(api_key=typhoon_key, base_url="https://api.opentyphoon.ai/v1")
+                        rw_resp   = rw_client.chat.completions.create(
+                            model="typhoon-v2.5-30b-a3b-instruct",
+                            messages=[{"role":"user","content":
+                                f"เขียนคำถามนี้ใหม่ให้สมบูรณ์ชัดเจน โดยอ้างอิงบริบท: "
+                                f"{st.session_state.chatbot_messages[-2]['content'][:200]}\n"
+                                f"คำถาม: {prompt}\nคำถามใหม่:"}],
+                            temperature=0.3, max_tokens=150
+                        )
+                        search_query = rw_resp.choices[0].message.content.strip()
+                    except Exception:
+                        search_query = prompt
 
-                raw_context   = st.session_state.file_context
-                final_context = filter_relevant_content(raw_context, search_query, max_chars=100000)
-                if not final_context: final_context = "ไม่พบข้อมูลในเอกสาร ตอบตามความรู้ทั่วไป"
+                # ── Build context ─────────────────────────────────
+                final_context = filter_relevant_content(
+                    st.session_state.file_context, search_query, max_chars=80000)
+                if not final_context:
+                    final_context = "ไม่พบข้อมูลในเอกสาร ตอบตามความรู้ทั่วไป"
 
-                system_prompt = f"""คุณคือ PA Assistant ผู้เชี่ยวชาญการตรวจสอบ
-ตอบคำถามโดยอ้างอิง "เนื้อหาที่คัดเลือกมา" ด้านล่าง:
-กฎ: 1. ตอบเฉพาะที่มีในเนื้อหา 2. ถ้าเนื้อหาไม่พอ ให้บอกว่า "ไม่พบข้อมูลในเอกสารที่เกี่ยวข้อง"
-คำถาม: "{prompt}" (บริบท: "{search_query}")
---- เนื้อหาที่คัดเลือกมา ---\n{final_context}\n-------------------------"""
+                system_prompt = (
+                    "คุณคือ PA Assistant ผู้เชี่ยวชาญการตรวจสอบผลสัมฤทธิ์ภาครัฐ\n"
+                    "ตอบคำถามโดยอ้างอิงเนื้อหาด้านล่าง ถ้าไม่พบให้บอกว่า 'ไม่พบข้อมูลในเอกสารที่เกี่ยวข้อง'\n"
+                    f"คำถาม: {prompt}\n"
+                    "--- เนื้อหา ---\n" + final_context[:80000] + "\n---------------"
+                )
+                messages_for_api = [
+                    {"role":"system","content":system_prompt},
+                    {"role":"user",  "content":prompt}
+                ]
 
-                if len(system_prompt) > 120000:
-                    system_prompt = system_prompt[:120000] + "\n... (ข้อมูลถูกตัดเนื่องจากยาวเกินไป)"
+                # ── Try providers in order ────────────────────────
+                # 1st: Typhoon (paid, reliable)
+                # 2nd-4th: OpenRouter free models (fallback)
+                providers = []
+                if typhoon_key:
+                    providers.append(("typhoon", typhoon_key,
+                                      "https://api.opentyphoon.ai/v1",
+                                      "typhoon-v2.5-30b-a3b-instruct", {}))
+                if openrouter_key:
+                    hdrs = {"HTTP-Referer":"https://streamlit.io/","X-Title":"PA Chat"}
+                    providers += [
+                        ("gemini-flash",  openrouter_key, "https://openrouter.ai/api/v1",
+                         "google/gemini-flash-1.5", hdrs),
+                        ("qwen",          openrouter_key, "https://openrouter.ai/api/v1",
+                         "qwen/qwen-2.5-72b-instruct:free", hdrs),
+                        ("mistral",       openrouter_key, "https://openrouter.ai/api/v1",
+                         "mistralai/mistral-7b-instruct:free", hdrs),
+                    ]
 
-                messages_for_api = [{"role":"system","content":system_prompt},{"role":"user","content":prompt}]
-                primary_model = "google/gemini-2.0-pro-exp-02-05:free"
-                backup_model  = "meta-llama/llama-3.3-70b-instruct:free"
+                if not providers:
+                    message_placeholder.error("ไม่พบ API Key — กรุณาตั้งค่า `api_key` ใน Streamlit Secrets")
+                    st.stop()
 
-                try:
-                    stream = client.chat.completions.create(extra_headers={"HTTP-Referer":"https://streamlit.io/","X-Title":"PA Chat"}, model=primary_model, messages=messages_for_api, stream=True)
-                except Exception:
-                    stream = client.chat.completions.create(extra_headers={"HTTP-Referer":"https://streamlit.io/","X-Title":"PA Chat"}, model=backup_model, messages=messages_for_api, stream=True)
+                stream = None
+                used_provider = ""
+                last_err = None
+                for name, key, base_url, model, extra_hdrs in providers:
+                    try:
+                        c = OpenAI(api_key=key, base_url=base_url)
+                        kwargs = dict(model=model, messages=messages_for_api, stream=True, max_tokens=2048)
+                        if extra_hdrs:
+                            kwargs["extra_headers"] = extra_hdrs
+                        stream = c.chat.completions.create(**kwargs)
+                        used_provider = name
+                        break
+                    except Exception as e:
+                        last_err = e
+                        continue
+
+                if stream is None:
+                    message_placeholder.error(f"ทุก provider ตอบไม่ได้: {last_err}")
+                    st.stop()
 
                 full_response = ""
                 for chunk in stream:
-                    if chunk.choices[0].delta.content:
-                        full_response += chunk.choices[0].delta.content
+                    delta = chunk.choices[0].delta.content
+                    if delta:
+                        full_response += delta
                         message_placeholder.markdown(full_response + "▌")
 
                 message_placeholder.markdown(full_response)
-                st.session_state.chatbot_messages.append({"role":"assistant","content":full_response})
+                st.session_state.chatbot_messages.append(
+                    {"role":"assistant","content":full_response})
 
             except Exception as e:
                 st.error(f"Error: {e}")
