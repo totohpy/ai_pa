@@ -167,18 +167,34 @@ def generate_html_report(data):
     # CSS block
     css = (
         font_faces
-        + "body{font-family:'Sarabun',sans-serif;font-size:16px;margin:1cm;}"
+        # page bg — light cream (matches app)
+        + "html,body{background:#f8f9ee;margin:0;padding:16px 24px;"
+        + "font-family:'Sarabun',sans-serif;font-size:16px;}"
+        # white paper card
+        + ".paper{"
+        + "background:#ffffff;"
+        + "border:1px solid #d8d9b4;"
+        + "border-radius:12px;"
+        + "box-shadow:0 4px 24px rgba(0,0,0,0.10);"
+        + "padding:32px 40px;"
+        + "max-width:1100px;"
+        + "margin:0 auto 24px auto;}"
         + "h2{text-align:center;font-weight:bold;}"
         + "table{width:100%;border-collapse:collapse;margin-top:1em;margin-bottom:1em;}"
-        + "th,td{border:1px solid black;padding:8px;text-align:left;vertical-align:top;}"
+        + "th,td{border:1px solid #aaa;padding:8px;text-align:left;vertical-align:top;}"
+        + "thead th{background:#f8f9ee;font-weight:700;}"
         + ".sig-table td{height:120px;}"
-        + ".print-btn-wrap{text-align:center;margin:15px 0;}"
-        + ".print-btn{padding:10px 20px;font-size:16px;cursor:pointer;border-radius:5px;"
-        + "border:1px solid #7A2020;background-color:#f8e8e8;color:#7A2020;"
-        + "font-family:'Sarabun',sans-serif;}"
-        + "thead th{position:sticky;top:-1px;background-color:#f8f9ee;z-index:2;}"
-        + "@media print{.no-print{display:none;}"
-        + "@page{size:A4 landscape;margin:1.5cm;}body{margin:0;}}"
+        + ".print-btn-wrap{text-align:center;margin:0 0 18px 0;}"
+        + ".print-btn{padding:9px 22px;font-size:15px;cursor:pointer;border-radius:8px;"
+        + "border:1px solid #7A2020;background:#f8e8e8;color:#7A2020;"
+        + "font-family:'Sarabun',sans-serif;font-weight:600;}"
+        + ".print-btn:hover{background:#f0d0d0;}"
+        + "@media print{"
+        + ".no-print{display:none;}"
+        + "html,body{background:#fff;padding:0;}"
+        + ".paper{box-shadow:none;border:none;border-radius:0;padding:1cm;max-width:none;}"
+        + "@page{size:A4 landscape;margin:1.5cm;}"
+        + "}"
     )
 
     info = data["general_info"]
@@ -223,6 +239,7 @@ def generate_html_report(data):
         "<div class='print-btn-wrap no-print'>"
         "<button class='print-btn' onclick='window.print()'>🖨️ พิมพ์ / บันทึกเป็น PDF</button>"
         "</div>"
+        "<div class='paper'>"
         "<h2>แผนและแนวการตรวจสอบ</h2>"
         "<p><b>สำนักงาน/จังหวัด:</b> " + fmt(info.get("office","")) + "&nbsp;&nbsp;"
         "<b>เรื่องที่ตรวจสอบ:</b> " + fmt(info.get("topic","")) + "</p>"
@@ -236,6 +253,7 @@ def generate_html_report(data):
         "</tr></thead><tbody><tr>"
         + sig_cell("maker") + sig_cell("reviewer") + sig_cell("approver")
         + "</tr></tbody></table>"
+        "</div>"   # close .paper
         "</body></html>"
     )
     return html_out
