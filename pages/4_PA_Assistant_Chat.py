@@ -108,11 +108,16 @@ def build_providers(typhoon_key, openrouter_key, ollama_url, ollama_model):
             extra_hdrs={}, out_tokens=2048))
     if openrouter_key:
         for label, model in [
-            ("🔵 Qwen3-8b",        "qwen/qwen3-8b:free"),
-            ("🟢 DeepSeek-R1",     "deepseek/deepseek-r1-0528:free"),
-            ("🟡 Llama-3.1-8b",    "meta-llama/llama-3.1-8b-instruct:free"),
-            ("🟠 Gemma-3-4b",      "google/gemma-3-4b-it:free"),
-            ("🔴 Mistral-Nemo",    "mistralai/mistral-nemo:free"),
+            ("🔵 Qwen3-8b",          "qwen/qwen3-8b:free"),
+            ("🔵 Qwen3-14b",         "qwen/qwen3-14b:free"),
+            ("🟢 DeepSeek-R1",       "deepseek/deepseek-r1-0528:free"),
+            ("🟢 DeepSeek-V3",       "deepseek/deepseek-v3-0324:free"),
+            ("🟡 Llama-3.1-8b",      "meta-llama/llama-3.1-8b-instruct:free"),
+            ("🟡 Llama-3.3-70b",     "meta-llama/llama-3.3-70b-instruct:free"),
+            ("🟠 Gemma-3-4b",        "google/gemma-3-4b-it:free"),
+            ("🟠 Gemma-3-27b",       "google/gemma-3-27b-it:free"),
+            ("⚪ Phi-4",             "microsoft/phi-4:free"),
+            ("⚪ Mistral-7b",        "mistralai/mistral-7b-instruct:free"),
         ]:
             providers.append(dict(name=label, key=openrouter_key,
                 base_url="https://openrouter.ai/api/v1",
@@ -228,7 +233,9 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                 ]
 
                 # ── ลอง provider ทีละตัว ──────────────────────
-                stream, used_name, last_err = None, "", None
+                stream, used_name = None, ""
+                errors = []   # เก็บ error ทุกตัวเพื่อ debug
+
                 for p in providers:
                     try:
                         c = OpenAI(api_key=p["key"], base_url=p["base_url"])
@@ -240,13 +247,16 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                         used_name = p["name"]
                         break
                     except Exception as e:
-                        last_err = e
+                        errors.append(f"**{p['name']}** (`{p['model']}`): `{e}`")
                         if "429" in str(e): time.sleep(1)
                         continue
 
                 if stream is None:
+                    err_detail = "\n\n".join(errors)
                     placeholder.error(
-                        f"⚠️ ทุก provider ตอบไม่ได้\n\nError: `{last_err}`\n\n"
+                        "⚠️ ทุก provider ตอบไม่ได้ในขณะนี้\n\n"
+                        "**รายละเอียด error แต่ละตัว:**\n\n"
+                        f"{err_detail}\n\n"
                         "💡 ลองเปิด Ollama ในเมนูซ้ายมือ"
                     )
                     st.stop()
