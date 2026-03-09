@@ -13,15 +13,18 @@ for _p in [_here.parent, _here, pathlib.Path(os.getcwd())]:
         break
 try:
     from theme import apply_theme, SIDEBAR_HTML
+    from ai_provider import render_provider_sidebar
 except ImportError:
     def apply_theme(): pass
-    SIDEBAR_HTML = "<p style=\'color:white\'>AIT</p>"
+    SIDEBAR_HTML = "<p style='color:white'>AIT</p>"
+    def render_provider_sidebar(): pass
 
 st.set_page_config(page_title="Typhoon OCR", page_icon="📄", layout="wide")
 apply_theme()
 
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
+    render_provider_sidebar()
 
 if 'api_key' not in st.session_state:
     try: st.session_state['api_key'] = st.secrets.get("api_key","")
@@ -88,10 +91,10 @@ if uploaded_file:
         pages_input = st.text_input("ระบุหน้า (สำหรับ PDF)", placeholder="เช่น 1, 2 หรือ 1-5 (เว้นว่างเพื่อทำทั้งหมด)")
         st.markdown("---")
         with st.expander("⚙️ การตั้งค่า (Advanced)"):
-            max_tokens        = st.slider("Max Tokens", 1000, 16000, st.session_state.get("max_tokens",16000), 100, key="max_tokens_slider")
-            temperature       = st.slider("Temperature", 0.0, 1.0, st.session_state.get("temperature",0.1), 0.1, key="temperature_slider")
-            top_p             = st.slider("Top P", 0.0, 1.0, st.session_state.get("top_p",0.6), 0.1, key="top_p_slider")
-            repetition_penalty= st.slider("Repetition Penalty", 1.0, 2.0, st.session_state.get("repetition_penalty",1.1), 0.1, key="repetition_penalty_slider")
+            max_tokens         = st.slider("Max Tokens", 1000, 16000, st.session_state.get("max_tokens",16000), 100, key="max_tokens_slider")
+            temperature        = st.slider("Temperature", 0.0, 1.0, st.session_state.get("temperature",0.1), 0.1, key="temperature_slider")
+            top_p              = st.slider("Top P", 0.0, 1.0, st.session_state.get("top_p",0.6), 0.1, key="top_p_slider")
+            repetition_penalty = st.slider("Repetition Penalty", 1.0, 2.0, st.session_state.get("repetition_penalty",1.1), 0.1, key="repetition_penalty_slider")
         st.markdown("---")
         current_api_key = st.session_state.get("api_key","")
         if st.button("🚀 เริ่มประมวลผล (Start OCR)", type="primary", use_container_width=True):
@@ -114,3 +117,4 @@ if uploaded_file:
         if result_text:
             docx_file = create_docx(result_text)
             st.download_button(label="💾 ดาวน์โหลดไฟล์ .docx", data=docx_file, file_name="ocr_result.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
