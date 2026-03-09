@@ -18,15 +18,18 @@ for _p in [_here.parent, _here, pathlib.Path(os.getcwd())]:
         break
 try:
     from theme import apply_theme, SIDEBAR_HTML
+    from ai_provider import render_provider_sidebar
 except ImportError:
     def apply_theme(): pass
-    SIDEBAR_HTML = "<p style=\'color:white\'>AIT</p>"
+    SIDEBAR_HTML = "<p style='color:white'>AIT</p>"
+    def render_provider_sidebar(): pass
 
 st.set_page_config(page_title="Super Analytics Sandbox", page_icon="🕵️", layout="wide")
 apply_theme()
 
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
+    render_provider_sidebar()
 
 # ── Thai Font Setup ───────────────────────────────────
 def setup_thai_font():
@@ -140,3 +143,4 @@ if uploaded_file:
         st.error("ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบไฟล์")
 else:
     st.info("👆 กรุณาอัปโหลดไฟล์ Excel หรือ CSV เพื่อเริ่มต้น")
+
