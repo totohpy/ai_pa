@@ -23,8 +23,6 @@ faiss-cpu
 tiktoken
 plotly
 pygwalker
-sweetviz
-dtale
-ydata-profiling
 seaborn
 matplotlib
+Pillow
