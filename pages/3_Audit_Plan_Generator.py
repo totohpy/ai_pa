@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime
 import re
-from openai import OpenAI
 import os, html, io, base64, json
 import docx
 from docx.enum.section import WD_ORIENT
@@ -16,15 +15,23 @@ for _p in [_here.parent, _here, pathlib.Path(os.getcwd())]:
         break
 try:
     from theme import apply_theme, SIDEBAR_HTML
+    from ai_provider import render_provider_sidebar, get_openai_client_and_model
 except ImportError:
     def apply_theme(): pass
     SIDEBAR_HTML = ""
+    def render_provider_sidebar(): pass
+    def get_openai_client_and_model(page="default"):
+        from openai import OpenAI
+        import streamlit as st
+        key = st.session_state.get("api_key_global","")
+        return OpenAI(api_key=key, base_url="https://api.opentyphoon.ai/v1"), "typhoon-v2.5-30b-a3b-instruct"
 
 st.set_page_config(layout="wide", page_title="Audit Plan Generator")
 apply_theme()
 
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
+    render_provider_sidebar()
 
 st.title("🔮 Audit Plan Generator")
 st.markdown("เครื่องมือช่วยสร้างแผนและแนวการตรวจสอบ พร้อมระบบ AI ช่วยร่างเนื้อหา")
@@ -79,10 +86,6 @@ def add_issue(obj_index, parent_issue_path=None):
 def run_ai_for_field(obj_index, path, field_name):
     st.session_state.ui_feedback_message = None
     try:
-        api_key = st.session_state.get("api_key_global","")
-        if not api_key:
-            st.session_state.ui_feedback_message = ("error","ไม่พบ API Key"); return
-        client = OpenAI(api_key=api_key, base_url="https://api.opentyphoon.ai/v1")
         obj = st.session_state.plan_gen_data["objectives"][obj_index]
         target = obj
         for idx in path: target = target["issues"][idx]
@@ -99,8 +102,10 @@ def run_ai_for_field(obj_index, path, field_name):
         }
         prompt = (f"คุณคือผู้เชี่ยวชาญด้านการตรวจสอบภาครัฐ Performance Audit\n{ctx}\n"
                   f"คำสั่ง: {instructions.get(field_name,'')}\nตอบเป็น bullet points เท่านั้น")
+
+        client, model = get_openai_client_and_model(page="default")
         resp = client.chat.completions.create(
-            model="typhoon-v2.5-30b-a3b-instruct",
+            model=model,
             messages=[{"role":"user","content":prompt}],
             temperature=0.5, max_tokens=4096
         )
@@ -125,7 +130,6 @@ def fmt(text):
     return html.escape(text or "").replace("\n","<br>")
 
 def build_issue_rows(issues, obj_num):
-    """Build HTML table rows for all leaf issues (no sub-issues)"""
     rows = ""
     for j, issue in enumerate(issues):
         if issue.get("issues"):
@@ -147,54 +151,27 @@ def build_issue_rows(issues, obj_num):
     return rows
 
 def generate_html_report(data):
-    # Font faces
     font_faces = ""
     rb = load_font_b64("Sarabun-Regular.ttf")
     bb = load_font_b64("Sarabun-Bold.ttf")
     if rb:
-        font_faces += (
-            "@font-face{font-family:'Sarabun';"
-            "src:url(data:font/truetype;charset=utf-8;base64," + rb + ")"
-            " format('truetype');font-weight:normal;}\n"
-        )
+        font_faces += ("@font-face{font-family:'Sarabun';src:url(data:font/truetype;charset=utf-8;base64," + rb + ") format('truetype');font-weight:normal;}\n")
     if bb:
-        font_faces += (
-            "@font-face{font-family:'Sarabun';"
-            "src:url(data:font/truetype;charset=utf-8;base64," + bb + ")"
-            " format('truetype');font-weight:bold;}\n"
-        )
+        font_faces += ("@font-face{font-family:'Sarabun';src:url(data:font/truetype;charset=utf-8;base64," + bb + ") format('truetype');font-weight:bold;}\n")
 
-    # CSS block
     css = (
         font_faces
-        # page bg — light cream (matches app)
-        + "html,body{background:#f8f9ee;margin:0;padding:16px 24px;"
-        + "font-family:'Sarabun',sans-serif;font-size:16px;}"
-        # white paper card
-        + ".paper{"
-        + "background:#ffffff;"
-        + "border:1px solid #d8d9b4;"
-        + "border-radius:12px;"
-        + "box-shadow:0 4px 24px rgba(0,0,0,0.10);"
-        + "padding:32px 40px;"
-        + "max-width:1100px;"
-        + "margin:0 auto 24px auto;}"
+        + "html,body{background:#f8f9ee;margin:0;padding:16px 24px;font-family:'Sarabun',sans-serif;font-size:16px;}"
+        + ".paper{background:#ffffff;border:1px solid #d8d9b4;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.10);padding:32px 40px;max-width:1100px;margin:0 auto 24px auto;}"
         + "h2{text-align:center;font-weight:bold;}"
         + "table{width:100%;border-collapse:collapse;margin-top:1em;margin-bottom:1em;}"
         + "th,td{border:1px solid #aaa;padding:8px;text-align:left;vertical-align:top;}"
         + "thead th{background:#f8f9ee;font-weight:700;}"
         + ".sig-table td{height:120px;}"
         + ".print-btn-wrap{text-align:center;margin:0 0 18px 0;}"
-        + ".print-btn{padding:9px 22px;font-size:15px;cursor:pointer;border-radius:8px;"
-        + "border:1px solid #7A2020;background:#f8e8e8;color:#7A2020;"
-        + "font-family:'Sarabun',sans-serif;font-weight:600;}"
+        + ".print-btn{padding:9px 22px;font-size:15px;cursor:pointer;border-radius:8px;border:1px solid #7A2020;background:#f8e8e8;color:#7A2020;font-family:'Sarabun',sans-serif;font-weight:600;}"
         + ".print-btn:hover{background:#f0d0d0;}"
-        + "@media print{"
-        + ".no-print{display:none;}"
-        + "html,body{background:#fff;padding:0;}"
-        + ".paper{box-shadow:none;border:none;border-radius:0;padding:1cm;max-width:none;}"
-        + "@page{size:A4 landscape;margin:1.5cm;}"
-        + "}"
+        + "@media print{.no-print{display:none;}html,body{background:#fff;padding:0;}.paper{box-shadow:none;border:none;border-radius:0;padding:1cm;max-width:none;}@page{size:A4 landscape;margin:1.5cm;}}"
     )
 
     info = data["general_info"]
@@ -204,15 +181,12 @@ def generate_html_report(data):
         s = sigs.get(role, {})
         date_str = s["date"].strftime("%d/%m/%Y") if s.get("date") else ""
         return (
-            "<td>"
-            "<b>ลงชื่อ:</b> " + fmt(s.get("name","")) + "<br>"
+            "<td><b>ลงชื่อ:</b> " + fmt(s.get("name","")) + "<br>"
             "<b>ตำแหน่ง:</b> " + fmt(s.get("position","")) + "<br>"
             "<b>วันที่:</b> " + date_str + "<br>"
-            "<b>ความเห็น:</b> " + fmt(s.get("comment","")) +
-            "</td>"
+            "<b>ความเห็น:</b> " + fmt(s.get("comment","")) + "</td>"
         )
 
-    # Objectives + issues tables
     objectives_html = ""
     for i, obj in enumerate(data["objectives"]):
         obj_num = i + 1
@@ -220,27 +194,19 @@ def generate_html_report(data):
         if obj.get("issues"):
             objectives_html += (
                 "<table><thead><tr>"
-                "<th>เกณฑ์การตรวจสอบ</th>"
-                "<th>ข้อมูลที่ต้องการ</th>"
-                "<th>แหล่งข้อมูล</th>"
-                "<th>วิธีรวบรวมหลักฐาน</th>"
-                "<th>วิธีวิเคราะห์หลักฐาน</th>"
+                "<th>เกณฑ์การตรวจสอบ</th><th>ข้อมูลที่ต้องการ</th>"
+                "<th>แหล่งข้อมูล</th><th>วิธีรวบรวมหลักฐาน</th><th>วิธีวิเคราะห์หลักฐาน</th>"
                 "</tr></thead><tbody>"
                 + build_issue_rows(obj["issues"], obj_num)
                 + "</tbody></table>"
             )
 
     html_out = (
-        "<!DOCTYPE html><html lang='th'><head>"
-        "<meta charset='UTF-8'>"
-        "<title>แผนและแนวการตรวจสอบ</title>"
-        "<style>" + css + "</style>"
-        "</head><body>"
+        "<!DOCTYPE html><html lang='th'><head><meta charset='UTF-8'>"
+        "<title>แผนและแนวการตรวจสอบ</title><style>" + css + "</style></head><body>"
         "<div class='print-btn-wrap no-print'>"
-        "<button class='print-btn' onclick='window.print()'>🖨️ พิมพ์ / บันทึกเป็น PDF</button>"
-        "</div>"
-        "<div class='paper'>"
-        "<h2>แผนและแนวการตรวจสอบ</h2>"
+        "<button class='print-btn' onclick='window.print()'>🖨️ พิมพ์ / บันทึกเป็น PDF</button></div>"
+        "<div class='paper'><h2>แผนและแนวการตรวจสอบ</h2>"
         "<p><b>สำนักงาน/จังหวัด:</b> " + fmt(info.get("office","")) + "&nbsp;&nbsp;"
         "<b>เรื่องที่ตรวจสอบ:</b> " + fmt(info.get("topic","")) + "</p>"
         "<p><b>หน่วยงาน:</b> " + fmt(info.get("agency","")) + "&nbsp;&nbsp;"
@@ -252,9 +218,7 @@ def generate_html_report(data):
         "<th>ผู้จัดทำ</th><th>ผู้สอบทาน</th><th>ผู้อนุมัติ (รผต./ผอ.สำนัก)</th>"
         "</tr></thead><tbody><tr>"
         + sig_cell("maker") + sig_cell("reviewer") + sig_cell("approver")
-        + "</tr></tbody></table>"
-        "</div>"   # close .paper
-        "</body></html>"
+        + "</tr></tbody></table></div></body></html>"
     )
     return html_out
 
@@ -414,3 +378,4 @@ with st.container(border=True):
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         use_container_width=True
     )
+
