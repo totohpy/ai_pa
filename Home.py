@@ -8,15 +8,18 @@ for _p in [_here, pathlib.Path(os.getcwd())]:
         break
 try:
     from theme import apply_theme, SIDEBAR_HTML
+    from ai_provider import render_provider_sidebar
 except ImportError:
     def apply_theme(): pass
     SIDEBAR_HTML = ""
+    def render_provider_sidebar(): pass
 
 st.set_page_config(page_title="PA Planning Studio", page_icon="🔎", layout="wide")
 apply_theme()
 
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
+    render_provider_sidebar()
 
 st.markdown("""
 <style>
@@ -27,7 +30,6 @@ st.markdown("""
     position:relative; overflow:hidden;
     box-shadow:0 10px 36px rgba(122,32,32,0.22);
 }
-/* geometric shapes in banner */
 .banner::before {
     content:''; position:absolute; top:-50px; right:-50px;
     width:180px; height:180px;
@@ -71,7 +73,6 @@ a.fcard-link { text-decoration:none !important; color:inherit !important; displa
     box-shadow:0 2px 10px rgba(122,32,32,0.06);
     transition:all 0.26s cubic-bezier(.34,1.46,.64,1);
 }
-/* red top bar on hover */
 .fcard-main::before {
     content:''; position:absolute; top:0; left:0; right:0; height:4px;
     background:linear-gradient(90deg,#7A2020,#c0392b);
@@ -80,7 +81,6 @@ a.fcard-link { text-decoration:none !important; color:inherit !important; displa
 a.fcard-link:hover .fcard-main { box-shadow:0 12px 40px rgba(122,32,32,0.14); transform:translateY(-6px); border-color:#b8a0a0; }
 a.fcard-link:hover .fcard-main::before { transform:scaleX(1); }
 
-/* green geometric shape — top-right corner */
 .fcard-geo {
     position:absolute; top:14px; right:14px;
     width:28px; height:28px; border-radius:7px;
@@ -223,3 +223,4 @@ with u4:
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="infobox">⚠️ การใช้ฟีเจอร์ AI อาจผิดพลาดได้ โปรดตรวจสอบคำตอบอีกครั้ง ระบบไม่มีการจัดเก็บข้อมูลไว้</div>', unsafe_allow_html=True)
+
