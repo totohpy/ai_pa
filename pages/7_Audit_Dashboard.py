@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import json, os, sys, pathlib
 
-import sys, os, pathlib
 _here = pathlib.Path(__file__).resolve().parent
 for _p in [_here.parent, _here, pathlib.Path(os.getcwd())]:
     if (_p / "theme.py").exists():
@@ -10,27 +9,31 @@ for _p in [_here.parent, _here, pathlib.Path(os.getcwd())]:
         break
 try:
     from theme import apply_theme, SIDEBAR_HTML
+    from ai_provider import render_provider_sidebar, get_openai_client_and_model
 except ImportError:
     def apply_theme(): pass
-    SIDEBAR_HTML = "<p style=\'color:white\'>AIT</p>"
+    SIDEBAR_HTML = ""
+    def render_provider_sidebar(): pass
+    def get_openai_client_and_model(page="default"):
+        from openai import OpenAI
+        import streamlit as st
+        key = st.session_state.get("api_key_global","")
+        return OpenAI(api_key=key, base_url="https://api.opentyphoon.ai/v1"), "typhoon-v2.5-30b-a3b-instruct"
 
 st.set_page_config(page_title="Audit Dashboard", page_icon="📊", layout="wide")
 apply_theme()
 
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
+    render_provider_sidebar()
 
-# ── Init ──────────────────────────────────────────────
 if 'api_key_global' not in st.session_state:
     try: st.session_state['api_key_global'] = st.secrets["api_key"]
     except: st.session_state['api_key_global'] = ""
 
-# ── Page Header ───────────────────────────────────────
 st.title("📊 Audit Dashboard Builder")
 st.markdown("อัปโหลดข้อมูล แล้วเลือก Template หรือสั่ง AI สร้าง Dashboard ให้อัตโนมัติ")
 
-# ─────────────────────────────────────────────────────
-# STEP 1: Upload Data
 # ─────────────────────────────────────────────────────
 with st.container(border=True):
     st.markdown("#### 📂 Step 1 — อัปโหลดข้อมูล")
@@ -54,9 +57,6 @@ if uploaded:
     except Exception as e:
         st.error(f"อ่านไฟล์ไม่ได้: {e}")
 
-# ─────────────────────────────────────────────────────
-# STEP 2: Mode Selection
-# ─────────────────────────────────────────────────────
 if df is not None:
     st.markdown("---")
     with st.container(border=True):
@@ -75,7 +75,6 @@ if df is not None:
         st.markdown("---")
         with st.container(border=True):
             st.markdown("#### 🤖 Step 3 — บอก AI ว่าต้องการ Dashboard แบบไหน")
-
             col_a, col_b = st.columns([3,1])
             with col_a:
                 ai_prompt = st.text_area(
@@ -87,7 +86,6 @@ if df is not None:
                 st.markdown("<br>", unsafe_allow_html=True)
                 run_ai = st.button("🚀 สร้าง Dashboard", type="primary", use_container_width=True)
 
-            # Quick prompt buttons
             st.markdown("**หรือเลือก prompt สำเร็จรูป:**")
             qp1, qp2, qp3, qp4 = st.columns(4)
             if qp1.button("📊 สรุปภาพรวม", use_container_width=True):
@@ -106,15 +104,7 @@ if df is not None:
         if run_ai and ai_prompt:
             with st.spinner("🤖 AI กำลังวิเคราะห์ข้อมูลและสร้าง Dashboard..."):
                 try:
-                    from openai import OpenAI
-                    client = OpenAI(api_key=st.session_state.api_key_global, base_url="https://api.opentyphoon.ai/v1")
-
-                    col_info = []
-                    for c in df.columns:
-                        dtype = str(df[c].dtype)
-                        nunique = df[c].nunique()
-                        col_info.append(f"- {c} ({dtype}, {nunique} unique values)")
-
+                    col_info = [f"- {c} ({str(df[c].dtype)}, {df[c].nunique()} unique values)" for c in df.columns]
                     sample_data = df.head(5).to_string()
 
                     system_prompt = """คุณคือ Data Analyst ผู้เชี่ยวชาญ Python + Plotly + Streamlit
@@ -142,17 +132,16 @@ if df is not None:
 
 กรุณา generate Python + Streamlit + Plotly code สำหรับสร้าง Dashboard ตามที่ต้องการ"""
 
+                    client, model = get_openai_client_and_model(page="default")
                     response = client.chat.completions.create(
-                        model="typhoon-v2.5-30b-a3b-instruct",
+                        model=model,
                         messages=[
                             {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_msg}
+                            {"role": "user",   "content": user_msg}
                         ],
                         temperature=0.3, max_tokens=4096
                     )
-
                     generated_code = response.choices[0].message.content.strip()
-                    # Strip markdown if AI added it
                     generated_code = generated_code.replace("```python","").replace("```","").strip()
                     st.session_state['dashboard_code'] = generated_code
                     st.success("✅ AI สร้าง Dashboard code เรียบร้อยแล้ว!")
@@ -161,11 +150,9 @@ if df is not None:
                     st.error(f"เกิดข้อผิดพลาด: {e}")
                     st.info("ลองใช้โหมด Template สำเร็จรูปแทนครับ")
 
-        # ── Show generated dashboard ─────────────────
         if st.session_state.get('dashboard_code'):
             st.markdown("---")
             st.markdown("#### 📊 Dashboard ที่ AI สร้าง")
-
             with st.expander("📝 ดู/แก้ไข Code ที่ AI สร้าง"):
                 edited_code = st.text_area("Code", value=st.session_state['dashboard_code'], height=300, key="code_editor")
                 if st.button("🔄 รัน Code ที่แก้ไขแล้ว", type="secondary"):
@@ -192,7 +179,6 @@ if df is not None:
 
         num_cols = df.select_dtypes(include='number').columns.tolist()
         cat_cols = df.select_dtypes(include=['object','category']).columns.tolist()
-        all_cols = df.columns.tolist()
 
         t1, t2, t3, t4 = st.tabs(["📊 สรุปภาพรวม", "📈 แผนภูมิเปรียบเทียบ", "🔗 ความสัมพันธ์", "📋 ตาราง"])
 
@@ -208,8 +194,7 @@ if df is not None:
                 col_y = st.selectbox("ค่า (แกน Y)", num_cols, key="ov_y")
                 agg = st.selectbox("สรุปด้วย", ["sum","mean","count"], key="ov_agg")
                 grouped = df.groupby(col_x)[col_y].agg(agg).reset_index().sort_values(col_y, ascending=False)
-                fig = px.bar(grouped, x=col_x, y=col_y, title=f"{col_y} ({agg}) แยกตาม {col_x}",
-                             color_discrete_sequence=["#7A2020"])
+                fig = px.bar(grouped, x=col_x, y=col_y, title=f"{col_y} ({agg}) แยกตาม {col_x}", color_discrete_sequence=["#7A2020"])
                 fig.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -220,14 +205,11 @@ if df is not None:
                 chart_type = st.radio("ประเภทกราฟ", ["แท่ง","วงกลม","แนวนอน"], horizontal=True)
                 grouped2 = df.groupby(col_x2)[col_y2].sum().reset_index()
                 if chart_type == "วงกลม":
-                    fig2 = px.pie(grouped2, names=col_x2, values=col_y2, title=f"สัดส่วน {col_y2}",
-                                  color_discrete_sequence=px.colors.sequential.Reds_r)
+                    fig2 = px.pie(grouped2, names=col_x2, values=col_y2, title=f"สัดส่วน {col_y2}", color_discrete_sequence=px.colors.sequential.Reds_r)
                 elif chart_type == "แนวนอน":
-                    fig2 = px.bar(grouped2, x=col_y2, y=col_x2, orientation='h', title=f"{col_y2} แยกตาม {col_x2}",
-                                  color_discrete_sequence=["#9e2c2c"])
+                    fig2 = px.bar(grouped2, x=col_y2, y=col_x2, orientation='h', title=f"{col_y2} แยกตาม {col_x2}", color_discrete_sequence=["#9e2c2c"])
                 else:
-                    fig2 = px.bar(grouped2, x=col_x2, y=col_y2, title=f"{col_y2} แยกตาม {col_x2}",
-                                  color=col_x2, color_discrete_sequence=px.colors.qualitative.Set2)
+                    fig2 = px.bar(grouped2, x=col_x2, y=col_y2, title=f"{col_y2} แยกตาม {col_x2}", color=col_x2, color_discrete_sequence=px.colors.qualitative.Set2)
                 fig2.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
                 st.plotly_chart(fig2, use_container_width=True)
             else:
@@ -244,13 +226,10 @@ if df is not None:
                                   color_discrete_sequence=px.colors.qualitative.Bold)
                 fig3.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
                 st.plotly_chart(fig3, use_container_width=True)
-
-                # Correlation heatmap
                 if len(num_cols) >= 3:
                     st.markdown("**Correlation Heatmap**")
                     corr = df[num_cols].corr().round(2)
-                    fig_hm = px.imshow(corr, text_auto=True, color_continuous_scale="RdBu_r",
-                                       title="Correlation Matrix", aspect="auto")
+                    fig_hm = px.imshow(corr, text_auto=True, color_continuous_scale="RdBu_r", title="Correlation Matrix", aspect="auto")
                     st.plotly_chart(fig_hm, use_container_width=True)
             else:
                 st.info("ต้องมีคอลัมน์ตัวเลขอย่างน้อย 2 คอลัมน์")
@@ -281,7 +260,6 @@ if df is not None:
         st.markdown("---")
         with st.container(border=True):
             st.markdown("#### 🔧 Step 3 — กำหนด Chart เอง")
-            st.markdown("เพิ่มกราฟได้ทีละตัว เลือกคอลัมน์และประเภทกราฟตามต้องการ")
 
         if 'custom_charts' not in st.session_state:
             st.session_state['custom_charts'] = []
@@ -311,15 +289,14 @@ if df is not None:
             for idx, chart_cfg in enumerate(st.session_state['custom_charts']):
                 with chart_cols[idx % 2]:
                     try:
-                        ctype = chart_cfg["type"]; cx = chart_cfg["x"]; cy = chart_cfg["y"]
-                        title = chart_cfg["title"]
-                        if ctype == "Bar":       fig = px.bar(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
-                        elif ctype == "Line":    fig = px.line(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
-                        elif ctype == "Pie":     fig = px.pie(df, names=cx, values=cy, title=title, color_discrete_sequence=px.colors.sequential.Reds_r)
-                        elif ctype == "Scatter": fig = px.scatter(df, x=cx, y=cy, title=title, color_discrete_sequence=["#9e2c2c"])
+                        ctype = chart_cfg["type"]; cx = chart_cfg["x"]; cy = chart_cfg["y"]; title = chart_cfg["title"]
+                        if ctype == "Bar":         fig = px.bar(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
+                        elif ctype == "Line":      fig = px.line(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
+                        elif ctype == "Pie":       fig = px.pie(df, names=cx, values=cy, title=title, color_discrete_sequence=px.colors.sequential.Reds_r)
+                        elif ctype == "Scatter":   fig = px.scatter(df, x=cx, y=cy, title=title, color_discrete_sequence=["#9e2c2c"])
                         elif ctype == "Histogram": fig = px.histogram(df, x=cx, title=title, color_discrete_sequence=["#7A2020"])
-                        elif ctype == "Box":     fig = px.box(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
-                        else:                    fig = px.bar(df, x=cx, y=cy, title=title)
+                        elif ctype == "Box":       fig = px.box(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
+                        else:                      fig = px.bar(df, x=cx, y=cy, title=title)
                         fig.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee", margin=dict(t=40,b=20,l=10,r=10))
                         st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
@@ -328,7 +305,6 @@ if df is not None:
             st.info("ยังไม่มีกราฟ — กดเพิ่มกราฟด้านบน")
 
 else:
-    # No file uploaded yet
     st.markdown("---")
     with st.container(border=True):
         st.markdown("""
@@ -339,3 +315,4 @@ else:
           จากนั้นเลือกโหมด: AI อัตโนมัติ · Template สำเร็จรูป · หรือกำหนดเอง</div>
         </div>
         """, unsafe_allow_html=True)
+
