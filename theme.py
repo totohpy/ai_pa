@@ -1,4 +1,5 @@
-# theme.py — PA Planning Studio v6.0
+# theme.py — PA Planning Studio v6.1
+# เพิ่ม AI Provider selector ใน sidebar
 # Fix: file uploader white bg using comprehensive selectors
 # Fix: sidebar red + white text via CSS (config.toml secondaryBg = cream)
 
@@ -49,8 +50,45 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stSidebarNav"] ul { padding:0 6px !important; margin:0 !important; }
 [data-testid="stSidebarNav"] li { margin-bottom:2px !important; }
 
+/* ── Sidebar: ทำให้ radio / text_input / expander ภายใน sidebar อ่านได้ ── */
+[data-testid="stSidebar"] .stRadio label,
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {
+    color:#ffffff !important;
+    font-size:13px !important;
+}
+[data-testid="stSidebar"] .stRadio div[data-testid="stMarkdownContainer"] p {
+    color:#ffffff !important;
+}
+[data-testid="stSidebar"] .stTextInput label,
+[data-testid="stSidebar"] .stTextInput input {
+    color:#1a1a1a !important;
+    font-size:13px !important;
+}
+[data-testid="stSidebar"] details summary {
+    color:rgba(255,255,255,0.75) !important;
+    font-size:12px !important;
+}
+[data-testid="stSidebar"] details {
+    background:rgba(255,255,255,0.08) !important;
+    border-radius:8px !important;
+    padding:4px 8px !important;
+}
+[data-testid="stSidebar"] details p,
+[data-testid="stSidebar"] details code,
+[data-testid="stSidebar"] details pre {
+    color:rgba(255,255,255,0.80) !important;
+    font-size:11px !important;
+}
+[data-testid="stSidebar"] code,
+[data-testid="stSidebar"] pre {
+    background:rgba(0,0,0,0.25) !important;
+    color:#f0f0f0 !important;
+    border-radius:4px !important;
+}
+/* radio dot color in sidebar */
+[data-testid="stSidebar"] input[type="radio"] { accent-color:#ffffff !important; }
+
 /* ═══ FILE UPLOADER — force WHITE ═══ */
-/* ครอบคลุมทุก selector ที่ Streamlit ใช้ */
 [data-testid="stFileUploader"],
 [data-testid="stFileUploader"] > div,
 [data-testid="stFileUploader"] > section,
@@ -165,6 +203,8 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 </style>
 """
 
+# SIDEBAR_HTML เป็น HTML-only ส่วน (footer card)
+# AI Provider selector ถูก render ด้วย render_provider_sidebar() จาก ai_provider.py
 SIDEBAR_HTML = """
 <div class="sb-footer">
   <div class="sb-footer-card">
@@ -176,6 +216,7 @@ SIDEBAR_HTML = """
   </div>
 </div>
 """
+
 
 def apply_theme():
     import streamlit as st
