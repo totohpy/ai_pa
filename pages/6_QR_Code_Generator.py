@@ -12,15 +12,18 @@ for _p in [_here.parent, _here, pathlib.Path(os.getcwd())]:
         break
 try:
     from theme import apply_theme, SIDEBAR_HTML
+    from ai_provider import render_provider_sidebar
 except ImportError:
     def apply_theme(): pass
-    SIDEBAR_HTML = "<p style=\'color:white\'>AIT</p>"
+    SIDEBAR_HTML = "<p style='color:white'>AIT</p>"
+    def render_provider_sidebar(): pass
 
 st.set_page_config(page_title="QR Code Generator", page_icon="📱", layout="wide")
 apply_theme()
 
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
+    render_provider_sidebar()
 
 def generate_qr_code_with_logo(data, logo_file_name=None, logo_size_factor=3.5):
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=10, border=2)
@@ -121,3 +124,4 @@ with st.container(border=True):
                 <div style="font-size:1.1rem;font-weight:600;">รอการสร้าง QR Code</div>
                 <div style="font-size:0.9rem;margin-top:6px;">กรอกข้อมูลและเลือกโลโก้ทางซ้าย<br>แล้วกดปุ่มสร้างได้เลย</div>
             </div>""", unsafe_allow_html=True)
+
