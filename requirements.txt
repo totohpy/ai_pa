@@ -1,7 +1,7 @@
-streamlit
+streamlit>=1.35.0
 pandas
 scikit-learn
-openai
+openai>=1.0.0
 openpyxl
 xlsxwriter
 PyPDF2==3.0.1
@@ -9,13 +9,12 @@ groq
 graphviz
 streamlit-mermaid
 streamlit_agraph
-google-generativeai==0.5.4
 google-auth
 google-auth-httplib2
 fpdf2
 requests
 python-docx
-qrcode
+qrcode[pil]
 langchain
 langchain-openai
 langchain-community
