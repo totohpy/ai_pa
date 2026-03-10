@@ -14,7 +14,7 @@ except ImportError:
     SIDEBAR_HTML = ""
     def render_provider_sidebar(): pass
 
-st.set_page_config(page_title="PA Planning Studio", page_icon="🔎", layout="wide")
+st.set_page_config(page_title="ระบบอัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · Performance Audit Planning Studio", page_icon="🧭", layout="wide")
 apply_theme()
 
 with st.sidebar:
@@ -151,7 +151,7 @@ with m1:
         <div class="fcard-geo"></div>
         <div class="fcard-icon">🏳️</div>
         <div class="fcard-title">Audit Design Assistant</div>
-        <div class="fcard-desc">วิเคราะห์แผน 6W2H · Logic Model · Flowchart ค้นหาข้อตรวจพบเดิม และแนะนำประเด็นด้วย AI</div>
+        <div class="fcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · Flowchart ค้นหาข้อตรวจพบที่ผ่านมา และแนะนำประเด็นการตรวจสอบด้วย AI</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
@@ -197,7 +197,7 @@ with u2:
       <div class="fcard-util">
         <div class="fcard-util-icon">📱</div>
         <div class="fcard-util-title">QR Code Generator</div>
-        <div class="fcard-util-desc">สร้าง QR Code พร้อมโลโก้หน่วยงาน ดาวน์โหลด PNG ได้ทันที</div>
+        <div class="fcard-util-desc">สร้าง QR Code พร้อมโลโก้หน่วยงาน ดาวน์โหลดได้ทันที</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
@@ -207,7 +207,7 @@ with u3:
       <div class="fcard-util">
         <div class="fcard-util-icon">📊</div>
         <div class="fcard-util-title">Audit Dashboard</div>
-        <div class="fcard-util-desc">Dashboard สรุปสภาพปัญหาด้านสิ่งแวดล้อมและการวางแผนตรวจสอบ</div>
+        <div class="fcard-util-desc">Dashboard ตัวช่วยสรุปข้อมูลและนำเสนอข้อมูลด้วยภาพ</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
@@ -217,7 +217,7 @@ with u4:
       <div class="fcard-util">
         <div class="fcard-util-icon">🕵️</div>
         <div class="fcard-util-title">Analytics Sandbox</div>
-        <div class="fcard-util-desc">Power BI Mode · YData · Sweetviz · PyGWalker วิเคราะห์ข้อมูลเชิงลึก</div>
+        <div class="fcard-util-desc">Power BI Mode · YData Profiling· PyGWalker วิเคราะห์ข้อมูลเชิงลึก</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
