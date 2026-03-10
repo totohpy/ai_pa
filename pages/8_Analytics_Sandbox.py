@@ -90,9 +90,11 @@ if uploaded_file:
     if df is not None:
         st.success(f"✅ โหลดข้อมูลสำเร็จ: {df.shape[0]:,} รายการ, {df.shape[1]} คอลัมน์")
 
-        tab_bi, tab_quick, tab_audit = st.tabs([
+        tab_bi, tab_quick, tab_join, tab_groupby, tab_audit = st.tabs([
             "🎨 Power BI Mode",
             "📑 Quick Report",
+            "🔗 Join ตาราง",
+            "📊 Group by / Pivot",
             "🛠️ Audit Tools",
         ])
 
@@ -152,6 +154,115 @@ if uploaded_file:
                                     title=f"Value Counts: {cat_sel}")
                     fig_vc.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
                     st.plotly_chart(fig_vc, use_container_width=True)
+
+        # ── Join ตาราง ────────────────────────────────────
+        with tab_join:
+            st.subheader("🔗 Join 2 ตาราง")
+            st.info("อัปโหลดไฟล์ที่ 2 เพื่อ Join กับตารางหลักที่อัปโหลดด้านบน")
+
+            uploaded_file2 = st.file_uploader("📂 อัปโหลดตารางที่ 2", type=['xlsx','csv'], key="file2")
+
+            @st.cache_data
+            def load_data2(file):
+                try:
+                    if file.name.endswith('.csv'): return pd.read_csv(file)
+                    else: return pd.read_excel(file)
+                except: return None
+
+            if uploaded_file2:
+                df2 = load_data2(uploaded_file2)
+                if df2 is not None:
+                    st.success(f"✅ ตารางที่ 2: {df2.shape[0]:,} แถว × {df2.shape[1]} คอลัมน์")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        key1 = st.selectbox("🔑 Key จากตาราง 1", df.columns.tolist(), key="join_key1")
+                    with col2:
+                        key2 = st.selectbox("🔑 Key จากตาราง 2", df2.columns.tolist(), key="join_key2")
+                    with col3:
+                        join_type = st.selectbox("ประเภท Join", [
+                            "inner — เฉพาะที่ตรงกัน",
+                            "left — ทุกแถวตาราง 1",
+                            "right — ทุกแถวตาราง 2",
+                            "outer — ทั้งหมด",
+                        ])
+                        join_how = join_type.split(" — ")[0]
+
+                    with st.expander("👀 ตัวอย่างข้อมูลทั้ง 2 ตาราง"):
+                        c1, c2 = st.columns(2)
+                        c1.markdown("**ตาราง 1**")
+                        c1.dataframe(df.head(5), use_container_width=True, hide_index=True)
+                        c2.markdown("**ตาราง 2**")
+                        c2.dataframe(df2.head(5), use_container_width=True, hide_index=True)
+
+                    if st.button("🔗 Join ตาราง", type="primary"):
+                        try:
+                            joined = pd.merge(df, df2, left_on=key1, right_on=key2, how=join_how)
+                            st.session_state['joined_df'] = joined
+                            st.success(f"✅ Join สำเร็จ! ได้ {joined.shape[0]:,} แถว × {joined.shape[1]} คอลัมน์")
+                        except Exception as e:
+                            st.error(f"Join ไม่ได้: {e}")
+
+                    if 'joined_df' in st.session_state:
+                        joined = st.session_state['joined_df']
+                        st.dataframe(joined, use_container_width=True, hide_index=True)
+                        st.download_button("⬇️ ดาวน์โหลดผลลัพธ์ CSV",
+                            joined.to_csv(index=False, encoding='utf-8-sig'),
+                            "joined_data.csv", "text/csv")
+            else:
+                st.warning("กรุณาอัปโหลดตารางที่ 2 ก่อนครับ")
+
+        # ── Group by / Pivot ──────────────────────────────
+        with tab_groupby:
+            st.subheader("📊 Group by / Pivot Table")
+            import plotly.express as px
+
+            data_source = st.radio("ข้อมูลที่ใช้",
+                ["ตารางหลัก", "ตารางที่ Join แล้ว (ถ้ามี)"], horizontal=True)
+            work_df = st.session_state.get('joined_df', df) if data_source == "ตารางที่ Join แล้ว (ถ้ามี)" else df
+
+            num_cols = work_df.select_dtypes(include='number').columns.tolist()
+            cat_cols = work_df.select_dtypes(include=['object','category']).columns.tolist()
+
+            st.markdown("#### Group by")
+            with st.container(border=True):
+                gc1, gc2, gc3 = st.columns(3)
+                group_cols = gc1.multiselect("Group by คอลัมน์", cat_cols or work_df.columns.tolist(), key="grp_cols")
+                agg_col    = gc2.selectbox("คำนวณคอลัมน์", num_cols or work_df.columns.tolist(), key="grp_val")
+                agg_func   = gc3.selectbox("ฟังก์ชัน", ["sum","mean","count","max","min","median"], key="grp_func")
+                if group_cols and agg_col:
+                    grouped = work_df.groupby(group_cols)[agg_col].agg(agg_func).reset_index()
+                    grouped.columns = group_cols + [f"{agg_func}({agg_col})"]
+                    grouped = grouped.sort_values(grouped.columns[-1], ascending=False)
+                    st.dataframe(grouped, use_container_width=True, hide_index=True)
+                    if len(group_cols) == 1:
+                        fig = px.bar(grouped.head(20), x=group_cols[0], y=grouped.columns[-1],
+                            title=f"{agg_func}({agg_col}) แยกตาม {group_cols[0]}",
+                            color_discrete_sequence=["#7A2020"])
+                        fig.update_layout(plot_bgcolor="white", paper_bgcolor="white")
+                        st.plotly_chart(fig, use_container_width=True)
+                    st.download_button("⬇️ ดาวน์โหลด CSV",
+                        grouped.to_csv(index=False, encoding='utf-8-sig'), "grouped.csv", "text/csv")
+                else:
+                    st.info("เลือก Group by คอลัมน์และคอลัมน์ที่ต้องการคำนวณ")
+
+            st.markdown("#### Pivot Table")
+            with st.container(border=True):
+                pc1, pc2, pc3, pc4 = st.columns(4)
+                pivot_idx  = pc1.selectbox("แถว (Index)", cat_cols or work_df.columns.tolist(), key="pvt_idx")
+                pivot_col  = pc2.selectbox("คอลัมน์ (Columns)", ["(ไม่มี)"] + cat_cols, key="pvt_col")
+                pivot_val  = pc3.selectbox("ค่า (Values)", num_cols or work_df.columns.tolist(), key="pvt_val")
+                pivot_func = pc4.selectbox("ฟังก์ชัน", ["sum","mean","count","max","min"], key="pvt_func")
+                if st.button("สร้าง Pivot Table", type="primary"):
+                    try:
+                        cols_arg = None if pivot_col == "(ไม่มี)" else pivot_col
+                        pivot = pd.pivot_table(work_df, index=pivot_idx,
+                            columns=cols_arg, values=pivot_val,
+                            aggfunc=pivot_func, fill_value=0)
+                        st.dataframe(pivot, use_container_width=True)
+                        st.download_button("⬇️ ดาวน์โหลด Pivot CSV",
+                            pivot.to_csv(encoding='utf-8-sig'), "pivot.csv", "text/csv")
+                    except Exception as e:
+                        st.error(f"สร้าง Pivot ไม่ได้: {e}")
 
         # ── Audit Tools ───────────────────────────────
         with tab_audit:
