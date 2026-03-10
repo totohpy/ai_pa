@@ -112,7 +112,18 @@ if uploaded_file:
         with tab_quick:
             st.subheader("📑 Quick Report")
 
-            if HAS_SWEETVIZ:
+            if HAS_YDATA:
+                if st.button("🚀 สร้างรายงาน YData Profiling", type="primary"):
+                    with st.spinner("กำลังสร้างรายงาน... (อาจใช้เวลาสักครู่)"):
+                        try:
+                            profile = ProfileReport(df, title="PA Data Report",
+                                                    explorative=True, minimal=False)
+                            profile.to_file("ydata_report.html")
+                            with open("ydata_report.html", 'r', encoding='utf-8') as f:
+                                components.html(f.read(), height=1000, scrolling=True)
+                        except Exception as e:
+                            st.error(f"YData error: {e}")
+            elif HAS_SWEETVIZ:
                 if st.button("🚀 สร้างรายงาน Sweetviz", type="primary"):
                     with st.spinner("กำลังสร้างรายงาน..."):
                         report = sv.analyze(df)
