@@ -124,7 +124,8 @@ if df is not None:
 6. import ที่ใช้ได้: import plotly.express as px, import plotly.graph_objects as go, import pandas as pd
 7. ใส่ try/except ทุก chart เพื่อป้องกัน error จาก column ที่อาจไม่มี
 8. ถ้าไม่แน่ใจ column ให้ใช้ df.columns[0], df.columns[1] เป็น fallback
-9. Code ต้องรันได้ทันทีโดยไม่มี input จากผู้ใช้เพิ่มเติม"""
+9. Code ต้องรันได้ทันทีโดยไม่มี input จากผู้ใช้เพิ่มเติม
+10. ทุก fig ต้องมี fig.update_layout(plot_bgcolor="white", paper_bgcolor="white") เสมอ ห้ามใช้สีอื่น"""
 
                     user_msg = f"""ข้อมูล DataFrame:
 คอลัมน์:
@@ -148,6 +149,19 @@ if df is not None:
                     )
                     generated_code = response.choices[0].message.content.strip()
                     generated_code = generated_code.replace("```python","").replace("```","").strip()
+                    # inject white background หลังทุก fig.update_layout หรือ st.plotly_chart
+                    import re
+                    generated_code = re.sub(
+                        r'(fig\.update_layout\()',
+                        r'fig.update_layout(plot_bgcolor="white", paper_bgcolor="white", ',
+                        generated_code
+                    )
+                    # กรณี AI ไม่ได้ใส่ update_layout เลย — เพิ่มก่อน st.plotly_chart ทุกตัว
+                    generated_code = re.sub(
+                        r'(?<!update_layout\n)(st\.plotly_chart\((\w+),)',
+                        r'\2.update_layout(plot_bgcolor="white", paper_bgcolor="white")\nst.plotly_chart(\2,',
+                        generated_code
+                    )
                     st.session_state['dashboard_code'] = generated_code
                     st.success("✅ AI สร้าง Dashboard code เรียบร้อยแล้ว!")
 
