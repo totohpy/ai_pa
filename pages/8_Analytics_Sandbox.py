@@ -1,14 +1,10 @@
 import streamlit as st
 import pandas as pd
-import sweetviz as sv
-from ydata_profiling import ProfileReport
-import streamlit.components.v1 as components
-import pygwalker as pyg
-from pygwalker.api.streamlit import StreamlitRenderer
 import os, sys
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import seaborn as sns
+import streamlit.components.v1 as components
 
 import sys, os, pathlib
 _here = pathlib.Path(__file__).resolve().parent
@@ -23,6 +19,21 @@ except ImportError:
     def apply_theme(): pass
     SIDEBAR_HTML = "<p style='color:white'>AIT</p>"
     def render_provider_sidebar(): pass
+
+# optional imports — ไม่พังถ้าไม่มี
+try:
+    from pygwalker.api.streamlit import StreamlitRenderer
+    HAS_PYGWALKER = True
+except ImportError:
+    HAS_PYGWALKER = False
+
+HAS_SWEETVIZ = False  # ไม่รองรับ numpy เวอร์ชันใหม่
+
+try:
+    from ydata_profiling import ProfileReport
+    HAS_YDATA = True
+except ImportError:
+    HAS_YDATA = False
 
 st.set_page_config(page_title="Super Analytics Sandbox", page_icon="🕵️", layout="wide")
 apply_theme()
@@ -55,8 +66,6 @@ def setup_thai_font():
 thai_font_name, font_found = setup_thai_font()
 if font_found:
     st.toast(f"✅ ฟอนต์: {thai_font_name}", icon="🇹🇭")
-else:
-    st.warning("⚠️ ไม่พบไฟล์ฟอนต์ Sarabun-Regular.ttf")
 
 # ── UI ────────────────────────────────────────────────
 st.title("🕵️ Super Analytics Sandbox")
@@ -81,47 +90,70 @@ if uploaded_file:
     if df is not None:
         st.success(f"✅ โหลดข้อมูลสำเร็จ: {df.shape[0]:,} รายการ, {df.shape[1]} คอลัมน์")
 
-        tab_bi, tab_ydata, tab_sweetviz, tab_audit = st.tabs([
+        tab_bi, tab_quick, tab_audit = st.tabs([
             "🎨 Power BI Mode",
-            "🔬 Deep Scan (YData)",
             "📑 Quick Report",
-            "🛠️ Audit Tools"
+            "🛠️ Audit Tools",
         ])
 
+        # ── Power BI Mode (PyGWalker) ─────────────────
         with tab_bi:
-            renderer = get_pyg_renderer(df)
-            renderer.explorer()
+            if HAS_PYGWALKER:
+                renderer = get_pyg_renderer(df)
+                renderer.explorer()
+            else:
+                st.warning("⚠️ PyGWalker ไม่พร้อมใช้งานบน Python เวอร์ชันนี้")
+                st.info("ใช้แท็บ Quick Report หรือ Audit Tools แทนครับ")
 
-        with tab_ydata:
-            st.subheader("🔬 Deep Data Profiling (YData)")
-            if st.button("🚀 เริ่มวิเคราะห์เจาะลึก", type="primary"):
-                with st.spinner("กำลังประมวลผล..."):
-                    try:
-                        if font_found:
-                            plt.rcParams['font.family'] = 'sans-serif'
-                            plt.rcParams['font.sans-serif'] = [thai_font_name] + plt.rcParams['font.sans-serif']
-                            sns.set_theme(font=thai_font_name)
-                        pr = ProfileReport(df, explorative=True, title="Audit Data Profiling",
-                            plot={'dpi':200,'image_format':'png','font':{'family':'sans-serif','sans-serif':[thai_font_name]}})
-                        report_path = "ydata_report.html"
-                        pr.to_file(report_path)
-                        with open(report_path,'r',encoding='utf-8') as f: html_content = f.read()
-                        st.success("วิเคราะห์เสร็จสิ้น!")
-                        components.html(html_content, height=1000, scrolling=True)
-                        with open(report_path,"rb") as f:
-                            st.download_button("💾 ดาวน์โหลดรายงาน", f, "Deep_Audit_Report.html", "text/html")
-                    except Exception as e:
-                        st.error(f"เกิดข้อผิดพลาด: {e}")
+        # ── Quick Report ──────────────────────────────
+        with tab_quick:
+            st.subheader("📑 Quick Report")
 
-        with tab_sweetviz:
-            st.subheader("📑 Quick Scan Report")
-            if st.button("🚀 สร้างรายงานด่วน", type="primary"):
-                with st.spinner("กำลังสร้างรายงาน..."):
-                    report = sv.analyze(df)
-                    report.show_html("sweetviz_report.html", open_browser=False, layout='vertical', scale=1.0)
-                    with open("sweetviz_report.html",'r',encoding='utf-8') as f:
-                        components.html(f.read(), height=1000, scrolling=True)
+            if HAS_SWEETVIZ:
+                if st.button("🚀 สร้างรายงาน Sweetviz", type="primary"):
+                    with st.spinner("กำลังสร้างรายงาน..."):
+                        report = sv.analyze(df)
+                        report.show_html("sweetviz_report.html", open_browser=False, layout='vertical', scale=1.0)
+                        with open("sweetviz_report.html", 'r', encoding='utf-8') as f:
+                            components.html(f.read(), height=1000, scrolling=True)
+            else:
+                # ── Fallback: plotly ──────────────────
+                import plotly.express as px
+                num_cols = df.select_dtypes(include='number').columns.tolist()
+                cat_cols = df.select_dtypes(include=['object','category']).columns.tolist()
 
+                st.markdown("**สถิติเบื้องต้น**")
+                st.dataframe(df.describe(), use_container_width=True)
+
+                if num_cols:
+                    st.markdown("**การกระจายของข้อมูล**")
+                    col_sel = st.selectbox("เลือกคอลัมน์", num_cols, key="hist_col")
+                    fig = px.histogram(df, x=col_sel, nbins=30,
+                                       color_discrete_sequence=["#7A2020"],
+                                       title=f"การกระจาย: {col_sel}")
+                    fig.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
+                    st.plotly_chart(fig, use_container_width=True)
+
+                if len(num_cols) >= 2:
+                    st.markdown("**Correlation Heatmap**")
+                    corr = df[num_cols].corr().round(2)
+                    fig_hm = px.imshow(corr, text_auto=True,
+                                       color_continuous_scale="RdBu_r",
+                                       title="Correlation Matrix", aspect="auto")
+                    st.plotly_chart(fig_hm, use_container_width=True)
+
+                if cat_cols:
+                    st.markdown("**Value Counts**")
+                    cat_sel = st.selectbox("เลือกคอลัมน์", cat_cols, key="vc_col")
+                    vc = df[cat_sel].value_counts().reset_index()
+                    vc.columns = [cat_sel, 'count']
+                    fig_vc = px.bar(vc.head(20), x=cat_sel, y='count',
+                                    color_discrete_sequence=["#7A2020"],
+                                    title=f"Value Counts: {cat_sel}")
+                    fig_vc.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
+                    st.plotly_chart(fig_vc, use_container_width=True)
+
+        # ── Audit Tools ───────────────────────────────
         with tab_audit:
             st.subheader("🛠️ Audit Tools")
             c1, c2 = st.columns(2)
@@ -131,10 +163,10 @@ if uploaded_file:
                 if st.button("สุ่มข้อมูล", type="primary"):
                     st.dataframe(df.sample(sample_size), use_container_width=True, hide_index=True)
             with c2:
-                num_cols = df.select_dtypes(include=['number']).columns.tolist()
-                if num_cols:
+                num_cols_audit = df.select_dtypes(include=['number']).columns.tolist()
+                if num_cols_audit:
                     st.markdown("**Top 5 ตามคอลัมน์**")
-                    col = st.selectbox("เรียงตาม", num_cols)
+                    col = st.selectbox("เรียงตาม", num_cols_audit)
                     if st.button("แสดง Top 5", type="secondary"):
                         st.dataframe(df.nlargest(5, col), use_container_width=True, hide_index=True)
                 else:
@@ -143,4 +175,3 @@ if uploaded_file:
         st.error("ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบไฟล์")
 else:
     st.info("👆 กรุณาอัปโหลดไฟล์ Excel หรือ CSV เพื่อเริ่มต้น")
-
