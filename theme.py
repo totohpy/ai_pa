@@ -280,3 +280,35 @@ div[class*="loading"], div[class*="splash"] {
 }
 </style>""", unsafe_allow_html=True)
     st.markdown(GOV_CSS, unsafe_allow_html=True)
+    # ── JS MutationObserver: ซ่อน toolbar สำหรับทุก user รวมถึง public ──
+    st.markdown("""
+<script>
+(function() {
+    const SELECTORS = [
+        '[data-testid="stToolbar"]',
+        '[data-testid="stDeployButton"]',
+        '[data-testid="stStatusWidget"]',
+        '[data-testid="stBottom"]',
+        '[data-testid="stToolbarActions"]',
+        '[data-testid="manage-app-button"]',
+        '.viewerBadge_container__r5tak',
+        'button[title="Fork this app"]',
+        'a[href*="streamlit.io/cloud"]',
+    ];
+    function hideAll() {
+        SELECTORS.forEach(function(sel) {
+            document.querySelectorAll(sel).forEach(function(el) {
+                el.style.setProperty('display','none','important');
+                el.style.setProperty('visibility','hidden','important');
+            });
+        });
+    }
+    hideAll();
+    // ทำงานทุกครั้งที่ Streamlit inject DOM ใหม่
+    new MutationObserver(hideAll).observe(document.body, {childList:true, subtree:true});
+    // backup interval 5 วินาทีแรก
+    var n = 0;
+    var t = setInterval(function(){ hideAll(); if(++n>=10) clearInterval(t); }, 500);
+})();
+</script>
+""", unsafe_allow_html=True)
