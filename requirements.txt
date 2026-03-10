@@ -28,3 +28,7 @@ dtale
 ydata-profiling
 seaborn
 matplotlib
+folium
+streamlit-folium
+geopandas
+shapely
