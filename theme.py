@@ -256,14 +256,15 @@ footer                           { visibility:hidden !important; display:none !i
 [data-testid="manage-app-button"] { display:none !important; }
 a[href*="github.com"]            { display:none !important; }
 button[title="Fork this app"]    { display:none !important; }
-button[kind="header"]            { display:none !important; }
+/* ลบ button[kind="header"] ออก — โดน sidebar collapse button ด้วย */
+[data-testid="stHeader"] button[kind="header"] { display:none !important; }
 /* bottom-right floating buttons */
 .viewerBadge_container__r5tak   { display:none !important; }
 .viewerBadge_link__qRIco        { display:none !important; }
 #stDecoration                   { display:none !important; }
 section[data-testid="stBottom"]  { display:none !important; }
-div[class*="toolbar"]           { display:none !important; }
-div[class*="Toolbar"]           { display:none !important; }
+/* ลบ div[class*="toolbar"] ออก — match sidebar toolbar ด้วย */
+div[data-testid="stToolbar"]    { display:none !important; }
 div[class*="StatusWidget"]      { display:none !important; }
 </style>
 """
