@@ -76,11 +76,16 @@ if df is not None:
         with st.container(border=True):
             st.markdown("#### 🤖 Step 3 — บอก AI ว่าต้องการ Dashboard แบบไหน")
             col_a, col_b = st.columns([3,1])
+            # ใช้ preset key แยกจาก widget key
+            if 'ai_prompt_preset' not in st.session_state:
+                st.session_state['ai_prompt_preset'] = ""
+
             with col_a:
                 ai_prompt = st.text_area(
                     "อธิบาย Dashboard ที่ต้องการ",
+                    value=st.session_state['ai_prompt_preset'],
                     placeholder="เช่น: สร้าง Dashboard สรุปผลการตรวจสอบ แสดง: 1) จำนวนข้อตรวจพบตามหน่วยงาน (แท่ง) 2) แนวโน้มปีละ (เส้น) 3) สัดส่วนความรุนแรง (วงกลม)",
-                    height=120, key="ai_prompt_input"
+                    height=120,
                 )
             with col_b:
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -89,16 +94,16 @@ if df is not None:
             st.markdown("**หรือเลือก prompt สำเร็จรูป:**")
             qp1, qp2, qp3, qp4 = st.columns(4)
             if qp1.button("📊 สรุปภาพรวม", use_container_width=True):
-                st.session_state['ai_prompt_input'] = "สร้าง Dashboard ภาพรวม แสดงสถิติสำคัญ จำนวนรายการ ค่าเฉลี่ย สูงสุด ต่ำสุด และแผนภูมิแท่งเปรียบเทียบแต่ละหมวด"
+                st.session_state['ai_prompt_preset'] = "สร้าง Dashboard ภาพรวม แสดงสถิติสำคัญ จำนวนรายการ ค่าเฉลี่ย สูงสุด ต่ำสุด และแผนภูมิแท่งเปรียบเทียบแต่ละหมวด"
                 st.rerun()
             if qp2.button("📈 แนวโน้มตามเวลา", use_container_width=True):
-                st.session_state['ai_prompt_input'] = "สร้าง Dashboard แนวโน้มตามเวลา แสดงกราฟเส้นการเปลี่ยนแปลง พร้อม highlight จุดสูงสุดและต่ำสุด"
+                st.session_state['ai_prompt_preset'] = "สร้าง Dashboard แนวโน้มตามเวลา แสดงกราฟเส้นการเปลี่ยนแปลง พร้อม highlight จุดสูงสุดและต่ำสุด"
                 st.rerun()
             if qp3.button("🔍 วิเคราะห์ข้อตรวจพบ", use_container_width=True):
-                st.session_state['ai_prompt_input'] = "สร้าง Dashboard วิเคราะห์ข้อตรวจพบ แสดงจำนวนตามหน่วยงาน ระดับความรุนแรง สาเหตุหลัก และข้อเสนอแนะที่พบบ่อย"
+                st.session_state['ai_prompt_preset'] = "สร้าง Dashboard วิเคราะห์ข้อตรวจพบ แสดงจำนวนตามหน่วยงาน ระดับความรุนแรง สาเหตุหลัก และข้อเสนอแนะที่พบบ่อย"
                 st.rerun()
             if qp4.button("💰 งบประมาณ", use_container_width=True):
-                st.session_state['ai_prompt_input'] = "สร้าง Dashboard งบประมาณ แสดงการเบิกจ่าย เปรียบเทียบแผนกับผล สัดส่วนตามประเภทรายจ่าย"
+                st.session_state['ai_prompt_preset'] = "สร้าง Dashboard งบประมาณ แสดงการเบิกจ่าย เปรียบเทียบแผนกับผล สัดส่วนตามประเภทรายจ่าย"
                 st.rerun()
 
         if run_ai and ai_prompt:
@@ -315,4 +320,3 @@ else:
           จากนั้นเลือกโหมด: AI อัตโนมัติ · Template สำเร็จรูป · หรือกำหนดเอง</div>
         </div>
         """, unsafe_allow_html=True)
-
