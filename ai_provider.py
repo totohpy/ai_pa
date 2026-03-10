@@ -73,8 +73,8 @@ def render_provider_sidebar():
         vertex_ok  = bool(ss.get("vertex_project_id") and ss.get("vertex_sa_json"))
         st.markdown(
             f"<small style='color:rgba(255,255,255,0.65);'>"
-            f"{'🥇 ' if typhoon_ok else '❌'} <br>"
-            f"{'🥈 ' if vertex_ok  else '⚠️'} <br>"
+            f"{'✅ ' if typhoon_ok else '❌'} Model-1 <br>"
+            f"{'✅ ' if vertex_ok  else '⚠️'} Model-2 <br>"
             f"</small>",
             unsafe_allow_html=True
         )
