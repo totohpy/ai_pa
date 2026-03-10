@@ -1,7 +1,14 @@
 [theme]
-base                = "light"
-primaryColor        = "#7A2020"
-backgroundColor     = "#f8f9ee"
+base                     = "light"
+primaryColor             = "#7A2020"
+backgroundColor          = "#f8f9ee"
 secondaryBackgroundColor = "#7A2020"
-textColor           = "#1a1a1a"
-font                = "sans serif"
+textColor                = "#1a1a1a"
+font                     = "sans serif"
+
+[client]
+showSidebarNavigation = true
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
