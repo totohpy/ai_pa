@@ -185,12 +185,13 @@ def get_openai_client_and_model(page: str = "default"):
                 return client, model
 
             except Exception as e:
-                st.warning(f"⚠️ Vertex AI ไม่พร้อม ({e}) — fallback ไป Typhoon")
-                # fallback → Typhoon
-                api_key = ss.get("api_key_global", "")
-                if not api_key:
-                    raise ValueError("ไม่พบ API Key ทั้ง Vertex และ Typhoon")
-                return OpenAI(api_key=api_key, base_url=TYPHOON_BASE_URL), TYPHOON_MODEL
+                # หน้า chat ใช้ Vertex เท่านั้น — ไม่ fallback ไป Typhoon
+                raise ValueError(
+                    f"Vertex AI ใช้งานไม่ได้: {e}\n\n"
+                    "กรุณาตรวจสอบ Secrets:\n"
+                    "• vertex_project_id = \"pa-gen-ai\"\n"
+                    "• vertex_sa_json = '{...}' (JSON แบบ single line)"
+                )
 
         else:
             # ── Typhoon (default cloud) ───────────────────────────────────────
