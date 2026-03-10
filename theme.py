@@ -220,4 +220,19 @@ SIDEBAR_HTML = """
 
 def apply_theme():
     import streamlit as st
+    # ── Anti-flash: inject ก่อนเลย ป้องกัน sidebar สีขาวตอนเปลี่ยนหน้า ──
+    st.markdown("""
+<style>
+[data-testid="stSidebar"],
+[data-testid="stSidebar"]>div,
+[data-testid="stSidebar"]>div>div,
+[data-testid="stSidebar"]>div>div>div,
+[data-testid="stSidebarNav"] {
+    background-color:#7A2020 !important;
+}
+[data-testid="stAppViewContainer"] {
+    background-color:#f8f9ee !important;
+}
+</style>
+""", unsafe_allow_html=True)
     st.markdown(GOV_CSS, unsafe_allow_html=True)
