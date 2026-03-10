@@ -31,10 +31,11 @@ def init_provider_state():
     ss.setdefault("onpremise_url",    "http://your-server:11434/v1")
     ss.setdefault("onpremise_model",  "typhoon2-8b")
 
-    # API keys from secrets — อ่านใหม่ทุกครั้ง ไม่ cache ใน session_state
+    # Typhoon API key (ใช้หน้าอื่น ยกเว้น Chat)
     try:    ss["api_key_global"]    = st.secrets["api_key"]
     except: ss.setdefault("api_key_global", "")
 
+    # Vertex AI secrets (ใช้หน้า Chat)
     try:    ss["vertex_project_id"] = st.secrets["vertex_project_id"]
     except: ss.setdefault("vertex_project_id", "")
 
@@ -164,7 +165,6 @@ def get_openai_client_and_model(page: str = "default"):
                 location  = VERTEX_LOCATION
 
                 if not sa_json or not project:
-                    # debug: แสดงว่า secrets keys ที่มีอยู่คืออะไร
                     available = list(st.secrets.keys()) if hasattr(st, 'secrets') else []
                     raise ValueError(
                         f"ไม่พบ vertex_project_id หรือ vertex_sa_json ใน Secrets\n"
