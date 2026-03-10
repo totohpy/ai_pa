@@ -200,7 +200,7 @@ if df is not None:
                 agg = st.selectbox("สรุปด้วย", ["sum","mean","count"], key="ov_agg")
                 grouped = df.groupby(col_x)[col_y].agg(agg).reset_index().sort_values(col_y, ascending=False)
                 fig = px.bar(grouped, x=col_x, y=col_y, title=f"{col_y} ({agg}) แยกตาม {col_x}", color_discrete_sequence=["#7A2020"])
-                fig.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
+                fig.update_layout(plot_bgcolor="white", paper_bgcolor="white")
                 st.plotly_chart(fig, use_container_width=True)
 
         with t2:
@@ -215,7 +215,7 @@ if df is not None:
                     fig2 = px.bar(grouped2, x=col_y2, y=col_x2, orientation='h', title=f"{col_y2} แยกตาม {col_x2}", color_discrete_sequence=["#9e2c2c"])
                 else:
                     fig2 = px.bar(grouped2, x=col_x2, y=col_y2, title=f"{col_y2} แยกตาม {col_x2}", color=col_x2, color_discrete_sequence=px.colors.qualitative.Set2)
-                fig2.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
+                fig2.update_layout(plot_bgcolor="white", paper_bgcolor="white")
                 st.plotly_chart(fig2, use_container_width=True)
             else:
                 st.info("ต้องมีคอลัมน์ข้อความและตัวเลขในข้อมูล")
@@ -229,7 +229,7 @@ if df is not None:
                 fig3 = px.scatter(df, x=cx, y=cy, color=color_arg, title=f"ความสัมพันธ์ {cx} vs {cy}",
                                   trendline="ols" if not color_arg else None,
                                   color_discrete_sequence=px.colors.qualitative.Bold)
-                fig3.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
+                fig3.update_layout(plot_bgcolor="white", paper_bgcolor="white")
                 st.plotly_chart(fig3, use_container_width=True)
                 if len(num_cols) >= 3:
                     st.markdown("**Correlation Heatmap**")
@@ -302,7 +302,7 @@ if df is not None:
                         elif ctype == "Histogram": fig = px.histogram(df, x=cx, title=title, color_discrete_sequence=["#7A2020"])
                         elif ctype == "Box":       fig = px.box(df, x=cx, y=cy, title=title, color_discrete_sequence=["#7A2020"])
                         else:                      fig = px.bar(df, x=cx, y=cy, title=title)
-                        fig.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee", margin=dict(t=40,b=20,l=10,r=10))
+                        fig.update_layout(plot_bgcolor="white", paper_bgcolor="white", margin=dict(t=40,b=20,l=10,r=10))
                         st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
                         st.error(f"Chart {idx+1} error: {e}")
