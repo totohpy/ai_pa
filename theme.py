@@ -185,6 +185,46 @@ h2 { font-size:19px !important; font-weight:700 !important; color:var(--text-h) 
 h3 { font-size:16px !important; font-weight:600 !important; color:var(--text-h) !important; }
 h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !important; text-transform:uppercase; letter-spacing:1px; border-bottom:none !important; }
 .stSelectbox>div>div,.stMultiSelect>div>div { background:#ffffff !important; border:1px solid var(--border-card) !important; border-radius:9px !important; }
+/* multiselect tags — พื้นขาว ตัวอักษรแดง อ่านง่าย */
+[data-baseweb="tag"] {
+    background-color: rgba(122,32,32,0.12) !important;
+    border: 1px solid rgba(122,32,32,0.35) !important;
+    border-radius: 6px !important;
+}
+[data-baseweb="tag"] span {
+    color: #7A2020 !important;
+    font-weight: 600 !important;
+}
+[data-baseweb="tag"] [role="presentation"] svg {
+    fill: #7A2020 !important;
+}
+/* ── ปุ่ม << ซ่อน sidebar (ใน sidebar) ── */
+[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapseButton"] {
+    background-color: rgba(255,255,255,0.2) !important;
+    border: 1px solid rgba(255,255,255,0.45) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stSidebarCollapseButton"] svg {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
+/* ── ปุ่ม >> เปิด sidebar (นอก sidebar) — ต้องเห็นชัดบน main ── */
+[data-testid="collapsedControl"] {
+    background-color: #7A2020 !important;
+    border-radius: 0 8px 8px 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2) !important;
+}
+[data-testid="collapsedControl"] button {
+    background: transparent !important;
+}
+[data-testid="collapsedControl"] svg {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
 .stSlider>div>div>div>div { background:var(--red) !important; }
 .stDownloadButton>button { background:var(--green-pale) !important; color:#2d5a1a !important; border:1px solid var(--green-lt) !important; border-radius:9px !important; font-weight:600 !important; }
 div[data-testid="stMetric"] { background:var(--bg-card) !important; border:1px solid var(--border-card) !important; border-radius:12px !important; padding:16px !important; }
