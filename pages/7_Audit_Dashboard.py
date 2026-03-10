@@ -149,19 +149,26 @@ if df is not None:
                     )
                     generated_code = response.choices[0].message.content.strip()
                     generated_code = generated_code.replace("```python","").replace("```","").strip()
-                    # inject white background หลังทุก fig.update_layout หรือ st.plotly_chart
+                    # เพิ่ม white background ให้ทุก fig อย่างปลอดภัย
+                    # โดยเพิ่ม 1 บรรทัดก่อน st.plotly_chart ทุกตัว
                     import re
-                    generated_code = re.sub(
-                        r'(fig\.update_layout\()',
-                        r'fig.update_layout(plot_bgcolor="white", paper_bgcolor="white", ',
-                        generated_code
-                    )
-                    # กรณี AI ไม่ได้ใส่ update_layout เลย — เพิ่มก่อน st.plotly_chart ทุกตัว
-                    generated_code = re.sub(
-                        r'(?<!update_layout\n)(st\.plotly_chart\((\w+),)',
-                        r'\2.update_layout(plot_bgcolor="white", paper_bgcolor="white")\nst.plotly_chart(\2,',
-                        generated_code
-                    )
+                    def inject_white_bg(code):
+                        lines = code.split("\n")
+                        result = []
+                        for line in lines:
+                            stripped = line.lstrip()
+                            if stripped.startswith("st.plotly_chart("):
+                                # หา indent และชื่อ fig variable
+                                indent = len(line) - len(stripped)
+                                m = re.match(r'st\.plotly_chart\((\w+)', stripped)
+                                if m:
+                                    fig_var = m.group(1)
+                                    pad = " " * indent
+                                    result.append(f'{pad}try: {fig_var}.update_layout(plot_bgcolor="white", paper_bgcolor="white")')
+                                    result.append(f'{pad}except: pass')
+                            result.append(line)
+                        return "\n".join(result)
+                    generated_code = inject_white_bg(generated_code)
                     st.session_state['dashboard_code'] = generated_code
                     st.success("✅ AI สร้าง Dashboard code เรียบร้อยแล้ว!")
 
@@ -334,3 +341,4 @@ else:
           จากนั้นเลือกโหมด: AI อัตโนมัติ · Template สำเร็จรูป · หรือกำหนดเอง</div>
         </div>
         """, unsafe_allow_html=True)
+        
