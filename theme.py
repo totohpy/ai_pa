@@ -200,6 +200,19 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 .sb-emblem { width:32px; height:32px; background:rgba(255,255,255,0.22); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:17px; }
 .sb-name { font-size:13px; font-weight:700; display:block; color:#ffffff !important; }
 .sb-org  { font-size:11px; opacity:0.70; margin-top:1px; display:block; color:#ffffff !important; }
+
+/* ── ซ่อน Streamlit branding / toolbar ── */
+#MainMenu                        { visibility:hidden !important; display:none !important; }
+[data-testid="stToolbar"]        { visibility:hidden !important; display:none !important; }
+[data-testid="stDecoration"]     { visibility:hidden !important; display:none !important; }
+[data-testid="stHeader"]         { visibility:hidden !important; display:none !important; }
+[data-testid="stDeployButton"]   { visibility:hidden !important; display:none !important; }
+footer                           { visibility:hidden !important; display:none !important; }
+/* Fork button และ GitHub icon บน Streamlit Cloud */
+[data-testid="stToolbarActions"] { visibility:hidden !important; display:none !important; }
+a[href*="github.com"]            { display:none !important; }
+button[title="Fork this app"]    { display:none !important; }
+button[kind="header"]            { display:none !important; }
 </style>
 """
 
@@ -242,14 +255,16 @@ def apply_theme():
     from { opacity: 0; }
     to   { opacity: 1; }
 }
-/* main content fade-in ด้วย */
-[data-testid="stAppViewContainer"] > section.main {
-    animation: mainFadeIn 0.25s ease-in forwards;
+/* ซ่อน Streamlit loading splash shapes */
+#loading-spinner, .stSpinner,
+[data-testid="stSkeleton"],
+div[class*="loading"], div[class*="splash"] {
+    display: none !important;
 }
-@keyframes mainFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+/* ซ่อน geometric shapes ของ Streamlit loading screen */
+.element-container svg,
+[data-testid="stAppViewContainer"] > div:first-child > div:first-child > svg {
+    display: none !important;
 }
-</style>
-""", unsafe_allow_html=True)
+</style>""", unsafe_allow_html=True)
     st.markdown(GOV_CSS, unsafe_allow_html=True)
