@@ -248,9 +248,12 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 [data-testid="stHeader"]         { visibility:hidden !important; display:none !important; }
 [data-testid="stDeployButton"]   { visibility:hidden !important; display:none !important; }
 [data-testid="stStatusWidget"]   { visibility:hidden !important; display:none !important; }
-[data-testid="stBottom"]         { visibility:hidden !important; display:none !important; }
-footer                           { visibility:hidden !important; display:none !important; }
-/* Fork / GitHub / Deploy / Manage app buttons */
+/* ซ่อนเฉพาะ deploy/status ใน stBottom ไม่ซ่อนทั้ง stBottom (มี collapsedControl อยู่ด้วย) */
+[data-testid="stBottom"] [data-testid="stDeployButton"]   { display:none !important; }
+[data-testid="stBottom"] [data-testid="stStatusWidget"]   { display:none !important; }
+[data-testid="stBottom"] [data-testid="stToolbarActions"] { display:none !important; }
+/* ปุ่ม >> collapsedControl ต้องเห็นเสมอ */
+[data-testid="collapsedControl"] {
 [data-testid="stToolbarActions"] { visibility:hidden !important; display:none !important; }
 [data-testid="baseButton-header"] { display:none !important; }
 [data-testid="manage-app-button"] { display:none !important; }
@@ -262,8 +265,7 @@ button[title="Fork this app"]    { display:none !important; }
 .viewerBadge_container__r5tak   { display:none !important; }
 .viewerBadge_link__qRIco        { display:none !important; }
 #stDecoration                   { display:none !important; }
-section[data-testid="stBottom"]  { display:none !important; }
-/* ลบ div[class*="toolbar"] ออก — match sidebar toolbar ด้วย */
+/* ไม่ซ่อน section[stBottom] ทั้งก้อน เพราะมี collapsedControl >> อยู่ด้วย */
 div[data-testid="stToolbar"]    { display:none !important; }
 div[class*="StatusWidget"]      { display:none !important; }
 </style>
@@ -330,7 +332,6 @@ div[class*="loading"], div[class*="splash"] {
         '[data-testid="stToolbar"]',
         '[data-testid="stDeployButton"]',
         '[data-testid="stStatusWidget"]',
-        '[data-testid="stBottom"]',
         '[data-testid="stToolbarActions"]',
         '[data-testid="manage-app-button"]',
         '.viewerBadge_container__r5tak',
