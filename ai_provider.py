@@ -10,9 +10,9 @@ PROVIDER_LOCAL     = "local"      # Ollama
 PROVIDER_ONPREMISE = "onpremise"  # On-Premise OpenAI-compatible
 
 AI_PROVIDER_OPTIONS = {
-    "☁️ Cloud AI (Typhoon / Vertex)": PROVIDER_CLOUD,
-    "💻 Local AI (Ollama)":           PROVIDER_LOCAL,
-    "🖥️ On-Premise AI":               PROVIDER_ONPREMISE,
+    "☁️ Cloud AI ": PROVIDER_CLOUD,
+    "💻 Local AI ": PROVIDER_LOCAL,
+    "🖥️ On-Premise AI": PROVIDER_ONPREMISE,
 }
 
 # ─── Default model per provider ───────────────────────────────────────────────
@@ -73,9 +73,8 @@ def render_provider_sidebar():
         vertex_ok  = bool(ss.get("vertex_project_id") and ss.get("vertex_sa_json"))
         st.markdown(
             f"<small style='color:rgba(255,255,255,0.65);'>"
-            f"{'✅' if typhoon_ok else '❌'} Typhoon API<br>"
-            f"{'✅' if vertex_ok  else '⚠️'} Vertex AI (Chat)<br>"
-            f"<span style='opacity:0.5;font-size:10px;'>ตั้งค่าใน Streamlit Secrets</span>"
+            f"{'✅' if typhoon_ok else '❌'} 1st API<br>"
+            f"{'✅' if vertex_ok  else '⚠️'} 2nd AI <br>"
             f"</small>",
             unsafe_allow_html=True
         )
