@@ -220,9 +220,10 @@ SIDEBAR_HTML = """
 
 def apply_theme():
     import streamlit as st
-    # ── Anti-flash: inject ก่อนเลย ป้องกัน sidebar สีขาวตอนเปลี่ยนหน้า ──
+    # ── Anti-flash: sidebar สีแดงทันที + fade-in content ──
     st.markdown("""
 <style>
+/* sidebar พื้นหลังแดงทันทีไม่มี flash */
 [data-testid="stSidebar"],
 [data-testid="stSidebar"]>div,
 [data-testid="stSidebar"]>div>div,
@@ -232,6 +233,22 @@ def apply_theme():
 }
 [data-testid="stAppViewContainer"] {
     background-color:#f8f9ee !important;
+}
+/* fade-in sidebar content ทั้งหมด */
+[data-testid="stSidebar"] > div:first-child {
+    animation: sidebarFadeIn 0.35s ease-in forwards;
+}
+@keyframes sidebarFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+/* main content fade-in ด้วย */
+[data-testid="stAppViewContainer"] > section.main {
+    animation: mainFadeIn 0.25s ease-in forwards;
+}
+@keyframes mainFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 </style>
 """, unsafe_allow_html=True)
