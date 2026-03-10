@@ -90,9 +90,10 @@ if uploaded_file:
     if df is not None:
         st.success(f"✅ โหลดข้อมูลสำเร็จ: {df.shape[0]:,} รายการ, {df.shape[1]} คอลัมน์")
 
-        tab_bi, tab_quick, tab_join, tab_groupby, tab_audit = st.tabs([
+        tab_bi, tab_quick, tab_profile, tab_join, tab_groupby, tab_audit = st.tabs([
             "🎨 Power BI Mode",
             "📑 Quick Report",
+            "🔬 Data Profiling",
             "🔗 Join ตาราง",
             "📊 Group by / Pivot",
             "🛠️ Audit Tools",
@@ -154,6 +155,126 @@ if uploaded_file:
                                     title=f"Value Counts: {cat_sel}")
                     fig_vc.update_layout(plot_bgcolor="#f8f9ee", paper_bgcolor="#f8f9ee")
                     st.plotly_chart(fig_vc, use_container_width=True)
+
+        # ── Data Profiling (YData-style) ──────────────────
+        with tab_profile:
+            st.subheader("🔬 Data Profiling Report")
+            st.caption("วิเคราะห์ข้อมูลเชิงลึกแบบ YData Profiling — ไม่ต้องติดตั้ง library เพิ่ม")
+
+            import plotly.express as px
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+
+            # ── Overview ──────────────────────────────────
+            with st.container(border=True):
+                st.markdown("#### 📋 Dataset Overview")
+                n_rows, n_cols = df.shape
+                n_dup   = df.duplicated().sum()
+                n_miss  = df.isnull().sum().sum()
+                miss_pct = n_miss / (n_rows * n_cols) * 100 if n_rows * n_cols > 0 else 0
+                n_num   = len(df.select_dtypes(include='number').columns)
+                n_cat   = len(df.select_dtypes(include=['object','category']).columns)
+
+                c1,c2,c3,c4,c5,c6 = st.columns(6)
+                c1.metric("แถวทั้งหมด",    f"{n_rows:,}")
+                c2.metric("คอลัมน์",       f"{n_cols:,}")
+                c3.metric("ตัวเลข",        f"{n_num}")
+                c4.metric("ข้อความ",       f"{n_cat}")
+                c5.metric("Duplicates",    f"{n_dup:,}")
+                c6.metric("Missing %",     f"{miss_pct:.1f}%")
+
+            # ── Missing Values Heatmap ─────────────────────
+            missing = df.isnull().sum()
+            missing = missing[missing > 0]
+            if len(missing) > 0:
+                with st.container(border=True):
+                    st.markdown("#### ❗ Missing Values")
+                    miss_df = pd.DataFrame({
+                        "คอลัมน์": missing.index,
+                        "จำนวน Missing": missing.values,
+                        "% Missing": (missing.values / n_rows * 100).round(2)
+                    }).sort_values("จำนวน Missing", ascending=False)
+                    c1, c2 = st.columns([1,2])
+                    with c1:
+                        st.dataframe(miss_df, hide_index=True, use_container_width=True)
+                    with c2:
+                        fig_miss = px.bar(miss_df, x="คอลัมน์", y="% Missing",
+                            title="% Missing per Column",
+                            color="% Missing", color_continuous_scale="Reds")
+                        fig_miss.update_layout(plot_bgcolor="white", paper_bgcolor="white")
+                        st.plotly_chart(fig_miss, use_container_width=True)
+            else:
+                st.success("✅ ไม่มี Missing Values!")
+
+            # ── Column-by-Column Profile ───────────────────
+            with st.container(border=True):
+                st.markdown("#### 🔍 Column Profiles")
+                col_sel = st.selectbox("เลือกคอลัมน์ที่ต้องการวิเคราะห์", df.columns.tolist(), key="profile_col")
+                series = df[col_sel]
+                dtype  = series.dtype
+
+                pc1, pc2 = st.columns(2)
+                with pc1:
+                    st.markdown("**สถิติพื้นฐาน**")
+                    stats = {
+                        "Type":     str(dtype),
+                        "Count":    f"{series.count():,}",
+                        "Missing":  f"{series.isnull().sum():,} ({series.isnull().mean()*100:.1f}%)",
+                        "Unique":   f"{series.nunique():,}",
+                    }
+                    if pd.api.types.is_numeric_dtype(series):
+                        stats.update({
+                            "Mean":   f"{series.mean():.4f}",
+                            "Median": f"{series.median():.4f}",
+                            "Std":    f"{series.std():.4f}",
+                            "Min":    f"{series.min():.4f}",
+                            "Max":    f"{series.max():.4f}",
+                            "Skew":   f"{series.skew():.4f}",
+                            "Kurt":   f"{series.kurtosis():.4f}",
+                        })
+                    else:
+                        top = series.value_counts().head(1)
+                        stats.update({
+                            "Most Common": f"{top.index[0]} ({top.values[0]:,})" if len(top) > 0 else "-",
+                        })
+                    for k,v in stats.items():
+                        st.markdown(f"- **{k}:** {v}")
+
+                with pc2:
+                    if pd.api.types.is_numeric_dtype(series):
+                        fig_h = px.histogram(series.dropna(), nbins=30,
+                            title=f"Distribution: {col_sel}",
+                            color_discrete_sequence=["#7A2020"])
+                        fig_h.update_layout(plot_bgcolor="white", paper_bgcolor="white", showlegend=False)
+                        st.plotly_chart(fig_h, use_container_width=True)
+                    else:
+                        vc = series.value_counts().head(15).reset_index()
+                        vc.columns = [col_sel, "count"]
+                        fig_b = px.bar(vc, x=col_sel, y="count",
+                            title=f"Top Values: {col_sel}",
+                            color_discrete_sequence=["#7A2020"])
+                        fig_b.update_layout(plot_bgcolor="white", paper_bgcolor="white")
+                        st.plotly_chart(fig_b, use_container_width=True)
+
+            # ── Correlation Matrix ─────────────────────────
+            num_df = df.select_dtypes(include='number')
+            if len(num_df.columns) >= 2:
+                with st.container(border=True):
+                    st.markdown("#### 🔗 Correlation Matrix")
+                    corr = num_df.corr()
+                    fig_corr = px.imshow(corr, text_auto=".2f",
+                        color_continuous_scale="RdBu_r",
+                        title="Correlation Heatmap", aspect="auto")
+                    fig_corr.update_layout(plot_bgcolor="white", paper_bgcolor="white")
+                    st.plotly_chart(fig_corr, use_container_width=True)
+
+            # ── Duplicate Rows ─────────────────────────────
+            if n_dup > 0:
+                with st.container(border=True):
+                    st.markdown(f"#### ⚠️ Duplicate Rows ({n_dup:,} แถว)")
+                    if st.checkbox("แสดงแถวที่ซ้ำ", key="show_dup"):
+                        st.dataframe(df[df.duplicated(keep=False)].sort_values(df.columns[0].tolist()),
+                            use_container_width=True, hide_index=False)
 
         # ── Join ตาราง ────────────────────────────────────
         with tab_join:
