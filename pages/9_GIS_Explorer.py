@@ -77,24 +77,10 @@ tab_map, tab_shape, tab_csv, tab_choropleth, tab_heatmap, tab_geo = st.tabs([
 with tab_map:
     st.subheader("🗺️ แผนที่ Interactive")
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        center_lat = st.number_input("Latitude ศูนย์กลาง", value=13.7563, format="%.4f", key="c_lat")
-    with col2:
-        center_lon = st.number_input("Longitude ศูนย์กลาง", value=100.5018, format="%.4f", key="c_lon")
-    with col3:
-        zoom = st.slider("Zoom", 1, 18, 6, key="map_zoom")
-    with col4:
-        basemap = st.selectbox("Basemap", [
-            "OpenStreetMap",
-            "CartoDB positron",
-            "CartoDB dark_matter",
-            "Stamen Terrain",
-            "Stamen Toner",
-            "Esri WorldImagery",
-        ], key="basemap_sel")
+    # ── ค่าเริ่มต้นคงที่ ──────────────────────────────────────────────────────
+    CENTER_LAT, CENTER_LON, ZOOM = 13.7563, 100.5018, 6
 
-    # ── WMS/WMTS Layer Selector ───────────────────────────────────────────────
+    # ── WMS/WMTS Overlay Catalog ──────────────────────────────────────────────
     WMS_CATALOG = {
         "🇹🇭 RTSD Orthophoto (กรมแผนที่ทหาร)": {
             "type": "wms",
@@ -114,7 +100,7 @@ with tab_map:
             "layers": "nso:province", "attr": "© NSO Thailand",
             "fmt": "image/png", "transparent": True,
         },
-        "🌍 NASA GIBS MODIS Terra (ดาวเทียมรายวัน)": {
+        "🌍 NASA GIBS MODIS Terra": {
             "type": "tile",
             "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg",
             "attr": "© NASA GIBS",
@@ -124,7 +110,7 @@ with tab_map:
             "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_DayNightBand_ENCC/default/2024-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png",
             "attr": "© NASA GIBS VIIRS",
         },
-        "🌍 OpenTopoMap (ภูมิประเทศ)": {
+        "🌍 OpenTopoMap": {
             "type": "tile",
             "url": "https://tile.opentopomap.org/{z}/{x}/{y}.png",
             "attr": "© OpenTopoMap contributors",
@@ -141,78 +127,83 @@ with tab_map:
         },
     }
 
-    with st.expander("🛰️ เพิ่ม WMS/WMTS Overlay Layers", expanded=False):
-        col_wms1, col_wms2 = st.columns([3,1])
-        with col_wms1:
-            selected_wms = st.multiselect(
-                "เลือก Layer ที่ต้องการซ้อนทับ (เลือกได้หลาย layer)",
-                list(WMS_CATALOG.keys()),
-                key="wms_selected",
-            )
-        with col_wms2:
-            wms_opacity = st.slider("Opacity", 0.1, 1.0, 0.8, 0.1, key="wms_opacity")
+    # ── Custom WMS (ย่อในแถวเดียว) ────────────────────────────────────────────
+    with st.expander("➕ เพิ่ม WMS URL เอง", expanded=False):
+        cw1, cw2, cw3 = st.columns([3, 2, 2])
+        custom_url   = cw1.text_input("WMS URL", key="custom_wms_url",
+            placeholder="https://example.com/geoserver/wms")
+        custom_layer = cw2.text_input("Layer Name", key="custom_wms_layer",
+            placeholder="workspace:layername")
+        custom_attr  = cw3.text_input("Attribution", value="Custom WMS", key="custom_wms_attr")
+        if custom_url and custom_layer:
+            WMS_CATALOG["🔧 Custom WMS"] = {
+                "type": "wms", "url": custom_url, "layers": custom_layer,
+                "attr": custom_attr, "fmt": "image/png", "transparent": True,
+            }
 
-        with st.expander("➕ เพิ่ม WMS URL เอง"):
-            cw1, cw2 = st.columns(2)
-            custom_url   = cw1.text_input("WMS URL", key="custom_wms_url",
-                placeholder="https://example.com/geoserver/wms")
-            custom_layer = cw2.text_input("Layer Name", key="custom_wms_layer",
-                placeholder="workspace:layername")
-            custom_attr  = st.text_input("Attribution", value="Custom WMS", key="custom_wms_attr")
-            if custom_url and custom_layer:
-                WMS_CATALOG["🔧 Custom WMS"] = {
-                    "type": "wms", "url": custom_url, "layers": custom_layer,
-                    "attr": custom_attr, "fmt": "image/png", "transparent": True,
-                }
-                if "🔧 Custom WMS" not in selected_wms:
-                    selected_wms = list(selected_wms) + ["🔧 Custom WMS"]
+    # ── สร้างแผนที่ ───────────────────────────────────────────────────────────
+    m = folium.Map(
+        location=[CENTER_LAT, CENTER_LON],
+        zoom_start=ZOOM,
+        control_scale=True,
+    )
 
-    TILE_URLS = {
-        "OpenStreetMap":      ("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                               "© OpenStreetMap contributors"),
-        "CartoDB positron":   ("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-                               "© CartoDB"),
-        "CartoDB dark_matter":("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-                               "© CartoDB"),
-        "Stamen Terrain":     ("https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg",
-                               "© Stamen Design"),
-        "Stamen Toner":       ("https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
-                               "© Stamen Design"),
-        "Esri WorldImagery":  ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-                               "© Esri"),
+    # เพิ่ม basemap ทั้งหมดเข้า LayerControl (ให้เลือกในแผนที่ได้เลย)
+    BASEMAPS = {
+        "OpenStreetMap":       ("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                "© OpenStreetMap contributors"),
+        "CartoDB Positron":    ("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                                "© CartoDB"),
+        "CartoDB Dark Matter": ("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                                "© CartoDB"),
+        "Stamen Terrain":      ("https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg",
+                                "© Stamen Design"),
+        "Stamen Toner":        ("https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+                                "© Stamen Design"),
+        "Esri Satellite":      ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                                "© Esri"),
     }
+    for name, (url, attr) in BASEMAPS.items():
+        folium.TileLayer(url, attr=attr, name=name, overlay=False, control=True).add_to(m)
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=zoom)
-    tile_url, attr = TILE_URLS.get(basemap, TILE_URLS["OpenStreetMap"])
-    if basemap != "OpenStreetMap":
-        folium.TileLayer(tile_url, attr=attr, name=basemap).add_to(m)
+    # เพิ่ม WMS/Tile overlays ที่ user เลือก (ถ้ามี custom)
+    if "🔧 Custom WMS" in WMS_CATALOG and custom_url and custom_layer:
+        cfg = WMS_CATALOG["🔧 Custom WMS"]
+        try:
+            folium.WmsTileLayer(
+                url=cfg["url"], layers=cfg["layers"],
+                fmt="image/png", transparent=True,
+                attr=cfg["attr"], name="🔧 Custom WMS",
+                overlay=True, control=True,
+            ).add_to(m)
+        except Exception as e:
+            st.warning(f"⚠️ Custom WMS โหลดไม่ได้: {e}")
 
-    # inject WMS/Tile overlay layers
-    for layer_name in (selected_wms or []):
-        cfg = WMS_CATALOG.get(layer_name)
-        if not cfg: continue
+    # เพิ่ม WMS catalog ทั้งหมดเป็น overlay ให้เลือกใน LayerControl
+    for layer_name, cfg in WMS_CATALOG.items():
+        if layer_name == "🔧 Custom WMS":
+            continue
         try:
             if cfg["type"] == "wms":
                 folium.WmsTileLayer(
                     url=cfg["url"], layers=cfg["layers"],
-                    fmt=cfg.get("fmt","image/png"),
+                    fmt=cfg.get("fmt", "image/png"),
                     transparent=cfg.get("transparent", True),
                     attr=cfg["attr"], name=layer_name,
-                    overlay=True, control=True,
-                    opacity=wms_opacity,
+                    overlay=True, control=True, show=False,
                 ).add_to(m)
             else:
                 folium.TileLayer(
                     cfg["url"], attr=cfg["attr"],
-                    name=layer_name, overlay=True, control=True,
-                    opacity=wms_opacity,
+                    name=layer_name, overlay=True,
+                    control=True, show=False,
                 ).add_to(m)
-        except Exception as e:
-            st.warning(f"⚠️ โหลด layer ไม่ได้ [{layer_name}]: {e}")
+        except Exception:
+            pass
 
-    folium.LayerControl(collapsed=False).add_to(m)
+    folium.LayerControl(collapsed=False, position="topright").add_to(m)
 
-    # แสดง layers ที่ upload ไว้ (จาก session_state)
+    # แสดง layer ที่ upload ไว้
     if "gdf_loaded" in st.session_state and st.session_state.gdf_loaded is not None:
         gdf = st.session_state.gdf_loaded
         folium.GeoJson(
@@ -233,6 +224,11 @@ with tab_map:
                 location=[row.geometry.y, row.geometry.x],
                 radius=6, color="#7A2020", fill=True, fill_opacity=0.7,
                 popup=str(row.drop("geometry").to_dict())
+            ).add_to(m)
+        st.info("✅ Points จากแท็บ CSV Lat/Lon ถูกเพิ่มบนแผนที่")
+
+    st_folium(m, use_container_width=True, height=580)
+
             ).add_to(m)
         st.info("✅ Points จากแท็บ CSV Lat/Lon ถูกเพิ่มบนแผนที่")
 
