@@ -82,18 +82,13 @@ with tab_map:
 
     # ── WMS/WMTS Overlay Catalog ──────────────────────────────────────────────
     WMS_CATALOG = {
-        # ── Longdo Map (ไทย) ─────────────────────────────────────────────────
-        "🗺️ Longdo Bluemarble Terrain (WMS)": {
+        # ── Longdo Map (ยืนยัน URL จาก QGIS doc) ────────────────────────────
+        "🗺️ Longdo WMS (แผนที่ทั่วไป)": {
             "type": "wms",
             "url": "https://ms.longdo.com/mapproxy/service",
             "layers": "bluemarble_terrain",
             "attr": "© Longdo Map",
             "fmt": "image/png", "transparent": True,
-        },
-        "🗺️ Longdo Bluemarble Terrain (TMS)": {
-            "type": "tile",
-            "url": "https://ms.longdo.com/mapproxy/tms/1.0.0/bluemarble_terrain/EPSG3857/{z}/{x}/{y}.png",
-            "attr": "© Longdo Map",
         },
         "🗺️ Longdo ผังเมืองประเทศไทย": {
             "type": "wms",
@@ -102,12 +97,26 @@ with tab_map:
             "attr": "© Longdo Map / กรมโยธาธิการและผังเมือง",
             "fmt": "image/png", "transparent": True,
         },
-        "🗺️ Longdo Rain Radar BKK": {
-            "type": "tile",
-            "url": "https://ms.longdo.com/mapproxy/tms/1.0.0/rain_radar_bkk/EPSG3857/{z}/{x}/{y}.png",
-            "attr": "© Longdo Map / สำนักการระบายน้ำ กทม.",
+        "🗺️ Longdo แปลงที่ดิน (กรมที่ดิน)": {
+            "type": "wms",
+            "url": "https://ms.longdo.com/mapproxy/service",
+            "layers": "dol_parcel",
+            "attr": "© Longdo Map / กรมที่ดิน",
+            "fmt": "image/png", "transparent": True,
         },
-        # ── กรมแผนที่ทหาร ────────────────────────────────────────────────────
+        "🗺️ Longdo Bluemarble Terrain (TMS)": {
+            "type": "tile",
+            "url": "https://ms.longdo.com/mapproxy/tms/1.0.0/bluemarble_terrain/EPSG3857/{z}/{x}/{y}.png",
+            "attr": "© Longdo Map",
+        },
+        # ── หน่วยงานไทย ──────────────────────────────────────────────────────
+        "🌳 กรมป่าไม้ (RFD Basemap)": {
+            "type": "wms",
+            "url": "https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer",
+            "layers": "0",
+            "attr": "© กรมป่าไม้ RFD",
+            "fmt": "image/png", "transparent": True,
+        },
         "🇹🇭 RTSD Orthophoto (กรมแผนที่ทหาร)": {
             "type": "wms",
             "url": "https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Orthophoto/ImageServer/WMSServer",
