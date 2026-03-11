@@ -81,86 +81,66 @@ with tab_map:
     CENTER_LAT, CENTER_LON, ZOOM = 13.7563, 100.5018, 6
 
     # ── WMS/WMTS Overlay Catalog ──────────────────────────────────────────────
+    LONGDO_URL = "https://ms.longdo.com/mapproxy/service"
+
     WMS_CATALOG = {
-        # ── Longdo Map (ยืนยัน URL จาก QGIS doc) ────────────────────────────
-        "🗺️ Longdo WMS (แผนที่ทั่วไป)": {
-            "type": "wms",
-            "url": "https://ms.longdo.com/mapproxy/service",
-            "layers": "bluemarble_terrain",
-            "attr": "© Longdo Map",
-            "fmt": "image/png", "transparent": True,
-        },
-        "🗺️ Longdo ผังเมืองประเทศไทย": {
-            "type": "wms",
-            "url": "https://ms.longdo.com/mapproxy/service",
-            "layers": "city_plan",
-            "attr": "© Longdo Map / กรมโยธาธิการและผังเมือง",
-            "fmt": "image/png", "transparent": True,
-        },
-        "🗺️ Longdo แปลงที่ดิน (กรมที่ดิน)": {
-            "type": "wms",
-            "url": "https://ms.longdo.com/mapproxy/service",
-            "layers": "dol_parcel",
-            "attr": "© Longdo Map / กรมที่ดิน",
-            "fmt": "image/png", "transparent": True,
-        },
-        "🗺️ Longdo Bluemarble Terrain (TMS)": {
-            "type": "tile",
-            "url": "https://ms.longdo.com/mapproxy/tms/1.0.0/bluemarble_terrain/EPSG3857/{z}/{x}/{y}.png",
-            "attr": "© Longdo Map",
-        },
-        # ── หน่วยงานไทย ──────────────────────────────────────────────────────
-        "🌳 กรมป่าไม้ (RFD Basemap)": {
-            "type": "wms",
-            "url": "https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer",
-            "layers": "0",
-            "attr": "© กรมป่าไม้ RFD",
-            "fmt": "image/png", "transparent": True,
-        },
-        "🇹🇭 RTSD Orthophoto (กรมแผนที่ทหาร)": {
-            "type": "wms",
-            "url": "https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Orthophoto/ImageServer/WMSServer",
-            "layers": "0", "attr": "© กรมแผนที่ทหาร RTSD",
-            "fmt": "image/png", "transparent": True,
-        },
-        "🇹🇭 RTSD แผนที่ฐาน (กรมแผนที่ทหาร)": {
-            "type": "wms",
-            "url": "https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Base_Map/MapServer/WMSServer",
-            "layers": "0", "attr": "© กรมแผนที่ทหาร RTSD",
-            "fmt": "image/png", "transparent": True,
-        },
-        "🇹🇭 NSO สถิติ (สำนักงานสถิติแห่งชาติ)": {
-            "type": "wms",
-            "url": "https://gis.nso.go.th/geoserver/wms",
-            "layers": "nso:province", "attr": "© NSO Thailand",
-            "fmt": "image/png", "transparent": True,
-        },
-        # ── นานาชาติ ─────────────────────────────────────────────────────────
-        "🌍 NASA GIBS MODIS Terra": {
-            "type": "tile",
-            "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg",
-            "attr": "© NASA GIBS",
-        },
-        "🌍 NASA GIBS VIIRS Night Lights": {
-            "type": "tile",
-            "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_DayNightBand_ENCC/default/2024-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png",
-            "attr": "© NASA GIBS VIIRS",
-        },
-        "🌍 OpenTopoMap": {
-            "type": "tile",
-            "url": "https://tile.opentopomap.org/{z}/{x}/{y}.png",
-            "attr": "© OpenTopoMap contributors",
-        },
-        "🌍 Esri World Shaded Relief": {
-            "type": "tile",
-            "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}",
-            "attr": "© Esri",
-        },
-        "🌍 Esri World Street Map": {
-            "type": "tile",
-            "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-            "attr": "© Esri",
-        },
+        # ── 🗺️ Longdo Map Styles ──────────────────────────────────────────────
+        "🗺️ Longdo Icons (ภาษาไทย)":          {"type":"wms","url":LONGDO_URL,"layers":"longdo_icons","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Icons (English)":           {"type":"wms","url":LONGDO_URL,"layers":"longdo_icons_en","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Political (ไทย)":           {"type":"wms","url":LONGDO_URL,"layers":"longdo_political","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Political (English)":        {"type":"wms","url":LONGDO_URL,"layers":"longdo_political_en","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Gray (ไทย)":                {"type":"wms","url":LONGDO_URL,"layers":"longdo_gray","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Gray (English)":             {"type":"wms","url":LONGDO_URL,"layers":"longdo_gray_en","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Light (ไทย)":               {"type":"wms","url":LONGDO_URL,"layers":"longdo_light","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Light (English)":            {"type":"wms","url":LONGDO_URL,"layers":"longdo_light_en","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Dark (ไทย)":                {"type":"wms","url":LONGDO_URL,"layers":"longdo_dark","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🗺️ Longdo Dark (English)":             {"type":"wms","url":LONGDO_URL,"layers":"longdo_dark_en","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 🛰️ Longdo ภาพถ่ายดาวเทียม/อากาศ ────────────────────────────────
+        "🛰️ Longdo Bluemarble Terrain":         {"type":"wms","url":LONGDO_URL,"layers":"bluemarble_terrain","attr":"© Longdo Map / GElib","fmt":"image/png","transparent":True},
+        "🛰️ Thaichote (GISTDA 2560-2562)":      {"type":"wms","url":LONGDO_URL,"layers":"thaichote","attr":"© GISTDA / Longdo Map","fmt":"image/png","transparent":True},
+        "🛰️ LDD Orthophoto (2547-2550)":        {"type":"wms","url":LONGDO_URL,"layers":"ldd_ortho","attr":"© กรมพัฒนาที่ดิน / Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 🏙️ Longdo ผังเมือง ───────────────────────────────────────────────
+        "🏙️ ผังเมือง ทั่วประเทศ (DPT+เมือง)":   {"type":"wms","url":LONGDO_URL,"layers":"cityplan_thailand","attr":"© กรมโยธาธิการ / Longdo Map","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง DPT":                      {"type":"wms","url":LONGDO_URL,"layers":"cityplan_dpt","attr":"© กรมโยธาธิการ / Longdo Map","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง ระดับจังหวัด":              {"type":"wms","url":LONGDO_URL,"layers":"cityplan_provinces","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง ระดับเมือง":               {"type":"wms","url":LONGDO_URL,"layers":"cityplan_cities","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 🏛️ Longdo หน่วยงานราชการ ─────────────────────────────────────────
+        "🏛️ กรมที่ดิน (DOL)":                   {"type":"wms","url":LONGDO_URL,"layers":"dol","attr":"© กรมที่ดิน / Longdo Map","fmt":"image/png","transparent":True},
+        "🏛️ กรมที่ดิน HD":                      {"type":"wms","url":LONGDO_URL,"layers":"dol_hd","attr":"© กรมที่ดิน / Longdo Map","fmt":"image/png","transparent":True},
+        "🏛️ กรมทางหลวง (DOH)":                  {"type":"wms","url":LONGDO_URL,"layers":"doh_section_km","attr":"© กรมทางหลวง / Longdo Map","fmt":"image/png","transparent":True},
+        "🏛️ การใช้ที่ดิน LDD (2561-2563)":      {"type":"wms","url":LONGDO_URL,"layers":"ldd_landuse_2561_2563","attr":"© กรมพัฒนาที่ดิน / Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 👥 Longdo ประชากร ─────────────────────────────────────────────────
+        "👥 ประชากรไทย 2020":                   {"type":"wms","url":LONGDO_URL,"layers":"thailand_population","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+        "👥 FB Population (รวม)":               {"type":"wms","url":LONGDO_URL,"layers":"fb_population_2020","attr":"© Facebook / Longdo Map","fmt":"image/png","transparent":True},
+        "👥 FB Population (ผู้สูงอายุ)":         {"type":"wms","url":LONGDO_URL,"layers":"fb_population_elderly","attr":"© Facebook / Longdo Map","fmt":"image/png","transparent":True},
+        "👥 FB Population (เด็ก)":              {"type":"wms","url":LONGDO_URL,"layers":"fb_population_children","attr":"© Facebook / Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 🚗 Longdo อุบัติเหตุ ──────────────────────────────────────────────
+        "🚗 อุบัติเหตุ 2564 (3 หน่วยงาน)":      {"type":"wms","url":LONGDO_URL,"layers":"accident_3Bura_2564","attr":"© DGA / Longdo Map","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ 2563":                    {"type":"wms","url":LONGDO_URL,"layers":"accident_3Bura_2563","attr":"© DGA / Longdo Map","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ 2562":                    {"type":"wms","url":LONGDO_URL,"layers":"accident_3Bura_2562","attr":"© DGA / Longdo Map","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ iTIC 2564":               {"type":"wms","url":LONGDO_URL,"layers":"accident_itic_2564","attr":"© iTIC / Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 🌊 Longdo น้ำท่วม/ความชัน ────────────────────────────────────────
+        "🌊 น้ำท่วม GISTDA (realtime)":         {"type":"wms","url":LONGDO_URL,"layers":"gistda_flood_update","attr":"© GISTDA / Longdo Map","fmt":"image/png","transparent":True},
+        "⛰️ ความชัน เกาะสมุย":                  {"type":"wms","url":LONGDO_URL,"layers":"samui_slope","attr":"© Longdo Map","fmt":"image/png","transparent":True},
+
+        # ── 🇹🇭 หน่วยงานไทยอื่น ───────────────────────────────────────────────
+        "🌳 กรมป่าไม้ (RFD Basemap)":            {"type":"wms","url":"https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer","layers":"0","attr":"© กรมป่าไม้","fmt":"image/png","transparent":True},
+        "🇹🇭 RTSD Orthophoto":                   {"type":"wms","url":"https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Orthophoto/ImageServer/WMSServer","layers":"0","attr":"© กรมแผนที่ทหาร","fmt":"image/png","transparent":True},
+        "🇹🇭 RTSD แผนที่ฐาน":                    {"type":"wms","url":"https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Base_Map/MapServer/WMSServer","layers":"0","attr":"© กรมแผนที่ทหาร","fmt":"image/png","transparent":True},
+        "🇹🇭 NSO สถิติ":                         {"type":"wms","url":"https://gis.nso.go.th/geoserver/wms","layers":"nso:province","attr":"© NSO Thailand","fmt":"image/png","transparent":True},
+
+        # ── 🌍 นานาชาติ ───────────────────────────────────────────────────────
+        "🌍 NASA GIBS MODIS Terra":              {"type":"tile","url":"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg","attr":"© NASA GIBS"},
+        "🌍 NASA GIBS VIIRS Night Lights":       {"type":"tile","url":"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_DayNightBand_ENCC/default/2024-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png","attr":"© NASA GIBS VIIRS"},
+        "🌍 OpenTopoMap":                        {"type":"tile","url":"https://tile.opentopomap.org/{z}/{x}/{y}.png","attr":"© OpenTopoMap"},
+        "🌍 Esri World Shaded Relief":           {"type":"tile","url":"https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}","attr":"© Esri"},
+        "🌍 Esri World Street Map":              {"type":"tile","url":"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}","attr":"© Esri"},
     }
 
     # ── Custom WMS (ย่อในแถวเดียว) ────────────────────────────────────────────
