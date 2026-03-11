@@ -82,6 +82,32 @@ with tab_map:
 
     # ── WMS/WMTS Overlay Catalog ──────────────────────────────────────────────
     WMS_CATALOG = {
+        # ── Longdo Map (ไทย) ─────────────────────────────────────────────────
+        "🗺️ Longdo Bluemarble Terrain (WMS)": {
+            "type": "wms",
+            "url": "https://ms.longdo.com/mapproxy/service",
+            "layers": "bluemarble_terrain",
+            "attr": "© Longdo Map",
+            "fmt": "image/png", "transparent": True,
+        },
+        "🗺️ Longdo Bluemarble Terrain (TMS)": {
+            "type": "tile",
+            "url": "https://ms.longdo.com/mapproxy/tms/1.0.0/bluemarble_terrain/EPSG3857/{z}/{x}/{y}.png",
+            "attr": "© Longdo Map",
+        },
+        "🗺️ Longdo ผังเมืองประเทศไทย": {
+            "type": "wms",
+            "url": "https://ms.longdo.com/mapproxy/service",
+            "layers": "city_plan",
+            "attr": "© Longdo Map / กรมโยธาธิการและผังเมือง",
+            "fmt": "image/png", "transparent": True,
+        },
+        "🗺️ Longdo Rain Radar BKK": {
+            "type": "tile",
+            "url": "https://ms.longdo.com/mapproxy/tms/1.0.0/rain_radar_bkk/EPSG3857/{z}/{x}/{y}.png",
+            "attr": "© Longdo Map / สำนักการระบายน้ำ กทม.",
+        },
+        # ── กรมแผนที่ทหาร ────────────────────────────────────────────────────
         "🇹🇭 RTSD Orthophoto (กรมแผนที่ทหาร)": {
             "type": "wms",
             "url": "https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Orthophoto/ImageServer/WMSServer",
@@ -100,6 +126,7 @@ with tab_map:
             "layers": "nso:province", "attr": "© NSO Thailand",
             "fmt": "image/png", "transparent": True,
         },
+        # ── นานาชาติ ─────────────────────────────────────────────────────────
         "🌍 NASA GIBS MODIS Terra": {
             "type": "tile",
             "url": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg",
