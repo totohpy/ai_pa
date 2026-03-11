@@ -241,26 +241,12 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 .sb-name { font-size:13px; font-weight:700; display:block; color:#ffffff !important; }
 .sb-org  { font-size:11px; opacity:0.70; margin-top:1px; display:block; color:#ffffff !important; }
 
-/* ── ซ่อน Streamlit branding / toolbar ── */
+/* ── ซ่อนเฉพาะ Streamlit branding ── */
 #MainMenu                        { visibility:hidden !important; display:none !important; }
 [data-testid="stDecoration"]     { visibility:hidden !important; display:none !important; }
-[data-testid="stDeployButton"]   { visibility:hidden !important; display:none !important; }
-[data-testid="stStatusWidget"]   { visibility:hidden !important; display:none !important; }
-[data-testid="stToolbarActions"] { visibility:hidden !important; display:none !important; }
-[data-testid="baseButton-header"] { display:none !important; }
-[data-testid="manage-app-button"] { display:none !important; }
-a[href*="github.com"]            { display:none !important; }
-button[title="Fork this app"]    { display:none !important; }
-/* ไม่ซ่อน stHeader และ stToolbar ทั้งก้อน เพราะปุ่ม >> collapsedControl อยู่ในนั้น */
-/* ซ่อนเฉพาะ deploy/status ใน stBottom */
-[data-testid="stBottom"] [data-testid="stDeployButton"]   { display:none !important; }
-[data-testid="stBottom"] [data-testid="stStatusWidget"]   { display:none !important; }
-[data-testid="stBottom"] [data-testid="stToolbarActions"] { display:none !important; }
-/* bottom-right floating buttons */
+#stDecoration                    { display:none !important; }
 .viewerBadge_container__r5tak   { display:none !important; }
 .viewerBadge_link__qRIco        { display:none !important; }
-#stDecoration                   { display:none !important; }
-div[class*="StatusWidget"]      { display:none !important; }
 </style>
 """
 
@@ -322,12 +308,8 @@ div[class*="loading"], div[class*="splash"] {
 <script>
 (function() {
     const SELECTORS = [
-        '[data-testid="stDeployButton"]',
-        '[data-testid="stStatusWidget"]',
-        '[data-testid="stToolbarActions"]',
-        '[data-testid="manage-app-button"]',
         '.viewerBadge_container__r5tak',
-        'button[title="Fork this app"]',
+        '.viewerBadge_link__qRIco',
     ];
     function hideAll() {
         var parent = window.parent.document;
