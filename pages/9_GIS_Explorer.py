@@ -229,11 +229,6 @@ with tab_map:
 
     st_folium(m, use_container_width=True, height=580)
 
-            ).add_to(m)
-        st.info("✅ Points จากแท็บ CSV Lat/Lon ถูกเพิ่มบนแผนที่")
-
-    st_folium(m, use_container_width=True, height=550)
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — Shapefile / GeoJSON
 # ═══════════════════════════════════════════════════════════════════════════════
