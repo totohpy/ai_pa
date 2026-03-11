@@ -201,13 +201,13 @@ h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !im
 /* ── ปุ่ม << ซ่อน sidebar (ใน sidebar) ── */
 [data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
 [data-testid="stSidebarCollapseButton"] {
-    background-color: rgba(255,255,255,0.2) !important;
-    border: 1px solid rgba(255,255,255,0.45) !important;
+    background-color: rgba(255,255,255,0.85) !important;
+    border: 1px solid rgba(255,255,255,0.95) !important;
     border-radius: 6px !important;
 }
 [data-testid="stSidebarCollapseButton"] svg {
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
+    fill: #7A2020 !important;
+    stroke: #7A2020 !important;
 }
 /* ── ปุ่ม >> เปิด sidebar (นอก sidebar) — ต้องเห็นชัดบน main ── */
 [data-testid="collapsedControl"] {
