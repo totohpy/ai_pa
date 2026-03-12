@@ -33,5 +33,3 @@ streamlit-folium
 geopandas
 shapely
 pyproj
-keplergl
-streamlit-keplergl
