@@ -244,18 +244,28 @@ with tab_map:
             opt_minimap  = st.toggle("🗺️ Mini Map",             value=False, key="opt_minimap")
             opt_measure  = st.toggle("📐 Measure tool",         value=False, key="opt_measure")
             opt_fullattr = st.toggle("📋 Popup เต็ม attribute", value=True,  key="opt_fullattr")
-            opt_pin      = st.toggle("📍 ปักหมุดจากการคลิก",   value=False, key="opt_pin")
+            opt_pin      = st.toggle("📍 โหมดปักหมุด (คลิกแผนที่)",   value=False, key="opt_pin")
 
         # ── รายการหมุด ───────────────────────────────────────────────────────
         if "pin_list" not in st.session_state:
             st.session_state["pin_list"] = []
-        if opt_pin and st.session_state["pin_list"]:
-            with st.expander(f"📍 หมุดที่ปัก ({len(st.session_state['pin_list'])})", expanded=True):
-                for _i,(_plat,_plon,_plbl) in enumerate(st.session_state["pin_list"]):
-                    _pc1,_pc2 = st.columns([4,1])
-                    _pc1.caption(f"**{_plbl}** {_plat:.5f},{_plon:.5f}")
-                    if _pc2.button("🗑️",key=f"dp{_i}"): st.session_state["pin_list"].pop(_i); st.rerun()
-                if st.button("🗑️ ลบทั้งหมด",key="clrpins"): st.session_state["pin_list"]=[]; st.rerun()
+        if opt_pin:
+            if st.session_state["pin_list"]:
+                with st.expander(f"📍 หมุดที่ปัก ({len(st.session_state['pin_list'])})", expanded=True):
+                    st.caption("💡 ลาก marker บนแผนที่เพื่อย้าย แล้วคลิก 💾 อัปเดต")
+                    for _i, (_plat, _plon, _plbl) in enumerate(st.session_state["pin_list"]):
+                        _pa, _pb, _pc = st.columns([3, 1, 1])
+                        _new_lbl = _pa.text_input("ชื่อ", value=_plbl, key=f"plbl_{_i}", label_visibility="collapsed")
+                        if _new_lbl != _plbl:
+                            st.session_state["pin_list"][_i] = (_plat, _plon, _new_lbl)
+                            st.rerun()
+                        _pa.caption(f"{_plat:.5f}, {_plon:.5f}")
+                        if _pb.button("🗑️", key=f"dp{_i}", help="ลบหมุดนี้"):
+                            st.session_state["pin_list"].pop(_i); st.rerun()
+                    if st.button("🗑️ ลบทั้งหมด", key="clrpins"):
+                        st.session_state["pin_list"] = []; st.rerun()
+            else:
+                st.info("👆 คลิกบนแผนที่เพื่อปักหมุด")
 
     # ══════════════════════════════════════════════════════════════════════════
     # Build Folium Map — Basemap + WMS ทั้งหมดอยู่ใน LayerControl ของ folium
@@ -362,33 +372,71 @@ with tab_map:
                 tooltip="📌 พิกัดที่ระบุ",
                 icon=folium.Icon(color="blue",icon="map-marker",prefix="fa")).add_to(m)
 
-        # User pins
-        for _plat,_plon,_plbl in st.session_state.get("pin_list",[]):
-            folium.Marker([_plat,_plon],
-                popup=f"<b>{_plbl}</b><br>Lat {_plat:.6f}<br>Lon {_plon:.6f}",
-                tooltip=_plbl,
-                icon=folium.Icon(color="orange",icon="thumb-tack",prefix="fa")).add_to(m)
+        # ── User pins — draggable ─────────────────────────────────────────────
+        if "pin_list" not in st.session_state:
+            st.session_state["pin_list"] = []
 
-        # LayerControl — collapsed=True เพราะมี layer เยอะ
+        for _pi, (_plat, _plon, _plbl) in enumerate(st.session_state["pin_list"]):
+            _pm = folium.Marker(
+                [_plat, _plon],
+                tooltip=f"📍 {_plbl}<br>{_plat:.5f}, {_plon:.5f}<br><i>ลากเพื่อย้าย</i>",
+                popup=folium.Popup(
+                    f"<b>{_plbl}</b><br>Lat: {_plat:.6f}<br>Lon: {_plon:.6f}",
+                    max_width=200,
+                ),
+                icon=folium.Icon(color="orange", icon="thumb-tack", prefix="fa"),
+                draggable=True,
+            )
+            _pm.add_to(m)
+
+        # LayerControl
         folium.LayerControl(collapsed=True, position="topright").add_to(m)
 
         map_out = st_folium(m, use_container_width=True, height=660,
                             returned_objects=["last_clicked","last_object_clicked_popup"],
                             key="main_map")
 
+        # ── Handle map click: auto-pin + drag-to-move ────────────────────────
         if map_out and map_out.get("last_clicked"):
-            _lc = map_out["last_clicked"]
-            _clat, _clon = _lc["lat"], _lc["lng"]
-            st.caption(f"📍 คลิกที่: **{_clat:.6f}**, **{_clon:.6f}**")
+            _lc   = map_out["last_clicked"]
+            _clat = _lc["lat"]; _clon = _lc["lng"]
+
             if st.session_state.get("opt_pin"):
-                if st.button(f"📍 ปักหมุด ณ {_clat:.4f},{_clon:.4f}", key="add_pin_btn"):
-                    _n = f"Pin {len(st.session_state['pin_list'])+1}"
-                    st.session_state["pin_list"].append((_clat,_clon,_n)); st.rerun()
+                _pins = st.session_state["pin_list"]
+
+                # ตรวจว่า click อยู่ใกล้ pin ที่มีอยู่แล้วไหม (รัศมี ~50 ม. = ~0.0005°)
+                # ถ้าใช่ → user อาจ drag pin มาจุดนี้ → ไม่ปักใหม่
+                _nearest_idx = None
+                _min_dist = 999
+                for _ii, (_pp, _qq, _) in enumerate(_pins):
+                    _d = ((_pp-_clat)**2 + (_qq-_clon)**2)**0.5
+                    if _d < _min_dist:
+                        _min_dist = _d; _nearest_idx = _ii
+
+                _too_close = _min_dist < 0.00001   # ซ้ำเป๊ะ (< 1 ม.)
+                _near_pin  = _min_dist < 0.001      # ใกล้ pin เดิม ~100 ม.
+
+                if _too_close:
+                    pass  # คลิกซ้ำตำแหน่งเดิม — ไม่ทำอะไร
+                elif _near_pin and _nearest_idx is not None and len(_pins) > 0:
+                    # อาจเป็นการ drag pin มาใกล้ๆ → แสดงปุ่มให้เลือก
+                    _old = _pins[_nearest_idx]
+                    st.caption(f"📍 ใกล้ **{_old[2]}** ({_min_dist*111000:.0f} ม.) — คลิกใหม่ หรือกด 💾 ย้ายหมุด")
+                    if st.button(f"💾 ย้าย {_old[2]} มาที่นี่", key="move_pin_btn"):
+                        st.session_state["pin_list"][_nearest_idx] = (_clat, _clon, _old[2])
+                        st.rerun()
+                    if st.button(f"📍 ปักหมุดใหม่ ณ จุดนี้", key="new_pin_here"):
+                        st.session_state["pin_list"].append((_clat, _clon, f"Pin {len(_pins)+1}"))
+                        st.rerun()
+                else:
+                    # ไกลจาก pin เดิม → ปักหมุดใหม่ทันที
+                    _n = f"Pin {len(_pins)+1}"
+                    st.session_state["pin_list"].append((_clat, _clon, _n))
+                    st.rerun()
+            else:
+                st.caption(f"📍 คลิกที่: **{_clat:.6f}**, **{_clon:.6f}**")
 
         if map_out and map_out.get("last_object_clicked_popup"):
-            with st.expander("📋 ข้อมูล Feature ที่คลิก", expanded=True):
-                st.markdown(map_out["last_object_clicked_popup"], unsafe_allow_html=True)
-
             with st.expander("📋 ข้อมูล Feature ที่คลิก", expanded=True):
                 st.markdown(map_out["last_object_clicked_popup"], unsafe_allow_html=True)
 
