@@ -246,7 +246,227 @@ with tab_map:
             ).add_to(m)
         st.info("✅ Points จากแท็บ CSV Lat/Lon ถูกเพิ่มบนแผนที่")
 
-    st_folium(m, use_container_width=True, height=580)
+    # ── Map options bar ───────────────────────────────────────────────────────
+    mo1, mo2, mo3, mo4 = st.columns(4)
+    opt_cluster  = mo1.toggle("🔵 Cluster จุด CSV",    value=True,  key="opt_cluster")
+    opt_minimap  = mo2.toggle("🗺️ Mini Map",            value=False, key="opt_minimap")
+    opt_measure  = mo3.toggle("📐 Measure tool",        value=False, key="opt_measure")
+    opt_fullattr = mo4.toggle("📋 Popup เต็ม attribute",value=True,  key="opt_fullattr")
+
+    # ── Search geocode ────────────────────────────────────────────────────────
+    with st.expander("🔍 ค้นหาตำแหน่ง (Geocode)", expanded=False):
+        sc1, sc2 = st.columns([4, 1])
+        search_q = sc1.text_input("พิมพ์ชื่อสถานที่ (ไทย/อังกฤษ)", key="geocode_q",
+                                   placeholder="กรุงเทพมหานคร, Chiang Mai, ...")
+        if sc2.button("🔍 ค้นหา", key="geocode_btn") and search_q:
+            try:
+                import requests as _req
+                r = _req.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={"q": search_q, "format": "json", "limit": 5,
+                            "accept-language": "th,en"},
+                    headers={"User-Agent": "PA-GIS-Explorer/1.0"},
+                    timeout=10,
+                )
+                geo_results = r.json()
+                if geo_results:
+                    st.session_state["geocode_results"] = geo_results
+                    st.session_state["geocode_selected"] = 0
+                else:
+                    st.warning("ไม่พบตำแหน่ง")
+            except Exception as e:
+                st.error(f"Geocode error: {e}")
+
+        if "geocode_results" in st.session_state:
+            res = st.session_state["geocode_results"]
+            labels = [f"{r.get('display_name','')[:80]}" for r in res]
+            sel = st.selectbox("เลือกตำแหน่ง", labels, key="geocode_pick")
+            sel_idx = labels.index(sel)
+            sel_r = res[sel_idx]
+            CENTER_LAT = float(sel_r["lat"])
+            CENTER_LON = float(sel_r["lon"])
+            ZOOM = 13
+            st.success(f"📍 {sel_r.get('display_name','')[:100]}")
+
+    # ── สร้างแผนที่ ───────────────────────────────────────────────────────────
+    m = folium.Map(
+        location=[CENTER_LAT, CENTER_LON],
+        zoom_start=ZOOM,
+        control_scale=True,
+    )
+
+    # plugins
+    from folium import plugins as fp
+
+    if opt_minimap:
+        fp.MiniMap(toggle_display=True, position="bottomleft").add_to(m)
+
+    if opt_measure:
+        fp.MeasureControl(
+            position="topleft",
+            primary_length_unit="meters",
+            secondary_length_unit="kilometers",
+            primary_area_unit="sqmeters",
+            secondary_area_unit="sqkilometers",
+        ).add_to(m)
+
+    fp.Fullscreen(position="topleft").add_to(m)
+    fp.MousePosition(position="bottomright",
+                     separator=" | Lon: ", prefix="Lat: ").add_to(m)
+
+    # ── Basemaps ──────────────────────────────────────────────────────────────
+    BASEMAPS = {
+        "OpenStreetMap":       ("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                "© OpenStreetMap contributors"),
+        "CartoDB Positron":    ("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                                "© CartoDB"),
+        "CartoDB Dark Matter": ("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                                "© CartoDB"),
+        "Stamen Terrain":      ("https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg",
+                                "© Stamen Design"),
+        "Stamen Toner":        ("https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+                                "© Stamen Design"),
+        "Esri Satellite":      ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                                "© Esri"),
+    }
+    for name, (url, attr) in BASEMAPS.items():
+        folium.TileLayer(url, attr=attr, name=name,
+                         overlay=False, control=True).add_to(m)
+
+    # ── WMS overlays ──────────────────────────────────────────────────────────
+    for layer_name, cfg in WMS_CATALOG.items():
+        if layer_name == "🔧 Custom WMS":
+            continue
+        try:
+            if cfg["type"] == "wms":
+                folium.WmsTileLayer(
+                    url=cfg["url"], layers=cfg["layers"],
+                    fmt=cfg.get("fmt", "image/png"),
+                    transparent=cfg.get("transparent", True),
+                    attr=cfg["attr"], name=layer_name,
+                    overlay=True, control=True, show=False,
+                ).add_to(m)
+            else:
+                folium.TileLayer(
+                    cfg["url"], attr=cfg["attr"],
+                    name=layer_name, overlay=True,
+                    control=True, show=False,
+                ).add_to(m)
+        except Exception:
+            pass
+
+    # Custom WMS
+    if "🔧 Custom WMS" in WMS_CATALOG and custom_url and custom_layer:
+        cfg = WMS_CATALOG["🔧 Custom WMS"]
+        try:
+            folium.WmsTileLayer(
+                url=cfg["url"], layers=cfg["layers"],
+                fmt="image/png", transparent=True,
+                attr=cfg["attr"], name="🔧 Custom WMS",
+                overlay=True, control=True,
+            ).add_to(m)
+        except Exception as e:
+            st.warning(f"⚠️ Custom WMS โหลดไม่ได้: {e}")
+
+    # ── Shapefile/GeoJSON layer ───────────────────────────────────────────────
+    if "gdf_loaded" in st.session_state and st.session_state.gdf_loaded is not None:
+        gdf = st.session_state.gdf_loaded
+        attr_cols = [c for c in gdf.columns if c != "geometry"]
+
+        def _style_fn(x):
+            return {"fillColor": "#7A2020", "color": "#7A2020",
+                    "weight": 2, "fillOpacity": 0.3}
+
+        tooltip_fields = attr_cols[:5] if attr_cols else None
+        popup_fields   = attr_cols if opt_fullattr else attr_cols[:5]
+
+        gj = folium.GeoJson(
+            gdf.__geo_interface__,
+            name="📂 Shapefile/GeoJSON",
+            style_function=_style_fn,
+            tooltip=folium.GeoJsonTooltip(
+                fields=tooltip_fields,
+                aliases=[f"{c}:" for c in tooltip_fields],
+                sticky=True,
+            ) if tooltip_fields else None,
+            popup=folium.GeoJsonPopup(
+                fields=popup_fields,
+                aliases=[f"<b>{c}</b>" for c in popup_fields],
+                max_width=400,
+            ) if popup_fields else None,
+        )
+        gj.add_to(m)
+        st.info(f"✅ Layer จากแท็บ Shapefile/GeoJSON ({len(gdf):,} features) ถูกเพิ่มบนแผนที่")
+
+    # ── CSV points layer (with clustering) ───────────────────────────────────
+    if "csv_gdf" in st.session_state and st.session_state.csv_gdf is not None:
+        csv_gdf = st.session_state.csv_gdf
+        attr_cols_csv = [c for c in csv_gdf.columns if c != "geometry"]
+
+        if opt_cluster:
+            marker_cluster = fp.MarkerCluster(name="📍 CSV Points (clustered)")
+            for _, row in csv_gdf.iterrows():
+                lat, lon = row.geometry.y, row.geometry.x
+                if opt_fullattr:
+                    popup_html = "<table style='font-size:12px'>"
+                    for col in attr_cols_csv:
+                        popup_html += f"<tr><td><b>{col}</b></td><td>{row[col]}</td></tr>"
+                    popup_html += "</table>"
+                else:
+                    vals = {c: row[c] for c in attr_cols_csv[:4]}
+                    popup_html = "<br>".join(f"<b>{k}</b>: {v}" for k, v in vals.items())
+
+                folium.CircleMarker(
+                    location=[lat, lon],
+                    radius=7, color="#7A2020",
+                    fill=True, fill_color="#7A2020", fill_opacity=0.8,
+                    tooltip=str(row[attr_cols_csv[0]]) if attr_cols_csv else f"{lat:.4f},{lon:.4f}",
+                    popup=folium.Popup(popup_html, max_width=380),
+                ).add_to(marker_cluster)
+            marker_cluster.add_to(m)
+        else:
+            fg = folium.FeatureGroup(name="📍 CSV Points")
+            for _, row in csv_gdf.iterrows():
+                lat, lon = row.geometry.y, row.geometry.x
+                popup_html = "<table style='font-size:12px'>"
+                for col in (attr_cols_csv if opt_fullattr else attr_cols_csv[:4]):
+                    popup_html += f"<tr><td><b>{col}</b></td><td>{row[col]}</td></tr>"
+                popup_html += "</table>"
+                folium.CircleMarker(
+                    location=[lat, lon],
+                    radius=7, color="#7A2020",
+                    fill=True, fill_color="#7A2020", fill_opacity=0.8,
+                    tooltip=str(row[attr_cols_csv[0]]) if attr_cols_csv else "",
+                    popup=folium.Popup(popup_html, max_width=380),
+                ).add_to(fg)
+            fg.add_to(m)
+        st.info(f"✅ CSV Points ({len(csv_gdf):,} จุด) ถูกเพิ่มบนแผนที่")
+
+    # Search result marker
+    if "geocode_results" in st.session_state:
+        res_list = st.session_state["geocode_results"]
+        if res_list:
+            r0 = res_list[st.session_state.get("geocode_selected", 0)]
+            folium.Marker(
+                [float(r0["lat"]), float(r0["lon"])],
+                popup=r0.get("display_name", "")[:200],
+                tooltip="📍 ตำแหน่งที่ค้นหา",
+                icon=folium.Icon(color="red", icon="star", prefix="fa"),
+            ).add_to(m)
+
+    folium.LayerControl(collapsed=False, position="topright").add_to(m)
+
+    map_out = st_folium(m, use_container_width=True, height=600,
+                        returned_objects=["last_clicked","last_object_clicked_popup"])
+
+    # แสดงข้อมูล popup ที่คลิก ด้านล่างแผนที่
+    if map_out and map_out.get("last_clicked"):
+        lc = map_out["last_clicked"]
+        st.caption(f"📍 คลิกที่: Lat {lc['lat']:.6f}, Lon {lc['lng']:.6f}")
+
+    if map_out and map_out.get("last_object_clicked_popup"):
+        with st.expander("📋 ข้อมูล Feature ที่คลิก", expanded=True):
+            st.markdown(map_out["last_object_clicked_popup"], unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — Shapefile / GeoJSON
@@ -1121,104 +1341,206 @@ with tab_spatial:
 """)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 8 — Kepler.gl  (ArcGIS-style interactive map)
+# TAB 8 — PyDeck  (ArcGIS-style interactive 3D map)
 # ═══════════════════════════════════════════════════════════════════════════════
 with tab_kepler:
-    st.subheader("🌐 Kepler.gl — Interactive Map Viewer")
-    st.caption("แผนที่ interactive คุณภาพสูง รองรับ CSV, GeoJSON, Shapefile · คลิก feature → popup · เปลี่ยน style ได้")
+    st.subheader("🌐 PyDeck — Interactive 3D Map Viewer")
+    st.caption("แผนที่ interactive คุณภาพสูง คลิก feature → popup · 3D extrusion · color by attribute · built-in Streamlit")
 
-    try:
-        from keplergl import KeplerGl
-        from streamlit_keplergl import keplergl_static
-        HAS_KEPLER = True
-    except ImportError:
-        HAS_KEPLER = False
+    import pydeck as pdk
 
-    if not HAS_KEPLER:
-        st.warning("⚠️ ยังไม่ได้ติดตั้ง `keplergl` และ `streamlit-keplergl` — จะพร้อมใช้หลัง deploy ครับ")
-        st.code("pip install keplergl streamlit-keplergl", language="bash")
-        st.markdown("**ตัวอย่าง feature ที่จะได้:**")
-        st.markdown("""
-- 🗺️ เปลี่ยน basemap ได้ (Dark, Light, Satellite, Streets)
-- 📊 แสดง point / line / polygon layer พร้อม color by attribute
-- 🔍 คลิก feature → popup แสดง attribute ทั้งหมด
-- 🎨 ปรับ color, opacity, radius ได้ real-time
-- 🔢 Heatmap / Cluster / Hexbin layer ในคลิกเดียว
-- 📐 Measure distance & area
-- 📤 Export ภาพแผนที่
-- 🔲 Split map (เปรียบ 2 แผนที่ข้างกัน)
-        """)
-        # Preview iframe จาก kepler.gl demo
-        st.markdown("**ดูตัวอย่าง Kepler.gl:**")
-        st.components.v1.iframe("https://kepler.gl/demo", height=500, scrolling=True)
+    pk_src = st.radio("แหล่งข้อมูล", ["CSV Lat/Lon", "GeoJSON / Shapefile"], horizontal=True, key="pk_src")
 
-    else:
-        kp_src = st.radio("แหล่งข้อมูล", ["CSV Lat/Lon", "GeoJSON / Shapefile"], horizontal=True, key="kp_src")
+    pk_style = st.selectbox("Basemap style", [
+        "mapbox://styles/mapbox/dark-v10",
+        "mapbox://styles/mapbox/light-v10",
+        "mapbox://styles/mapbox/satellite-v9",
+        "mapbox://styles/mapbox/streets-v12",
+        "mapbox://styles/mapbox/outdoors-v12",
+    ], key="pk_style",
+    format_func=lambda x: x.split("/")[-1].replace("-v10","").replace("-v9","").replace("-v12","").replace("-v11","").title()
+    )
 
-        kp_map = KeplerGl(height=580, config={
-            "version": "v1",
-            "config": {
-                "mapState": {"latitude": 13.7563, "longitude": 100.5018, "zoom": 5},
-                "mapStyle": {"styleType": "dark"},
-            }
-        })
+    pk_layer_type = st.selectbox("Layer type", [
+        "ScatterplotLayer (จุด)",
+        "HeatmapLayer (ความหนาแน่น)",
+        "HexagonLayer (3D Hex)",
+        "GridLayer (3D Grid)",
+        "GeoJsonLayer (Vector)",
+    ], key="pk_layer_type")
 
-        if kp_src == "CSV Lat/Lon":
-            kp_csv = st.file_uploader("อัปโหลด CSV (มีคอลัมน์ Lat, Lon)", type=["csv"], key="kp_csv")
-            if kp_csv:
-                df_kp = pd.read_csv(kp_csv)
-                st.dataframe(df_kp.head(3), use_container_width=True, hide_index=True)
-                kc1, kc2 = st.columns(2)
-                klat = kc1.selectbox("Latitude col", df_kp.columns, key="kp_lat")
-                klon = kc2.selectbox("Longitude col", df_kp.columns, key="kp_lon")
-                df_kp = df_kp.rename(columns={klat: "latitude", klon: "longitude"})
-                kp_map.add_data(data=df_kp, name="CSV Layer")
-                keplergl_static(kp_map)
-            else:
-                st.info("👆 อัปโหลด CSV เพื่อเริ่มต้น หรือดูแผนที่เปล่าด้านล่าง")
-                keplergl_static(kp_map)
+    if pk_src == "CSV Lat/Lon":
+        pk_csv = st.file_uploader("อัปโหลด CSV", type=["csv"], key="pk_csv")
+        if pk_csv:
+            df_pk = pd.read_csv(pk_csv)
+            st.dataframe(df_pk.head(3), use_container_width=True, hide_index=True)
+            pc1, pc2 = st.columns(2)
+            pk_lat = pc1.selectbox("Latitude col", df_pk.columns, key="pk_lat")
+            pk_lon = pc2.selectbox("Longitude col", df_pk.columns, key="pk_lon")
+            df_pk = df_pk.rename(columns={pk_lat: "lat", pk_lon: "lon"})
+            df_pk = df_pk.dropna(subset=["lat","lon"])
 
+            # color picker
+            cc1, cc2, cc3 = st.columns(3)
+            pk_r = cc1.slider("Red",   0, 255, 122, key="pk_r")
+            pk_g = cc2.slider("Green", 0, 255,  32, key="pk_g")
+            pk_b = cc3.slider("Blue",  0, 255,  32, key="pk_b")
+
+            mid_lat = df_pk["lat"].mean()
+            mid_lon = df_pk["lon"].mean()
+
+            view = pdk.ViewState(latitude=mid_lat, longitude=mid_lon,
+                                  zoom=6, pitch=45 if "3D" in pk_layer_type or "Hex" in pk_layer_type or "Grid" in pk_layer_type else 0)
+
+            if "Scatter" in pk_layer_type:
+                # tooltip fields = all non-lat/lon columns
+                extra_cols = [c for c in df_pk.columns if c not in ["lat","lon"]]
+                tooltip_html = "<b>📍 จุด</b><br>" + "<br>".join(
+                    [f"<b>{c}</b>: {{{c}}}" for c in extra_cols[:6]]
+                )
+                layer = pdk.Layer(
+                    "ScatterplotLayer", df_pk,
+                    get_position=["lon","lat"],
+                    get_color=[pk_r, pk_g, pk_b, 200],
+                    get_radius=500,
+                    pickable=True,
+                    auto_highlight=True,
+                )
+            elif "Heatmap" in pk_layer_type:
+                layer = pdk.Layer(
+                    "HeatmapLayer", df_pk,
+                    get_position=["lon","lat"],
+                    aggregation="MEAN",
+                    pickable=False,
+                )
+                tooltip_html = None
+            elif "Hex" in pk_layer_type:
+                pk_elev = st.slider("Elevation scale", 1, 500, 50, key="pk_elev")
+                layer = pdk.Layer(
+                    "HexagonLayer", df_pk,
+                    get_position=["lon","lat"],
+                    radius=5000,
+                    elevation_scale=pk_elev,
+                    elevation_range=[0, 3000],
+                    pickable=True,
+                    extruded=True,
+                    color_range=[
+                        [254,237,222],[253,190,133],[253,141,60],
+                        [230,85,13],[166,54,3],[102,37,6]
+                    ],
+                )
+                tooltip_html = "<b>จำนวน:</b> {elevationValue}"
+            else:  # Grid
+                pk_elev = st.slider("Elevation scale", 1, 500, 50, key="pk_elev_g")
+                layer = pdk.Layer(
+                    "GridLayer", df_pk,
+                    get_position=["lon","lat"],
+                    cell_size=5000,
+                    elevation_scale=pk_elev,
+                    pickable=True,
+                    extruded=True,
+                )
+                tooltip_html = "<b>จำนวน:</b> {count}"
+
+            tooltip = {"html": tooltip_html, "style": {"background":"#2d2d2d","color":"white","fontSize":"12px","padding":"8px"}} if tooltip_html else None
+            deck = pdk.Deck(layers=[layer], initial_view_state=view,
+                            map_style=pk_style, tooltip=tooltip)
+            st.pydeck_chart(deck, use_container_width=True)
+
+            # attribute table
+            with st.expander("📋 Attribute Table"):
+                st.dataframe(df_pk, use_container_width=True, hide_index=True)
         else:
-            kp_vec = st.file_uploader("GeoJSON / Shapefile (.zip)", type=["geojson","json","zip"], key="kp_vec")
-            if kp_vec:
-                name_kp = kp_vec.name.lower()
-                try:
-                    if name_kp.endswith(".zip"):
-                        with tempfile.TemporaryDirectory() as tmp:
-                            zp = os.path.join(tmp, "d.zip")
-                            with open(zp, "wb") as f: f.write(kp_vec.read())
-                            with zipfile.ZipFile(zp) as z: z.extractall(tmp)
-                            shps = [f for f in os.listdir(tmp) if f.endswith(".shp")]
-                            gdf_kp = gpd.read_file(os.path.join(tmp, shps[0]))
-                    else:
-                        gdf_kp = gpd.read_file(kp_vec)
+            # แสดง demo map เปล่า
+            view = pdk.ViewState(latitude=13.7563, longitude=100.5018, zoom=5, pitch=30)
+            deck = pdk.Deck(initial_view_state=view, map_style=pk_style,
+                            layers=[], tooltip=None)
+            st.pydeck_chart(deck, use_container_width=True)
+            st.info("👆 อัปโหลด CSV เพื่อเริ่มต้น")
 
-                    gdf_kp = gdf_kp.to_crs(epsg=4326)
-                    kp_map.add_data(data=json.loads(gdf_kp.to_json()), name="Vector Layer")
-                    keplergl_static(kp_map)
+    else:  # GeoJSON / Shapefile
+        pk_vec = st.file_uploader("GeoJSON / Shapefile (.zip)", type=["geojson","json","zip"], key="pk_vec")
+        if pk_vec:
+            try:
+                name_pk = pk_vec.name.lower()
+                if name_pk.endswith(".zip"):
+                    with tempfile.TemporaryDirectory() as tmp:
+                        zp = os.path.join(tmp, "d.zip")
+                        with open(zp, "wb") as f: f.write(pk_vec.read())
+                        with zipfile.ZipFile(zp) as z: z.extractall(tmp)
+                        shps = [f for f in os.listdir(tmp) if f.endswith(".shp")]
+                        gdf_pk = gpd.read_file(os.path.join(tmp, shps[0]))
+                else:
+                    gdf_pk = gpd.read_file(pk_vec)
 
-                    st.markdown("**Attribute Table:**")
-                    attr_kp = [c for c in gdf_kp.columns if c != "geometry"]
-                    st.dataframe(gdf_kp[attr_kp], use_container_width=True, hide_index=True)
-                except Exception as e:
-                    st.error(f"โหลดไม่ได้: {e}")
-            else:
-                st.info("👆 อัปโหลด GeoJSON หรือ Shapefile เพื่อเริ่มต้น")
-                keplergl_static(kp_map)
+                gdf_pk = gdf_pk.to_crs(epsg=4326)
+                attr_cols_pk = [c for c in gdf_pk.columns if c != "geometry"]
 
-        with st.expander("💡 วิธีใช้ Kepler.gl"):
-            st.markdown("""
-**Panel ซ้าย (หลัง upload ข้อมูล):**
-- 🔵 **Layers** — เพิ่ม/ลบ layer, เปลี่ยนประเภท (Point/Heatmap/Hex/Arc)
-- 🎨 **Color** — สีตาม attribute (คลิก Fill Color → Color Based On)
-- 📐 **Size/Radius** — ขนาดตาม attribute
-- 🔍 **Filter** — กรองข้อมูลตาม attribute แบบ real-time
+                # color col
+                cc1, cc2 = st.columns(2)
+                pk_r2 = cc1.slider("Fill Red",   0,255,122,key="pk_r2")
+                pk_g2 = cc1.slider("Fill Green", 0,255, 32,key="pk_g2")
+                pk_b2 = cc2.slider("Fill Blue",  0,255, 32,key="pk_b2")
+                pk_op  = cc2.slider("Opacity %", 0,100, 40,key="pk_op")
 
-**บนแผนที่:**
-- คลิก feature → popup แสดง attribute ทั้งหมด
-- Ctrl+drag → rotate 3D
-- 🖼️ ปุ่ม Share → Export เป็นภาพ PNG
-            """)
+                tooltip_html = "<b>Feature</b><br>" + "<br>".join(
+                    [f"<b>{c}</b>: {{{c}}}" for c in attr_cols_pk[:6]]
+                )
+
+                geojson_data = json.loads(gdf_pk.to_json())
+                layer = pdk.Layer(
+                    "GeoJsonLayer",
+                    geojson_data,
+                    pickable=True,
+                    stroked=True,
+                    filled=True,
+                    extruded=False,
+                    get_fill_color=[pk_r2, pk_g2, pk_b2, int(pk_op*2.55)],
+                    get_line_color=[pk_r2, pk_g2, pk_b2, 220],
+                    line_width_min_pixels=1,
+                    auto_highlight=True,
+                    highlight_color=[255, 200, 0, 180],
+                )
+
+                bounds = gdf_pk.total_bounds
+                mid_lat = (bounds[1]+bounds[3])/2
+                mid_lon = (bounds[0]+bounds[2])/2
+                view = pdk.ViewState(latitude=mid_lat, longitude=mid_lon, zoom=6, pitch=0)
+
+                deck = pdk.Deck(
+                    layers=[layer], initial_view_state=view,
+                    map_style=pk_style,
+                    tooltip={"html": tooltip_html,
+                             "style": {"background":"#2d2d2d","color":"white","fontSize":"12px","padding":"8px"}},
+                )
+                st.pydeck_chart(deck, use_container_width=True)
+
+                with st.expander("📋 Attribute Table"):
+                    st.dataframe(gdf_pk[attr_cols_pk], use_container_width=True, hide_index=True)
+
+            except Exception as e:
+                st.error(f"โหลดไม่ได้: {e}")
+        else:
+            view = pdk.ViewState(latitude=13.7563, longitude=100.5018, zoom=5, pitch=30)
+            st.pydeck_chart(pdk.Deck(initial_view_state=view, map_style=pk_style), use_container_width=True)
+            st.info("👆 อัปโหลด GeoJSON หรือ Shapefile เพื่อเริ่มต้น")
+
+    with st.expander("💡 วิธีใช้ PyDeck"):
+        st.markdown("""
+| Layer Type | ใช้เมื่อ |
+|---|---|
+| ScatterplotLayer | จุดทั่วไป คลิกดู attribute |
+| HeatmapLayer | ดูความหนาแน่น / cluster |
+| HexagonLayer 3D | นับจำนวนจุดต่อพื้นที่ แบบ 3D |
+| GridLayer 3D | เหมือน Hex แต่เป็นตาราง |
+| GeoJsonLayer | Polygon/Line/Point จาก Shapefile |
+
+**Tips:**
+- 🖱️ คลิก feature → popup attribute
+- 🔄 Ctrl+drag → หมุน 3D
+- 🔍 Scroll → zoom
+- 🎨 ปรับ RGB slider → เปลี่ยนสี real-time
+        """)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 9 — ArcGIS Online Viewer
