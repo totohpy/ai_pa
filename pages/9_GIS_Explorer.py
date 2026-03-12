@@ -1377,8 +1377,15 @@ with tab_kepler:
             pc1, pc2 = st.columns(2)
             pk_lat = pc1.selectbox("Latitude col", df_pk.columns, key="pk_lat")
             pk_lon = pc2.selectbox("Longitude col", df_pk.columns, key="pk_lon")
-            df_pk = df_pk.rename(columns={pk_lat: "lat", pk_lon: "lon"})
-            df_pk = df_pk.dropna(subset=["lat","lon"])
+            # Guard: ตรวจว่า column ที่เลือกยังมีอยู่ใน DataFrame
+            if pk_lat not in df_pk.columns or pk_lon not in df_pk.columns:
+                st.warning("⚠️ กรุณาเลือก Latitude/Longitude column ให้ถูกต้อง")
+                st.stop()
+            # สร้าง lat/lon columns โดยตรงแทนการ rename เพื่อหลีกเลี่ยง KeyError
+            df_pk = df_pk.copy()
+            df_pk["lat"] = pd.to_numeric(df_pk[pk_lat], errors="coerce")
+            df_pk["lon"] = pd.to_numeric(df_pk[pk_lon], errors="coerce")
+            df_pk = df_pk.dropna(subset=["lat", "lon"])
 
             # color picker
             cc1, cc2, cc3 = st.columns(3)
