@@ -74,411 +74,412 @@ tab_map, tab_heatmap, tab_spatial, tab_kepler, tab_arcgis = st.tabs([
 # TAB 1 — แผนที่หลัก
 # ═══════════════════════════════════════════════════════════════════════════════
 with tab_map:
-    st.subheader("🗺️ แผนที่ Interactive")
-
     CENTER_LAT, CENTER_LON, ZOOM = 13.7563, 100.5018, 6
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # SECTION 1 — เลือก Basemap
-    # ══════════════════════════════════════════════════════════════════════════
-    with st.expander("🗺️ ส่วนที่ 1 — Basemap", expanded=True):
-        BASEMAP_OPTIONS = {
-            "🗺️ OpenStreetMap":           ("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                            "© OpenStreetMap contributors", None),
-            "🛰️ OpenStreetMap Satellite":  ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-                                            "© Esri", None),
-            "🌍 Esri World Street Map":    ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-                                            "© Esri", None),
-            "🛰️ Esri Satellite":           ("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-                                            "© Esri", None),
-            "🚗 Google Roads":             ("https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}",
-                                            "© Google", None),
-            "🛰️ Google Satellite":         ("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-                                            "© Google", None),
-            "🛰️ Google Hybrid":            ("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-                                            "© Google", None),
-            "🚦 Google Traffic":           ("https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}",
-                                            "© Google", None),
-        }
-        basemap_keys = list(BASEMAP_OPTIONS.keys())
-        selected_basemap = st.radio(
-            "เลือก Basemap:",
-            basemap_keys,
-            index=0,
-            horizontal=True,
-            key="sel_basemap",
-        )
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # SECTION 2 — แผนที่บริหารจัดการ (WMS Catalog)
-    # ══════════════════════════════════════════════════════════════════════════
-    LONGDO_URL = "https://ms.longdo.com/mapproxy/service"
-    WMS_CATALOG = {
-        "🗺️ Longdo Icons (ภาษาไทย)":     {"type":"wms","url":LONGDO_URL,"layers":"longdo_icons","attr":"© Longdo Map","fmt":"image/png","transparent":True},
-        "🗺️ Longdo Icons (English)":       {"type":"wms","url":LONGDO_URL,"layers":"longdo_icons_en","attr":"© Longdo Map","fmt":"image/png","transparent":True},
-        "🗺️ Longdo Political (ไทย)":       {"type":"wms","url":LONGDO_URL,"layers":"longdo_political","attr":"© Longdo Map","fmt":"image/png","transparent":True},
-        "🗺️ Longdo Gray (ไทย)":            {"type":"wms","url":LONGDO_URL,"layers":"longdo_gray","attr":"© Longdo Map","fmt":"image/png","transparent":True},
-        "🗺️ Longdo Light (ไทย)":           {"type":"wms","url":LONGDO_URL,"layers":"longdo_light","attr":"© Longdo Map","fmt":"image/png","transparent":True},
-        "🗺️ Longdo Dark (ไทย)":            {"type":"wms","url":LONGDO_URL,"layers":"longdo_dark","attr":"© Longdo Map","fmt":"image/png","transparent":True},
-        "🛰️ Longdo Bluemarble Terrain":    {"type":"wms","url":LONGDO_URL,"layers":"bluemarble_terrain","attr":"© Longdo","fmt":"image/png","transparent":True},
-        "🛰️ Thaichote (GISTDA 2560-2562)": {"type":"wms","url":LONGDO_URL,"layers":"thaichote","attr":"© GISTDA","fmt":"image/png","transparent":True},
-        "🛰️ LDD Orthophoto (2547-2550)":   {"type":"wms","url":LONGDO_URL,"layers":"ldd_ortho","attr":"© กรมพัฒนาที่ดิน","fmt":"image/png","transparent":True},
-        "🏙️ ผังเมือง ทั่วประเทศ":          {"type":"wms","url":LONGDO_URL,"layers":"cityplan_thailand","attr":"© กรมโยธา","fmt":"image/png","transparent":True},
-        "🏙️ ผังเมือง DPT":                 {"type":"wms","url":LONGDO_URL,"layers":"cityplan_dpt","attr":"© กรมโยธา","fmt":"image/png","transparent":True},
-        "🏙️ ผังเมือง ระดับจังหวัด":         {"type":"wms","url":LONGDO_URL,"layers":"cityplan_provinces","attr":"© Longdo","fmt":"image/png","transparent":True},
-        "🏙️ ผังเมือง ระดับเมือง":           {"type":"wms","url":LONGDO_URL,"layers":"cityplan_cities","attr":"© Longdo","fmt":"image/png","transparent":True},
-        "🏛️ กรมที่ดิน (DOL)":              {"type":"wms","url":LONGDO_URL,"layers":"dol","attr":"© กรมที่ดิน","fmt":"image/png","transparent":True},
-        "🏛️ กรมที่ดิน HD":                 {"type":"wms","url":LONGDO_URL,"layers":"dol_hd","attr":"© กรมที่ดิน","fmt":"image/png","transparent":True},
-        "🏛️ กรมทางหลวง (DOH)":             {"type":"wms","url":LONGDO_URL,"layers":"doh_section_km","attr":"© กรมทางหลวง","fmt":"image/png","transparent":True},
-        "🏛️ การใช้ที่ดิน LDD (2561-2563)": {"type":"wms","url":LONGDO_URL,"layers":"ldd_landuse_2561_2563","attr":"© กรมพัฒนาที่ดิน","fmt":"image/png","transparent":True},
-        "👥 ประชากรไทย 2020":              {"type":"wms","url":LONGDO_URL,"layers":"thailand_population","attr":"© Longdo","fmt":"image/png","transparent":True},
-        "👥 FB Population (รวม)":          {"type":"wms","url":LONGDO_URL,"layers":"fb_population_2020","attr":"© Facebook/Longdo","fmt":"image/png","transparent":True},
-        "👥 FB Population (ผู้สูงอายุ)":    {"type":"wms","url":LONGDO_URL,"layers":"fb_population_elderly","attr":"© Facebook/Longdo","fmt":"image/png","transparent":True},
-        "👥 FB Population (เด็ก)":         {"type":"wms","url":LONGDO_URL,"layers":"fb_population_children","attr":"© Facebook/Longdo","fmt":"image/png","transparent":True},
-        "🚗 อุบัติเหตุ 2564 (3 หน่วยงาน)": {"type":"wms","url":LONGDO_URL,"layers":"accident_3Bura_2564","attr":"© DGA/Longdo","fmt":"image/png","transparent":True},
-        "🚗 อุบัติเหตุ 2563":               {"type":"wms","url":LONGDO_URL,"layers":"accident_3Bura_2563","attr":"© DGA/Longdo","fmt":"image/png","transparent":True},
-        "🚗 อุบัติเหตุ 2562":               {"type":"wms","url":LONGDO_URL,"layers":"accident_3Bura_2562","attr":"© DGA/Longdo","fmt":"image/png","transparent":True},
-        "🚗 อุบัติเหตุ iTIC 2564":          {"type":"wms","url":LONGDO_URL,"layers":"accident_itic_2564","attr":"© iTIC/Longdo","fmt":"image/png","transparent":True},
-        "🌊 น้ำท่วม GISTDA (realtime)":    {"type":"wms","url":LONGDO_URL,"layers":"gistda_flood_update","attr":"© GISTDA/Longdo","fmt":"image/png","transparent":True},
-        "⛰️ ความชัน เกาะสมุย":             {"type":"wms","url":LONGDO_URL,"layers":"samui_slope","attr":"© Longdo","fmt":"image/png","transparent":True},
-        "🌳 กรมป่าไม้ (RFD Basemap)":       {"type":"wms","url":"https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer","layers":"0","attr":"© กรมป่าไม้","fmt":"image/png","transparent":True},
-        "🇹🇭 RTSD Orthophoto":              {"type":"wms","url":"https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Orthophoto/ImageServer/WMSServer","layers":"0","attr":"© กรมแผนที่ทหาร","fmt":"image/png","transparent":True},
-        "🇹🇭 RTSD แผนที่ฐาน":               {"type":"wms","url":"https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Base_Map/MapServer/WMSServer","layers":"0","attr":"© กรมแผนที่ทหาร","fmt":"image/png","transparent":True},
-        "🇹🇭 NSO สถิติ":                    {"type":"wms","url":"https://gis.nso.go.th/geoserver/wms","layers":"nso:province","attr":"© NSO Thailand","fmt":"image/png","transparent":True},
-        "🌍 NASA GIBS MODIS Terra":         {"type":"tile","url":"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg","attr":"© NASA GIBS"},
-        "🌍 NASA VIIRS Night Lights":       {"type":"tile","url":"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_DayNightBand_ENCC/default/2024-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png","attr":"© NASA GIBS"},
-        "🌍 OpenTopoMap Overlay":           {"type":"tile","url":"https://tile.opentopomap.org/{z}/{x}/{y}.png","attr":"© OpenTopoMap"},
-        "🌍 Esri World Shaded Relief":      {"type":"tile","url":"https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}","attr":"© Esri"},
+    # ── Data definitions ──────────────────────────────────────────────────────
+    BASEMAP_OPTIONS = {
+        "🗺️ OpenStreetMap":          ("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                       "© OpenStreetMap contributors"),
+        "🛰️ OpenStreetMap Satellite": ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                                       "© Esri"),
+        "🌍 Esri World Street Map":   ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+                                       "© Esri"),
+        "🛰️ Esri Satellite":          ("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                                       "© Esri"),
+        "🚗 Google Roads":            ("https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}",
+                                       "© Google"),
+        "🛰️ Google Satellite":        ("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+                                       "© Google"),
+        "🛰️ Google Hybrid":           ("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                                       "© Google"),
+        "🚦 Google Traffic":          ("https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}",
+                                       "© Google"),
     }
 
-    with st.expander("🏛️ ส่วนที่ 2 — แผนที่บริหารจัดการ (WMS Overlay)", expanded=False):
-        st.caption("เลือก WMS layer ที่ต้องการซ้อนทับบนแผนที่หลัก (สามารถเลือกได้หลาย layer)")
-        wms_selections = st.multiselect(
-            "เลือก WMS Layer:",
-            list(WMS_CATALOG.keys()),
-            default=[],
-            key="wms_sel",
-            label_visibility="collapsed",
-        )
-        # Custom WMS
-        st.markdown("**➕ เพิ่ม WMS URL เอง (ไม่บังคับ)**")
-        cw1, cw2, cw3 = st.columns([3, 2, 2])
-        custom_url   = cw1.text_input("WMS URL", key="custom_wms_url", placeholder="https://example.com/geoserver/wms")
-        custom_layer = cw2.text_input("Layer Name", key="custom_wms_layer", placeholder="workspace:layername")
-        custom_attr  = cw3.text_input("Attribution", value="Custom WMS", key="custom_wms_attr")
-        if custom_url and custom_layer:
-            WMS_CATALOG["🔧 Custom WMS"] = {
-                "type": "wms", "url": custom_url, "layers": custom_layer,
-                "attr": custom_attr, "fmt": "image/png", "transparent": True,
-            }
-            if "🔧 Custom WMS" not in wms_selections:
-                wms_selections.append("🔧 Custom WMS")
+    _L = "https://ms.longdo.com/mapproxy/service"
+    WMS_CATALOG = {
+        "🗺️ Longdo Political (ไทย)":       {"type":"wms","url":_L,"layers":"longdo_political","attr":"© Longdo","fmt":"image/png","transparent":True},
+        "🛰️ Longdo Bluemarble Terrain":     {"type":"wms","url":_L,"layers":"bluemarble_terrain","attr":"© Longdo","fmt":"image/png","transparent":True},
+        "🛰️ Thaichote (GISTDA 2560-2562)":  {"type":"wms","url":_L,"layers":"thaichote","attr":"© GISTDA","fmt":"image/png","transparent":True},
+        "🛰️ LDD Orthophoto (2547-2550)":    {"type":"wms","url":_L,"layers":"ldd_ortho","attr":"© กรมพัฒนาที่ดิน","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง ทั่วประเทศ (DPT+เมือง)": {"type":"wms","url":_L,"layers":"cityplan_thailand","attr":"© กรมโยธา","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง DPT":                  {"type":"wms","url":_L,"layers":"cityplan_dpt","attr":"© กรมโยธา","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง ระดับจังหวัด":          {"type":"wms","url":_L,"layers":"cityplan_provinces","attr":"© Longdo","fmt":"image/png","transparent":True},
+        "🏙️ ผังเมือง ระดับเมือง":            {"type":"wms","url":_L,"layers":"cityplan_cities","attr":"© Longdo","fmt":"image/png","transparent":True},
+        "🏛️ กรมที่ดิน (DOL)":               {"type":"wms","url":_L,"layers":"dol","attr":"© กรมที่ดิน","fmt":"image/png","transparent":True},
+        "🏛️ กรมที่ดิน HD":                  {"type":"wms","url":_L,"layers":"dol_hd","attr":"© กรมที่ดิน","fmt":"image/png","transparent":True},
+        "🏛️ กรมทางหลวง (DOH)":              {"type":"wms","url":_L,"layers":"doh_section_km","attr":"© กรมทางหลวง","fmt":"image/png","transparent":True},
+        "🏛️ การใช้ที่ดิน LDD (2561-2563)":  {"type":"wms","url":_L,"layers":"ldd_landuse_2561_2563","attr":"© กรมพัฒนาที่ดิน","fmt":"image/png","transparent":True},
+        "👥 ประชากรไทย 2020":               {"type":"wms","url":_L,"layers":"thailand_population","attr":"© Longdo","fmt":"image/png","transparent":True},
+        "👥 FB Population (รวม)":           {"type":"wms","url":_L,"layers":"fb_population_2020","attr":"© Facebook/Longdo","fmt":"image/png","transparent":True},
+        "👥 FB Population (ผู้สูงอายุ)":     {"type":"wms","url":_L,"layers":"fb_population_elderly","attr":"© Facebook/Longdo","fmt":"image/png","transparent":True},
+        "👥 FB Population (เด็ก)":          {"type":"wms","url":_L,"layers":"fb_population_children","attr":"© Facebook/Longdo","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ 2564 (3 หน่วยงาน)":  {"type":"wms","url":_L,"layers":"accident_3Bura_2564","attr":"© DGA/Longdo","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ 2563":                {"type":"wms","url":_L,"layers":"accident_3Bura_2563","attr":"© DGA/Longdo","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ 2562":                {"type":"wms","url":_L,"layers":"accident_3Bura_2562","attr":"© DGA/Longdo","fmt":"image/png","transparent":True},
+        "🚗 อุบัติเหตุ iTIC 2564":           {"type":"wms","url":_L,"layers":"accident_itic_2564","attr":"© iTIC/Longdo","fmt":"image/png","transparent":True},
+        "🌊 น้ำท่วม GISTDA (realtime)":     {"type":"wms","url":_L,"layers":"gistda_flood_update","attr":"© GISTDA/Longdo","fmt":"image/png","transparent":True},
+        "⛰️ ความชัน เกาะสมุย":              {"type":"wms","url":_L,"layers":"samui_slope","attr":"© Longdo","fmt":"image/png","transparent":True},
+        "🌳 กรมป่าไม้ (RFD Basemap)":        {"type":"wms","url":"https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer","layers":"0","attr":"© กรมป่าไม้","fmt":"image/png","transparent":True},
+        "🌍 NASA GIBS MODIS Terra":          {"type":"tile","url":"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg","attr":"© NASA GIBS"},
+        "🌍 NASA VIIRS Night Lights":        {"type":"tile","url":"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_DayNightBand_ENCC/default/2024-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png","attr":"© NASA GIBS"},
+        "🌍 OpenTopoMap":                   {"type":"tile","url":"https://tile.opentopomap.org/{z}/{x}/{y}.png","attr":"© OpenTopoMap"},
+        "🌍 Esri World Shaded Relief":       {"type":"tile","url":"https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}","attr":"© Esri"},
+    }
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # SECTION 3 — นำเข้า Shapefile / GeoJSON / CSV
-    # ══════════════════════════════════════════════════════════════════════════
-    with st.expander("📂 ส่วนที่ 3 — นำเข้าข้อมูล (Shapefile / GeoJSON / CSV)", expanded=False):
-        file_type = st.radio("ประเภทไฟล์:", ["GeoJSON", "Shapefile (.zip)", "CSV (Lat/Lon)"],
-                             horizontal=True, key="import_file_type")
+    # ── Layout: left panel + map ───────────────────────────────────────────────
+    col_ctrl, col_map = st.columns([1, 3], gap="small")
 
-        if file_type == "GeoJSON":
-            geo_file = st.file_uploader("อัปโหลด GeoJSON", type=["geojson", "json"], key="geojson_up")
-            if geo_file:
-                try:
-                    gdf_new = gpd.read_file(geo_file)
-                    st.session_state.gdf_loaded = gdf_new
-                    st.session_state.csv_gdf    = None
-                    st.success(f"✅ โหลดสำเร็จ: {len(gdf_new):,} features · CRS: {gdf_new.crs}")
-                    attr_cols_new = [c for c in gdf_new.columns if c != "geometry"]
-                    st.dataframe(gdf_new[attr_cols_new].head(5), use_container_width=True, hide_index=True)
-                except Exception as e:
-                    st.error(f"อ่านไม่ได้: {e}")
+    with col_ctrl:
+        # ── ส่วนที่ 1: Basemap ──────────────────────────────────────────────
+        with st.expander("🗺️ **ส่วนที่ 1 — Basemap**", expanded=True):
+            selected_basemap = st.radio(
+                "เลือก Basemap:",
+                list(BASEMAP_OPTIONS.keys()),
+                index=0,
+                key="sel_basemap",
+            )
 
-        elif file_type == "Shapefile (.zip)":
-            st.caption("💡 zip ไฟล์ .shp .shx .dbf .prj รวมกันก่อนอัปโหลด")
-            shp_file = st.file_uploader("อัปโหลด Shapefile (.zip)", type=["zip"], key="shp_up")
-            if shp_file:
-                try:
-                    with tempfile.TemporaryDirectory() as tmp:
-                        zip_path = os.path.join(tmp, "data.zip")
-                        with open(zip_path, "wb") as f: f.write(shp_file.read())
-                        with zipfile.ZipFile(zip_path, "r") as z: z.extractall(tmp)
-                        shp_files = [f for f in os.listdir(tmp) if f.endswith(".shp")]
-                        if not shp_files:
-                            st.error("ไม่พบไฟล์ .shp ใน zip")
-                        else:
-                            gdf_new = gpd.read_file(os.path.join(tmp, shp_files[0]))
-                            st.session_state.gdf_loaded = gdf_new
-                            st.session_state.csv_gdf    = None
-                            st.success(f"✅ โหลดสำเร็จ: {len(gdf_new):,} features · CRS: {gdf_new.crs}")
-                            attr_cols_new = [c for c in gdf_new.columns if c != "geometry"]
-                            st.dataframe(gdf_new[attr_cols_new].head(5), use_container_width=True, hide_index=True)
-                except Exception as e:
-                    st.error(f"อ่านไม่ได้: {e}")
+        # ── ส่วนที่ 2: WMS Overlay ──────────────────────────────────────────
+        with st.expander("🏛️ **ส่วนที่ 2 — แผนที่บริหารจัดการ**", expanded=False):
+            st.caption("เลือก WMS layer ซ้อนทับ (เลือกได้หลาย layer)")
+            wms_selections = st.multiselect(
+                "WMS Layer:",
+                list(WMS_CATALOG.keys()),
+                default=[],
+                key="wms_sel",
+                label_visibility="collapsed",
+            )
+            st.markdown("**➕ WMS URL เอง**")
+            custom_url   = st.text_input("URL", key="custom_wms_url",   placeholder="https://…/wms")
+            custom_layer = st.text_input("Layer", key="custom_wms_layer", placeholder="workspace:layer")
+            custom_attr  = st.text_input("Attribution", value="Custom WMS", key="custom_wms_attr")
+            if custom_url and custom_layer:
+                WMS_CATALOG["🔧 Custom WMS"] = {
+                    "type":"wms","url":custom_url,"layers":custom_layer,
+                    "attr":custom_attr,"fmt":"image/png","transparent":True,
+                }
+                if "🔧 Custom WMS" not in wms_selections:
+                    wms_selections.append("🔧 Custom WMS")
 
-        else:  # CSV Lat/Lon
-            csv_file = st.file_uploader("อัปโหลด CSV ที่มีคอลัมน์ Latitude/Longitude", type=["csv"], key="csv_geo")
-            if csv_file:
-                df_csv = pd.read_csv(csv_file)
-                st.dataframe(df_csv.head(3), use_container_width=True, hide_index=True)
-                col1, col2 = st.columns(2)
-                lat_col = col1.selectbox("คอลัมน์ Latitude", df_csv.columns.tolist(), key="lat_col_main")
-                lon_col = col2.selectbox("คอลัมน์ Longitude", df_csv.columns.tolist(), key="lon_col_main")
-                if st.button("📍 โหลดข้อมูล CSV", type="primary", key="load_csv_main"):
+        # ── ส่วนที่ 3: นำเข้าข้อมูล ─────────────────────────────────────────
+        with st.expander("📂 **ส่วนที่ 3 — นำเข้าข้อมูล**", expanded=False):
+            file_type = st.radio(
+                "ประเภทไฟล์:",
+                ["GeoJSON", "Shapefile (.zip)", "CSV (Lat/Lon)"],
+                horizontal=False, key="import_file_type",
+            )
+            if file_type == "GeoJSON":
+                geo_file = st.file_uploader("อัปโหลด GeoJSON", type=["geojson","json"], key="geojson_up")
+                if geo_file:
                     try:
-                        df_clean = df_csv.dropna(subset=[lat_col, lon_col])
-                        gdf_csv = gpd.GeoDataFrame(
-                            df_clean,
-                            geometry=gpd.points_from_xy(
-                                pd.to_numeric(df_clean[lon_col], errors="coerce"),
-                                pd.to_numeric(df_clean[lat_col], errors="coerce")
-                            ),
-                            crs="EPSG:4326"
-                        )
-                        st.session_state.csv_gdf    = gdf_csv
-                        st.session_state.gdf_loaded = None
-                        st.success(f"✅ โหลดสำเร็จ: {len(gdf_csv):,} จุด")
+                        gdf_new = gpd.read_file(geo_file)
+                        st.session_state.gdf_loaded = gdf_new
+                        st.session_state.csv_gdf    = None
+                        st.success(f"✅ {len(gdf_new):,} features")
+                        attr_cols_new = [c for c in gdf_new.columns if c != "geometry"]
+                        st.dataframe(gdf_new[attr_cols_new].head(3), hide_index=True)
                     except Exception as e:
-                        st.error(f"Error: {e}")
+                        st.error(str(e))
 
-    # Layer status
-    has_vector = "gdf_loaded" in st.session_state and st.session_state.gdf_loaded is not None
-    has_csv    = "csv_gdf"    in st.session_state and st.session_state.csv_gdf    is not None
-    if has_vector:
-        gdf_loaded = st.session_state.gdf_loaded
-        c1c, c2c = st.columns([3,1])
-        c1c.info(f"📂 Layer: **{len(gdf_loaded):,} features** · {gdf_loaded.geom_type.value_counts().idxmax()}")
-        if c2c.button("🗑️ ลบ Layer", key="del_layer"):
-            st.session_state.gdf_loaded = None
-            st.rerun()
-    if has_csv:
-        csv_gdf = st.session_state.csv_gdf
-        c1c, c2c = st.columns([3,1])
-        c1c.info(f"📍 CSV Points: **{len(csv_gdf):,} จุด**")
-        if c2c.button("🗑️ ลบ CSV", key="del_csv"):
-            st.session_state.csv_gdf = None
-            st.rerun()
+            elif file_type == "Shapefile (.zip)":
+                st.caption("💡 zip ไฟล์ .shp .shx .dbf .prj รวมกัน")
+                shp_file = st.file_uploader("อัปโหลด Shapefile (.zip)", type=["zip"], key="shp_up")
+                if shp_file:
+                    try:
+                        with tempfile.TemporaryDirectory() as tmp:
+                            zp = os.path.join(tmp, "d.zip")
+                            with open(zp, "wb") as f: f.write(shp_file.read())
+                            with zipfile.ZipFile(zp) as z: z.extractall(tmp)
+                            shps = [f for f in os.listdir(tmp) if f.endswith(".shp")]
+                            if not shps:
+                                st.error("ไม่พบ .shp")
+                            else:
+                                gdf_new = gpd.read_file(os.path.join(tmp, shps[0]))
+                                st.session_state.gdf_loaded = gdf_new
+                                st.session_state.csv_gdf    = None
+                                st.success(f"✅ {len(gdf_new):,} features")
+                                attr_cols_new = [c for c in gdf_new.columns if c != "geometry"]
+                                st.dataframe(gdf_new[attr_cols_new].head(3), hide_index=True)
+                    except Exception as e:
+                        st.error(str(e))
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # Map options bar
-    # ══════════════════════════════════════════════════════════════════════════
-    mo1, mo2, mo3, mo4 = st.columns(4)
-    opt_cluster  = mo1.toggle("🔵 Cluster จุด CSV",    value=True,  key="opt_cluster")
-    opt_minimap  = mo2.toggle("🗺️ Mini Map",            value=False, key="opt_minimap")
-    opt_measure  = mo3.toggle("📐 Measure tool",        value=False, key="opt_measure")
-    opt_fullattr = mo4.toggle("📋 Popup เต็ม attribute",value=True,  key="opt_fullattr")
+            else:  # CSV
+                csv_file = st.file_uploader("อัปโหลด CSV (Lat/Lon)", type=["csv"], key="csv_geo")
+                if csv_file:
+                    df_csv = pd.read_csv(csv_file)
+                    st.dataframe(df_csv.head(3), hide_index=True)
+                    lat_col = st.selectbox("Latitude col", df_csv.columns.tolist(), key="lat_col_main")
+                    lon_col = st.selectbox("Longitude col", df_csv.columns.tolist(), key="lon_col_main")
+                    if st.button("📍 โหลด CSV", type="primary", key="load_csv_main"):
+                        try:
+                            df_c = df_csv.copy()
+                            df_c["_lat"] = pd.to_numeric(df_c[lat_col], errors="coerce")
+                            df_c["_lon"] = pd.to_numeric(df_c[lon_col], errors="coerce")
+                            df_c = df_c.dropna(subset=["_lat","_lon"])
+                            gdf_csv = gpd.GeoDataFrame(
+                                df_c,
+                                geometry=gpd.points_from_xy(df_c["_lon"], df_c["_lat"]),
+                                crs="EPSG:4326",
+                            )
+                            st.session_state.csv_gdf    = gdf_csv
+                            st.session_state.gdf_loaded = None
+                            st.success(f"✅ {len(gdf_csv):,} จุด")
+                        except Exception as e:
+                            st.error(str(e))
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # 🔍 ค้นหาตำแหน่ง (Geocode)
-    # ══════════════════════════════════════════════════════════════════════════
-    with st.expander("🔍 ค้นหาตำแหน่ง (Geocode)", expanded=False):
-        gc_mode = st.radio("โหมดค้นหา", ["🔤 พิมพ์ชื่อสถานที่", "📌 ระบุพิกัด"],
-                           horizontal=True, key="gc_mode")
+            # Layer status + delete buttons
+            has_vector = "gdf_loaded" in st.session_state and st.session_state.gdf_loaded is not None
+            has_csv    = "csv_gdf"    in st.session_state and st.session_state.csv_gdf    is not None
+            if has_vector:
+                gdf_loaded = st.session_state.gdf_loaded
+                r1, r2 = st.columns([3,1])
+                r1.info(f"📂 **{len(gdf_loaded):,}** features")
+                if r2.button("🗑️", key="del_layer", help="ลบ Layer"):
+                    st.session_state.gdf_loaded = None; st.rerun()
+            if has_csv:
+                gdf_c = st.session_state.csv_gdf
+                r1, r2 = st.columns([3,1])
+                r1.info(f"📍 **{len(gdf_c):,}** จุด")
+                if r2.button("🗑️", key="del_csv", help="ลบ CSV"):
+                    st.session_state.csv_gdf = None; st.rerun()
 
-        if gc_mode == "🔤 พิมพ์ชื่อสถานที่":
-            sc1, sc2 = st.columns([4, 1])
-            search_q = sc1.text_input("พิมพ์ชื่อสถานที่ (ไทย/อังกฤษ)", key="geocode_q",
-                                      placeholder="กรุงเทพมหานคร, Chiang Mai, ...")
-            if sc2.button("🔍 ค้นหา", key="geocode_btn") and search_q:
-                try:
-                    import requests as _req
-                    r = _req.get(
-                        "https://nominatim.openstreetmap.org/search",
-                        params={"q": search_q, "format": "json", "limit": 5,
-                                "accept-language": "th,en"},
-                        headers={"User-Agent": "PA-GIS-Explorer/1.0"},
-                        timeout=10,
-                    )
-                    geo_results = r.json()
-                    if geo_results:
-                        st.session_state["geocode_results"] = geo_results
-                        st.session_state["geocode_selected"] = 0
-                    else:
-                        st.warning("ไม่พบตำแหน่ง")
-                except Exception as e:
-                    st.error(f"Geocode error: {e}")
+        # ── ค้นหาตำแหน่ง ────────────────────────────────────────────────────
+        with st.expander("🔍 **ค้นหาตำแหน่ง**", expanded=False):
+            gc_mode = st.radio("โหมด:", ["🔤 ชื่อสถานที่", "📌 ระบุพิกัด"],
+                               horizontal=True, key="gc_mode")
 
-            if "geocode_results" in st.session_state:
-                res = st.session_state["geocode_results"]
-                labels = [r.get("display_name", "")[:80] for r in res]
-                sel = st.selectbox("เลือกตำแหน่ง", labels, key="geocode_pick")
-                sel_idx = labels.index(sel)
-                sel_r = res[sel_idx]
-                CENTER_LAT = float(sel_r["lat"])
-                CENTER_LON = float(sel_r["lon"])
+            if gc_mode == "🔤 ชื่อสถานที่":
+                search_q = st.text_input("พิมพ์ชื่อสถานที่ (ไทย/อังกฤษ)", key="geocode_q",
+                                          placeholder="กรุงเทพมหานคร, Chiang Mai …")
+                if st.button("🔍 ค้นหา", key="geocode_btn") and search_q:
+                    try:
+                        import requests as _req
+                        r = _req.get(
+                            "https://nominatim.openstreetmap.org/search",
+                            params={"q": search_q, "format":"json","limit":5,"accept-language":"th,en"},
+                            headers={"User-Agent":"PA-GIS-Explorer/1.0"},
+                            timeout=10,
+                        )
+                        geo_results = r.json()
+                        if geo_results:
+                            st.session_state["geocode_results"]  = geo_results
+                            st.session_state["geocode_selected"] = 0
+                        else:
+                            st.warning("ไม่พบตำแหน่ง")
+                    except Exception as e:
+                        st.error(str(e))
+
+                if "geocode_results" in st.session_state:
+                    res = st.session_state["geocode_results"]
+                    labels = [r.get("display_name","")[:70] for r in res]
+                    sel    = st.selectbox("เลือก:", labels, key="geocode_pick")
+                    sel_r  = res[labels.index(sel)]
+                    CENTER_LAT = float(sel_r["lat"])
+                    CENTER_LON = float(sel_r["lon"])
+                    ZOOM = 13
+                    st.caption(f"📍 {sel_r.get('display_name','')[:80]}")
+
+            else:  # ระบุพิกัด
+                coord_lat = st.number_input("Latitude",  value=13.7563,  format="%.6f", key="coord_lat")
+                coord_lon = st.number_input("Longitude", value=100.5018, format="%.6f", key="coord_lon")
+                if st.button("📌 ปักหมุด", type="primary", key="goto_coord"):
+                    st.session_state["coord_target"] = (coord_lat, coord_lon)
+                if "coord_target" in st.session_state:
+                    tgt = st.session_state["coord_target"]
+                    CENTER_LAT, CENTER_LON, ZOOM = tgt[0], tgt[1], 13
+                    st.success(f"📌 {tgt[0]:.5f}, {tgt[1]:.5f}")
+
+        # ── Map options ──────────────────────────────────────────────────────
+        with st.expander("⚙️ **ตัวเลือกแผนที่**", expanded=False):
+            opt_cluster  = st.toggle("🔵 Cluster จุด CSV",     value=True,  key="opt_cluster")
+            opt_minimap  = st.toggle("🗺️ Mini Map",             value=False, key="opt_minimap")
+            opt_measure  = st.toggle("📐 Measure tool",         value=False, key="opt_measure")
+            opt_fullattr = st.toggle("📋 Popup เต็ม attribute", value=True,  key="opt_fullattr")
+            opt_pin      = st.toggle("📍 ปักหมุดด้วยการคลิก",  value=False, key="opt_pin")
+
+        # ── Pin list ─────────────────────────────────────────────────────────
+        if "pin_list" not in st.session_state:
+            st.session_state["pin_list"] = []
+        if st.session_state.get("opt_pin") and st.session_state["pin_list"]:
+            with st.expander(f"📍 หมุดที่ปัก ({len(st.session_state['pin_list'])} จุด)", expanded=False):
+                for i, (plat, plon, plabel) in enumerate(st.session_state["pin_list"]):
+                    pc1, pc2 = st.columns([4,1])
+                    pc1.caption(f"**{plabel}** — {plat:.5f}, {plon:.5f}")
+                    if pc2.button("🗑️", key=f"del_pin_{i}"):
+                        st.session_state["pin_list"].pop(i); st.rerun()
+                if st.button("🗑️ ลบทั้งหมด", key="clear_pins"):
+                    st.session_state["pin_list"] = []; st.rerun()
+
+    # ── Build Folium Map ───────────────────────────────────────────────────────
+    with col_map:
+        from folium import plugins as fp
+
+        # Determine center (priority: coord_target > geocode > default)
+        if "coord_target" in st.session_state:
+            tgt = st.session_state["coord_target"]
+            CENTER_LAT, CENTER_LON, ZOOM = tgt[0], tgt[1], 13
+        if "geocode_results" in st.session_state:
+            res0 = st.session_state["geocode_results"]
+            if res0:
+                CENTER_LAT = float(res0[0]["lat"])
+                CENTER_LON = float(res0[0]["lon"])
                 ZOOM = 13
-                st.success(f"📍 {sel_r.get('display_name','')[:100]}")
 
-        else:  # ระบุพิกัด
-            pc1, pc2 = st.columns(2)
-            coord_lat = pc1.number_input("Latitude", value=13.7563, format="%.6f", key="coord_lat")
-            coord_lon = pc2.number_input("Longitude", value=100.5018, format="%.6f", key="coord_lon")
-            zoom_level = st.slider("Zoom level", 5, 18, 13, key="coord_zoom")
-            if st.button("📌 ไปที่ตำแหน่งนี้", key="goto_coord"):
-                CENTER_LAT = coord_lat
-                CENTER_LON = coord_lon
-                ZOOM = zoom_level
-                st.session_state["coord_target"] = (coord_lat, coord_lon, zoom_level)
-            if "coord_target" in st.session_state:
-                tgt = st.session_state["coord_target"]
-                CENTER_LAT, CENTER_LON, ZOOM = tgt
-                st.success(f"📍 Lat {CENTER_LAT:.6f}, Lon {CENTER_LON:.6f} (zoom {ZOOM})")
+        bm_url, bm_attr = BASEMAP_OPTIONS[selected_basemap]
+        _is_google = "google.com" in bm_url
+        m = folium.Map(
+            location=[CENTER_LAT, CENTER_LON],
+            zoom_start=ZOOM,
+            tiles=bm_url,
+            attr=bm_attr,
+            max_zoom=20 if _is_google else 19,
+            control_scale=True,
+        )
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # Build & Display Folium Map
-    # ══════════════════════════════════════════════════════════════════════════
-    from folium import plugins as fp
-
-    bm_url, bm_attr, _ = BASEMAP_OPTIONS[selected_basemap]
-    _is_google = "google.com" in bm_url
-    m = folium.Map(
-        location=[CENTER_LAT, CENTER_LON],
-        zoom_start=ZOOM,
-        tiles=bm_url,
-        attr=bm_attr,
-        max_zoom=20 if _is_google else 18,
-        control_scale=True,
-    )
-
-    # Optional plugins
-    if opt_minimap:
-        fp.MiniMap(toggle_display=True, position="bottomleft").add_to(m)
-    if opt_measure:
-        fp.MeasureControl(
-            position="topleft",
-            primary_length_unit="meters",
-            secondary_length_unit="kilometers",
-            primary_area_unit="sqmeters",
-            secondary_area_unit="sqkilometers",
-        ).add_to(m)
-    fp.Fullscreen(position="topleft").add_to(m)
-    fp.MousePosition(position="bottomright", separator=" | Lon: ", prefix="Lat: ").add_to(m)
-
-    # Add selected WMS overlays
-    for layer_name in wms_selections:
-        cfg = WMS_CATALOG.get(layer_name)
-        if not cfg:
-            continue
-        try:
-            if cfg["type"] == "wms":
-                folium.WmsTileLayer(
-                    url=cfg["url"], layers=cfg["layers"],
-                    fmt=cfg.get("fmt", "image/png"),
-                    transparent=cfg.get("transparent", True),
-                    attr=cfg["attr"], name=layer_name,
-                    overlay=True, control=True, show=True,
-                ).add_to(m)
-            else:
-                folium.TileLayer(
-                    cfg["url"], attr=cfg["attr"],
-                    name=layer_name, overlay=True,
-                    control=True, show=True,
-                ).add_to(m)
-        except Exception:
-            pass
-
-    # Add GeoJSON/Shapefile layer
-    if has_vector:
-        gdf = st.session_state.gdf_loaded
-        attr_cols = [c for c in gdf.columns if c != "geometry"]
-        tooltip_fields = attr_cols[:5] if attr_cols else None
-        popup_fields   = attr_cols if opt_fullattr else attr_cols[:5]
-
-        folium.GeoJson(
-            gdf.__geo_interface__,
-            name="📂 Layer ที่อัปโหลด",
-            style_function=lambda x: {
-                "fillColor": "#7A2020", "color": "#7A2020",
-                "weight": 2, "fillOpacity": 0.3
-            },
-            tooltip=folium.GeoJsonTooltip(
-                fields=tooltip_fields,
-                aliases=[f"{c}:" for c in tooltip_fields],
-                sticky=True,
-            ) if tooltip_fields else None,
-            popup=folium.GeoJsonPopup(
-                fields=popup_fields,
-                aliases=[f"<b>{c}</b>" for c in popup_fields],
-                max_width=400,
-            ) if popup_fields else None,
-        ).add_to(m)
-
-    # Add CSV points layer
-    if has_csv:
-        csv_gdf_map = st.session_state.csv_gdf
-        attr_cols_csv = [c for c in csv_gdf_map.columns if c != "geometry"]
-
-        if opt_cluster:
-            marker_cluster = fp.MarkerCluster(name="📍 CSV Points (clustered)")
-            for _, row in csv_gdf_map.iterrows():
-                lat_pt, lon_pt = row.geometry.y, row.geometry.x
-                if opt_fullattr:
-                    popup_html = "<table style='font-size:12px'>"
-                    for col in attr_cols_csv:
-                        popup_html += f"<tr><td><b>{col}</b></td><td>{row[col]}</td></tr>"
-                    popup_html += "</table>"
-                else:
-                    popup_html = "<br>".join(f"<b>{c}</b>: {row[c]}" for c in attr_cols_csv[:4])
-                folium.CircleMarker(
-                    location=[lat_pt, lon_pt],
-                    radius=7, color="#7A2020",
-                    fill=True, fill_color="#7A2020", fill_opacity=0.8,
-                    tooltip=str(row[attr_cols_csv[0]]) if attr_cols_csv else f"{lat_pt:.4f},{lon_pt:.4f}",
-                    popup=folium.Popup(popup_html, max_width=380),
-                ).add_to(marker_cluster)
-            marker_cluster.add_to(m)
-        else:
-            fg = folium.FeatureGroup(name="📍 CSV Points")
-            for _, row in csv_gdf_map.iterrows():
-                lat_pt, lon_pt = row.geometry.y, row.geometry.x
-                popup_html = "<table style='font-size:12px'>"
-                for col in (attr_cols_csv if opt_fullattr else attr_cols_csv[:4]):
-                    popup_html += f"<tr><td><b>{col}</b></td><td>{row[col]}</td></tr>"
-                popup_html += "</table>"
-                folium.CircleMarker(
-                    location=[lat_pt, lon_pt],
-                    radius=7, color="#7A2020",
-                    fill=True, fill_color="#7A2020", fill_opacity=0.8,
-                    tooltip=str(row[attr_cols_csv[0]]) if attr_cols_csv else "",
-                    popup=folium.Popup(popup_html, max_width=380),
-                ).add_to(fg)
-            fg.add_to(m)
-
-    # Geocode marker
-    if "geocode_results" in st.session_state:
-        res_list = st.session_state["geocode_results"]
-        if res_list:
-            r0 = res_list[st.session_state.get("geocode_selected", 0)]
-            folium.Marker(
-                [float(r0["lat"]), float(r0["lon"])],
-                popup=r0.get("display_name", "")[:200],
-                tooltip="📍 ตำแหน่งที่ค้นหา",
-                icon=folium.Icon(color="red", icon="star", prefix="fa"),
+        # Plugins
+        if opt_minimap:
+            fp.MiniMap(toggle_display=True, position="bottomleft").add_to(m)
+        if opt_measure:
+            fp.MeasureControl(
+                position="topleft",
+                primary_length_unit="meters",
+                secondary_length_unit="kilometers",
+                primary_area_unit="sqmeters",
             ).add_to(m)
-    if "coord_target" in st.session_state:
-        tgt = st.session_state["coord_target"]
-        folium.Marker(
-            [tgt[0], tgt[1]],
-            popup=f"Lat {tgt[0]:.6f}, Lon {tgt[1]:.6f}",
-            tooltip="📌 พิกัดที่ระบุ",
-            icon=folium.Icon(color="blue", icon="map-marker", prefix="fa"),
-        ).add_to(m)
+        fp.Fullscreen(position="topleft").add_to(m)
+        fp.MousePosition(position="bottomright", separator=" | Lon: ", prefix="Lat: ").add_to(m)
 
-    if wms_selections or has_vector or has_csv:
-        folium.LayerControl(collapsed=False, position="topright").add_to(m)
+        # WMS overlays
+        for ln in wms_selections:
+            cfg = WMS_CATALOG.get(ln)
+            if not cfg: continue
+            try:
+                if cfg["type"] == "wms":
+                    folium.WmsTileLayer(
+                        url=cfg["url"], layers=cfg["layers"],
+                        fmt=cfg.get("fmt","image/png"),
+                        transparent=cfg.get("transparent",True),
+                        attr=cfg["attr"], name=ln,
+                        overlay=True, control=True,
+                    ).add_to(m)
+                else:
+                    folium.TileLayer(
+                        cfg["url"], attr=cfg["attr"],
+                        name=ln, overlay=True, control=True,
+                    ).add_to(m)
+            except Exception:
+                pass
 
-    map_out = st_folium(m, use_container_width=True, height=600,
-                        returned_objects=["last_clicked", "last_object_clicked_popup"])
+        # Vector layer
+        has_vector = "gdf_loaded" in st.session_state and st.session_state.gdf_loaded is not None
+        has_csv    = "csv_gdf"    in st.session_state and st.session_state.csv_gdf    is not None
 
-    if map_out and map_out.get("last_clicked"):
-        lc = map_out["last_clicked"]
-        st.caption(f"📍 คลิกที่: Lat {lc['lat']:.6f}, Lon {lc['lng']:.6f}")
+        if has_vector:
+            gdf = st.session_state.gdf_loaded
+            attr_cols = [c for c in gdf.columns if c != "geometry"]
+            tt_fields = attr_cols[:5] or None
+            pp_fields = attr_cols if opt_fullattr else attr_cols[:5]
+            folium.GeoJson(
+                gdf.__geo_interface__,
+                name="📂 Layer อัปโหลด",
+                style_function=lambda x: {"fillColor":"#7A2020","color":"#7A2020","weight":2,"fillOpacity":0.3},
+                tooltip=folium.GeoJsonTooltip(fields=tt_fields, aliases=[f"{c}:" for c in tt_fields], sticky=True) if tt_fields else None,
+                popup=folium.GeoJsonPopup(fields=pp_fields, aliases=[f"<b>{c}</b>" for c in pp_fields], max_width=400) if pp_fields else None,
+            ).add_to(m)
 
-    if map_out and map_out.get("last_object_clicked_popup"):
-        with st.expander("📋 ข้อมูล Feature ที่คลิก", expanded=True):
-            st.markdown(map_out["last_object_clicked_popup"], unsafe_allow_html=True)
+        if has_csv:
+            csv_gdf_map = st.session_state.csv_gdf
+            attr_cols_csv = [c for c in csv_gdf_map.columns if c not in ("geometry","_lat","_lon")]
+            if opt_cluster:
+                mc = fp.MarkerCluster(name="📍 CSV Points")
+                for _, row in csv_gdf_map.iterrows():
+                    ph = "<table style='font-size:11px'>" + "".join(
+                        f"<tr><td><b>{c}</b></td><td>{row[c]}</td></tr>"
+                        for c in (attr_cols_csv if opt_fullattr else attr_cols_csv[:4])
+                    ) + "</table>"
+                    folium.CircleMarker(
+                        [row.geometry.y, row.geometry.x],
+                        radius=7, color="#7A2020", fill=True,
+                        fill_color="#7A2020", fill_opacity=0.8,
+                        tooltip=str(row[attr_cols_csv[0]]) if attr_cols_csv else "",
+                        popup=folium.Popup(ph, max_width=360),
+                    ).add_to(mc)
+                mc.add_to(m)
+            else:
+                fg = folium.FeatureGroup(name="📍 CSV Points")
+                for _, row in csv_gdf_map.iterrows():
+                    ph = "<table style='font-size:11px'>" + "".join(
+                        f"<tr><td><b>{c}</b></td><td>{row[c]}</td></tr>"
+                        for c in (attr_cols_csv if opt_fullattr else attr_cols_csv[:4])
+                    ) + "</table>"
+                    folium.CircleMarker(
+                        [row.geometry.y, row.geometry.x],
+                        radius=7, color="#7A2020", fill=True,
+                        fill_color="#7A2020", fill_opacity=0.8,
+                        tooltip=str(row[attr_cols_csv[0]]) if attr_cols_csv else "",
+                        popup=folium.Popup(ph, max_width=360),
+                    ).add_to(fg)
+                fg.add_to(m)
 
+        # Geocode marker
+        if "geocode_results" in st.session_state:
+            res0 = st.session_state["geocode_results"]
+            if res0:
+                r0 = res0[0]
+                folium.Marker(
+                    [float(r0["lat"]), float(r0["lon"])],
+                    popup=r0.get("display_name","")[:200],
+                    tooltip="🔍 ตำแหน่งที่ค้นหา",
+                    icon=folium.Icon(color="red", icon="search", prefix="fa"),
+                ).add_to(m)
 
+        # Coord pin
+        if "coord_target" in st.session_state:
+            tgt = st.session_state["coord_target"]
+            folium.Marker(
+                [tgt[0], tgt[1]],
+                popup=f"Lat {tgt[0]:.6f}, Lon {tgt[1]:.6f}",
+                tooltip="📌 พิกัดที่ระบุ",
+                icon=folium.Icon(color="blue", icon="map-marker", prefix="fa"),
+            ).add_to(m)
+
+        # User pins (from click)
+        for i, (plat, plon, plabel) in enumerate(st.session_state.get("pin_list", [])):
+            folium.Marker(
+                [plat, plon],
+                popup=f"<b>{plabel}</b><br>Lat {plat:.6f}<br>Lon {plon:.6f}",
+                tooltip=plabel,
+                icon=folium.Icon(color="orange", icon="thumb-tack", prefix="fa"),
+            ).add_to(m)
+
+        if wms_selections or has_vector or has_csv:
+            folium.LayerControl(collapsed=False, position="topright").add_to(m)
+
+        # Draw map
+        map_out = st_folium(
+            m,
+            use_container_width=True,
+            height=680,
+            returned_objects=["last_clicked","last_object_clicked_popup"],
+            key="main_map",
+        )
+
+        # Handle click — pin mode or info
+        if map_out and map_out.get("last_clicked"):
+            lc = map_out["last_clicked"]
+            clat, clon = lc["lat"], lc["lng"]
+            st.caption(f"📍 คลิกที่: **{clat:.6f}**, **{clon:.6f}**")
+
+            if st.session_state.get("opt_pin"):
+                pin_label = f"Pin {len(st.session_state['pin_list'])+1}"
+                if st.button(f"📍 ปักหมุด ณ {clat:.4f},{clon:.4f}", key="add_pin_btn"):
+                    st.session_state["pin_list"].append((clat, clon, pin_label))
+                    st.rerun()
+
+        if map_out and map_out.get("last_object_clicked_popup"):
+            with st.expander("📋 ข้อมูล Feature ที่คลิก", expanded=True):
+                st.markdown(map_out["last_object_clicked_popup"], unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 5 — Heatmap
