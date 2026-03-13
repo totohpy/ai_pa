@@ -95,9 +95,9 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 }
 .mcard-grid {
     position: absolute; inset: 0; pointer-events: none;
-    background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 19px, #e8e8e8 19px, #e8e8e8 20px),
-        repeating-linear-gradient(90deg, transparent, transparent 19px, #e8e8e8 19px, #e8e8e8 20px);
+    background-image: 
+        linear-gradient(115deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 40%, transparent 40%),
+        linear-gradient(250deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 30%, transparent 30%);
     opacity: 0; transition: opacity .25s;
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
@@ -268,7 +268,7 @@ with u5:
         <div class="ucard-bar"></div>
         <div class="ucard-icon">🗺️</div>
         <div class="ucard-title">GIS Explorer</div>
-        <div class="ucard-desc">แผนที่/ข้อมูลเชิงพื้นที่ · Heatmap · Geoprocessing · ตรวจสอบ/ประมวลผล</div>
+        <div class="ucard-desc">แสดงแผนที่/ข้อมูลเชิงพื้นที่ · Heatmap · Overlay · ตรวจสอบพื้นที่</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
