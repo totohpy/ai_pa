@@ -104,7 +104,7 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
     background: rgba(76, 175, 80, 0.06);
 }
 .mcard-grid::after {
-    content: ''; position: absolute; top: 20px; right: 10px;
+    content: ''; position: absolute; top: 20px; right: 0px;
     width: 240px; height: 240px; border-radius: 50%;
     background: rgba(129, 199, 132, 0.08);
 }
