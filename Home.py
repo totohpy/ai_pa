@@ -96,14 +96,17 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
     transition: transform .22s, border-color .22s;
 }
 .mcard-grid {
-    position: absolute; inset: 0; pointer-events: none;
-    /* ลวดลายวงกลมซ้อนกันสีเขียวอ่อน */
-    background-image: 
-        radial-gradient(circle at 20% 30%, rgba(76, 175, 80, 0) 0%, rgba(76, 175, 80, 0.15) 30%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(129, 199, 132, 0) 0%, rgba(129, 199, 132, 0.12) 30%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(76, 175, 80, 0) 0%, rgba(76, 175, 80, 0.1) 40%, transparent 60%),
-        radial-gradient(circle at 90% 20%, rgba(56, 142, 60, 0) 0%, rgba(56, 142, 60, 0.08) 35%, transparent 55%);
-    opacity: 1;
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.mcard-grid::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(76, 175, 80, 0.06);
+}
+.mcard-grid::after {
+    content: ''; position: absolute; top: 20px; right: 20px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(129, 199, 132, 0.04);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
