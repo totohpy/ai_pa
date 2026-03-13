@@ -60,7 +60,7 @@ st.markdown("""
 .hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
 
 .hero-title {
-    font-size: 32px; font-weight: 700; color: #fff;
+    font-size: 34px; font-weight: 700; color: #fff;
     position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
 }
 .hero-title span {
@@ -69,7 +69,7 @@ st.markdown("""
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .hero-sub {
-    font-size: 16px; color: rgba(255,255,255,0.62);
+    font-size: 18px; color: rgba(255,255,255,0.62);
     line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
 }
 
@@ -139,8 +139,8 @@ a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; margin-bottom: 10px;
 }
-.ucard-title { font-size: 16px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
-.ucard-desc  { font-size: 14px; color: #888;      line-height: 1.6; }
+.ucard-title { font-size: 14px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
+.ucard-desc  { font-size: 12px; color: #888;      line-height: 1.6; }
 
 /* ── Notice ── */
 .infobox {
