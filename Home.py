@@ -215,7 +215,7 @@ with m3:
 
 # ── Utility Tools ─────────────────────────────────────
 st.markdown('<div class="sec" style="margin-top:24px;"><div class="sec-title">ยูทิลิตี้</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
-u1, u2, u3, u4, u5 = st.columns(5, gap="2px")
+u1, u2, u3, u4, u5 = st.columns(5, gap="xxsmall")
 
 with u1:
     st.markdown("""
