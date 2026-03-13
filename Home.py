@@ -100,13 +100,13 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 }
 .mcard-grid::before {
     content: ''; position: absolute; top: -80px; right: -80px;
-    width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(76, 175, 80, 0.1);
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(76, 175, 80, 0.06);
 }
 .mcard-grid::after {
     content: ''; position: absolute; top: 20px; right: 20px;
-    width: 220px; height: 220px; border-radius: 50%;
-    background: rgba(129, 199, 132, 0.04);
+    width: 240px; height: 240px; border-radius: 50%;
+    background: rgba(129, 199, 132, 0.05);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
