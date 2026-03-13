@@ -14,7 +14,10 @@ except ImportError:
     SIDEBAR_HTML = ""
     def render_provider_sidebar(): pass
 
-st.set_page_config(page_title="ระบบอัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · Performance Audit Planning Studio", page_icon="🧭", layout="wide")
+st.set_page_config(
+    page_title="ระบบอัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · Performance Audit Planning Studio",
+    page_icon="🧭", layout="wide"
+)
 apply_theme()
 
 with st.sidebar:
@@ -23,233 +26,250 @@ with st.sidebar:
 
 st.markdown("""
 <style>
-/* ── Banner ── */
-.banner {
-    background:linear-gradient(135deg,#7A2020 0%,#9e2c2c 55%,#5a1515 100%);
-    border-radius:18px; padding:28px 32px 24px; margin-bottom:22px;
-    position:relative; overflow:hidden;
-    box-shadow:0 10px 36px rgba(122,32,32,0.22);
+/* ── Hero ── */
+.hero {
+    background: linear-gradient(135deg, #501313 0%, #791F1F 45%, #A32D2D 100%);
+    border-radius: 20px; padding: 36px 40px 32px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
 }
-.banner::before {
-    content:''; position:absolute; top:-50px; right:-50px;
-    width:180px; height:180px;
-    background:rgba(255,255,255,0.06); border-radius:36px;
-    transform:rotate(20deg);
+.hero-grid {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, #fff 39px, #fff 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, #fff 39px, #fff 40px);
 }
-.banner::after {
-    content:''; position:absolute; bottom:-60px; right:120px;
-    width:130px; height:130px;
-    background:rgba(255,255,255,0.04); border-radius:50%;
+.hero-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
+.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.11); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 100px; padding: 5px 13px; font-size: 11px;
+    color: rgba(255,255,255,0.88); letter-spacing: 0.6px;
+    margin-bottom: 14px; position: relative; z-index: 1;
 }
-.banner-shape-sm {
-    position:absolute; top:20px; right:200px;
-    width:40px; height:40px;
-    background:rgba(255,255,255,0.05);
-    clip-path:polygon(50% 0%,100% 100%,0% 100%);
+.hero-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #4caf50; flex-shrink: 0;
+    animation: pulse 2s infinite;
 }
-.banner-title {
-    font-size:26px; font-weight:700; color:#fff;
-    font-family:'Noto Serif Thai',serif; margin-bottom:6px;
-    position:relative; z-index:1;
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.45; transform: scale(0.8); }
 }
-.banner-desc {
-    font-size:13.5px; color:rgba(255,255,255,0.76);
-    line-height:1.7; position:relative; z-index:1;
+.hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
+
+.hero-title {
+    font-size: 28px; font-weight: 700; color: #fff;
+    position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
+}
+.hero-title span {
+    display: inline-block;
+    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.72));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+    font-size: 13.5px; color: rgba(255,255,255,0.62);
+    line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
 }
 
 /* ── Section label ── */
-.sec-lbl {
-    font-size:14px; font-weight:700; color:#7A2020;
-    letter-spacing:1.8px; text-transform:uppercase;
-    margin-bottom:14px; display:flex; align-items:center; gap:10px;
+.sec {
+    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
 }
-.sec-lbl::after { content:''; flex:1; height:1px; background:#e3e4c4; }
+.sec-title {
+    font-size: 11px; font-weight: 600; color: #888;
+    letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;
+}
+.sec-line { flex: 1; height: 1px; background: #e5e5e5; }
+
+/* ── Links ── */
+a.hcard-link { text-decoration: none !important; color: inherit !important; display: block; height: 100%; }
 
 /* ── Main cards ── */
-a.fcard-link { text-decoration:none !important; color:inherit !important; display:block; height:100%; }
-.fcard-main {
-    background:#fff; border:1.5px solid #d8d9b4; border-radius:18px;
-    padding:22px 20px 18px; position:relative; overflow:hidden; height:100%;
-    box-shadow:0 2px 10px rgba(122,32,32,0.06);
-    transition:all 0.26s cubic-bezier(.34,1.46,.64,1);
+.mcard {
+    background: #fff; border: 0.5px solid #e0e0e0;
+    border-radius: 14px; padding: 22px 20px 20px;
+    position: relative; overflow: hidden; height: 100%;
+    transition: transform .22s, border-color .22s;
 }
-.fcard-main::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:4px;
-    background:linear-gradient(90deg,#7A2020,#c0392b);
-    transform:scaleX(0); transform-origin:left; transition:transform 0.22s ease;
+.mcard-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 19px, #e8e8e8 19px, #e8e8e8 20px),
+        repeating-linear-gradient(90deg, transparent, transparent 19px, #e8e8e8 19px, #e8e8e8 20px);
+    opacity: 0; transition: opacity .25s;
 }
-a.fcard-link:hover .fcard-main { box-shadow:0 12px 40px rgba(122,32,32,0.14); transform:translateY(-6px); border-color:#b8a0a0; }
-a.fcard-link:hover .fcard-main::before { transform:scaleX(1); }
+a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
+a.hcard-link:hover .mcard .mcard-grid  { opacity: 0.35; }
+a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
 
-.fcard-geo {
-    position:absolute; top:14px; right:14px;
-    width:28px; height:28px; border-radius:7px;
-    background:linear-gradient(135deg,#6D9E51,#BCD9A2);
-    opacity:0.85;
+.mcard-stripe {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #791F1F, #E24B4A);
+    transform: scaleX(0); transform-origin: left; transition: transform .24s ease;
 }
-.fcard-geo.circle  { border-radius:50%; }
-.fcard-geo.diamond { border-radius:4px; transform:rotate(45deg); }
-
-.fcard-icon {
-    width:50px; height:50px; border-radius:14px;
-    background:rgba(122,32,32,0.08); border:1px solid rgba(122,32,32,0.13);
-    display:flex; align-items:center; justify-content:center;
-    margin-bottom:13px; font-size:24px;
+.mcard-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: #f7f7f7; border: 0.5px solid #e5e5e5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 14px; position: relative; z-index: 1;
 }
-.fcard-title { font-size:15px; font-weight:700; color:#1a1a1a; margin-bottom:7px; font-family:'Noto Serif Thai',serif; }
-.fcard-desc  { font-size:13px; color:#666; line-height:1.7; }
+.mcard-title { font-size: 14.5px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
+.mcard-desc  { font-size: 12.5px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
 
 /* ── Utility cards ── */
-.fcard-util {
-    background:#fff; border:1px solid #d8d9b4; border-radius:14px;
-    padding:16px 16px 14px; position:relative; overflow:hidden; height:100%;
-    box-shadow:0 1px 5px rgba(122,32,32,0.04);
-    transition:all 0.22s cubic-bezier(.34,1.46,.64,1);
+.ucard {
+    background: #fff; border: 0.5px solid #e0e0e0;
+    border-radius: 14px; padding: 16px 16px 15px;
+    position: relative; overflow: hidden; height: 100%;
+    transition: transform .2s, border-color .2s;
 }
-.fcard-util::after {
-    content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
-    background:#7A2020; transform:scaleX(0); transform-origin:left; transition:transform 0.2s ease;
-}
-a.fcard-link:hover .fcard-util { box-shadow:0 6px 24px rgba(122,32,32,0.12); transform:translateY(-4px); }
-a.fcard-link:hover .fcard-util::after { transform:scaleX(1); }
-.fcard-util-icon {
-    width:38px; height:38px; border-radius:10px;
-    background:rgba(122,32,32,0.07); border:1px solid rgba(122,32,32,0.10);
-    display:flex; align-items:center; justify-content:center;
-    margin-bottom:10px; font-size:19px;
-}
-.fcard-util-title { font-size:13.5px; font-weight:700; color:#1a1a1a; margin-bottom:5px; font-family:'Noto Serif Thai',serif; }
-.fcard-util-desc  { font-size:12px; color:#7a7a7a; line-height:1.6; }
+a.hcard-link:hover .ucard             { transform: translateY(-3px); border-color: #c8c8c8; }
+a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
 
-/* ── GIS card accent (สีเขียว-น้ำเงิน แทน แดง) ── */
-.fcard-util.gis-card::after { background:linear-gradient(90deg,#1a6b3c,#1565c0); }
-.fcard-util.gis-card { border-color:#b8cfd8; }
-a.fcard-link:hover .fcard-util.gis-card { box-shadow:0 6px 24px rgba(21,101,192,0.13); }
-.fcard-util-icon.gis-icon {
-    background:rgba(21,101,192,0.08);
-    border:1px solid rgba(21,101,192,0.15);
+.ucard-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #185FA5, #378ADD);
+    transform: scaleX(0); transform-origin: left; transition: transform .22s ease;
 }
+.ucard-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: #f7f7f7;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 10px;
+}
+.ucard-title { font-size: 13px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
+.ucard-desc  { font-size: 11.5px; color: #888;      line-height: 1.6; }
 
+/* ── Notice ── */
 .infobox {
-    background:#FEFFD3; border:1px solid #e0e098; border-left:4px solid #7A2020;
-    border-radius:10px; padding:11px 16px; font-size:13px; color:#404040;
-    line-height:1.6; margin-top:10px;
+    display: flex; align-items: flex-start; gap: 10px;
+    background: #FEFFD3; border: 0.5px solid #e0e098; border-left: 3px solid #7A2020;
+    border-radius: 10px; padding: 10px 14px; margin-top: 8px;
+    font-size: 12.5px; color: #555; line-height: 1.6;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Banner ────────────────────────────────────────────
+# ── Hero ──────────────────────────────────────────────
 st.markdown("""
-<div class="banner">
-  <div class="banner-shape-sm"></div>
-  <div class="banner-title">Performance Audit Planning Studio</div>
-  <div class="banner-desc">
-    เครื่องมืออัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-accent"></div>
+  <div class="hero-accent2"></div>
+  <div class="hero-badge">
+    <div class="hero-dot"></div>
+    AI-Powered
+    <div class="hero-sep"></div>
+    Auditor-Driven
   </div>
+  <div class="hero-title">
+    <span>Performance Audit</span><br>
+    <span>Planning Studio</span>
+  </div>
+  <div class="hero-sub">เครื่องมืออัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · SAO</div>
 </div>
 """, unsafe_allow_html=True)
 
-# ── Main Tools (3 cards) ──────────────────────────────
-st.markdown('<div class="sec-lbl">เครื่องมือหลัก</div>', unsafe_allow_html=True)
+# ── Main Tools ────────────────────────────────────────
+st.markdown('<div class="sec"><div class="sec-title">เครื่องมือหลัก</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
 m1, m2, m3 = st.columns(3, gap="medium")
 
 with m1:
     st.markdown("""
-    <a class="fcard-link" href="Audit_Design_Assistant" target="_self">
-      <div class="fcard-main">
-        <div class="fcard-geo"></div>
-        <div class="fcard-icon">🏳️</div>
-        <div class="fcard-title">Audit Design Assistant</div>
-        <div class="fcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · Flowchart ค้นหาข้อตรวจพบที่ผ่านมา และแนะนำประเด็นการตรวจสอบด้วย AI</div>
+    <a class="hcard-link" href="Audit_Design_Assistant" target="_self">
+      <div class="mcard">
+        <div class="mcard-grid"></div>
+        <div class="mcard-stripe"></div>
+        <div class="mcard-icon">🏳️</div>
+        <div class="mcard-title">Audit Design Assistant</div>
+        <div class="mcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · ค้นหาข้อตรวจพบที่ผ่านมา · AI แนะนำประเด็น · ร่างรายงาน </div>
       </div>
     </a>""", unsafe_allow_html=True)
 
 with m2:
     st.markdown("""
-    <a class="fcard-link" href="Audit_Plan_Generator" target="_self">
-      <div class="fcard-main">
-        <div class="fcard-geo circle"></div>
-        <div class="fcard-icon">🔮</div>
-        <div class="fcard-title">Audit Plan Generator</div>
-        <div class="fcard-desc">ร่างแผนและแนวการตรวจสอบอัตโนมัติ AI สร้างเนื้อหา ส่งออก Word / HTML ได้ทันที</div>
+    <a class="hcard-link" href="Audit_Plan_Generator" target="_self">
+      <div class="mcard">
+        <div class="mcard-grid"></div>
+        <div class="mcard-stripe"></div>
+        <div class="mcard-icon">🔮</div>
+        <div class="mcard-title">Audit Plan Generator</div>
+        <div class="mcard-desc">ร่างแผนและแนวการตรวจสอบอัตโนมัติ AI สร้างเนื้อหา ส่งออก Word · HTML ได้ทันที</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
 with m3:
     st.markdown("""
-    <a class="fcard-link" href="PA_Assistant_Chat" target="_self">
-      <div class="fcard-main">
-        <div class="fcard-geo diamond"></div>
-        <div class="fcard-icon">🤖</div>
-        <div class="fcard-title">PA Assistant Chat</div>
-        <div class="fcard-desc">ถาม-ตอบผู้ช่วยอัจฉริยะ อ้างอิงคู่มือและผลการตรวจสอบ รองรับ PDF · CSV · TXT</div>
+    <a class="hcard-link" href="PA_Assistant_Chat" target="_self">
+      <div class="mcard">
+        <div class="mcard-grid"></div>
+        <div class="mcard-stripe"></div>
+        <div class="mcard-icon">🤖</div>
+        <div class="mcard-title">PA Assistant Chat</div>
+        <div class="mcard-desc">ถาม-ตอบผู้ช่วยอัจฉริยะ อ้างอิงคู่มือและผลการตรวจสอบ รองรับ PDF · CSV · TXT</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
-# ── Utility Tools (แถว 1: 4 cards) ───────────────────
-st.markdown('<div class="sec-lbl" style="margin-top:24px;">ยูทิลิตี้</div>', unsafe_allow_html=True)
-u1, u2, u3, u4 = st.columns(4, gap="medium")
+# ── Utility Tools ─────────────────────────────────────
+st.markdown('<div class="sec" style="margin-top:24px;"><div class="sec-title">ยูทิลิตี้</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
+u1, u2, u3, u4, u5 = st.columns(5, gap="medium")
 
 with u1:
     st.markdown("""
-    <a class="fcard-link" href="แปลงภาพเป็นข้อความ_(OCR)" target="_self">
-      <div class="fcard-util">
-        <div class="fcard-util-icon">📄</div>
-        <div class="fcard-util-title">OCR แปลงภาพเป็นข้อความ</div>
-        <div class="fcard-util-desc">ดึงข้อความจากเอกสารภาษาไทย–อังกฤษด้วย Typhoon OCR</div>
+    <a class="hcard-link" href="แปลงภาพเป็นข้อความ_(OCR)" target="_self">
+      <div class="ucard">
+        <div class="ucard-bar"></div>
+        <div class="ucard-icon">📄</div>
+        <div class="ucard-title">OCR แปลงภาพเป็นข้อความ</div>
+        <div class="ucard-desc">ดึงข้อความจากภาพ · PDF ภาษาไทย–อังกฤษ แปลงเป็น Text · Doc</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
 with u2:
     st.markdown("""
-    <a class="fcard-link" href="QR_Code_Generator" target="_self">
-      <div class="fcard-util">
-        <div class="fcard-util-icon">📱</div>
-        <div class="fcard-util-title">QR Code Generator</div>
-        <div class="fcard-util-desc">สร้าง QR Code พร้อมโลโก้หน่วยงาน ดาวน์โหลดได้ทันที</div>
+    <a class="hcard-link" href="QR_Code_Generator" target="_self">
+      <div class="ucard">
+        <div class="ucard-bar"></div>
+        <div class="ucard-icon">📱</div>
+        <div class="ucard-title">QR Code Generator</div>
+        <div class="ucard-desc">สร้าง QR Code พร้อมโลโก้หน่วยงาน ดาวน์โหลดได้ทันที</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
 with u3:
     st.markdown("""
-    <a class="fcard-link" href="Audit_Dashboard" target="_self">
-      <div class="fcard-util">
-        <div class="fcard-util-icon">📊</div>
-        <div class="fcard-util-title">Audit Dashboard</div>
-        <div class="fcard-util-desc">Dashboard ตัวช่วยสรุปข้อมูลและนำเสนอข้อมูลด้วยภาพ</div>
+    <a class="hcard-link" href="Audit_Dashboard" target="_self">
+      <div class="ucard">
+        <div class="ucard-bar"></div>
+        <div class="ucard-icon">📊</div>
+        <div class="ucard-title">Audit Dashboard</div>
+        <div class="ucard-desc">Dashboard ตัวช่วยสรุปข้อมูลและนำเสนอข้อมูลด้วยภาพ</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
 with u4:
     st.markdown("""
-    <a class="fcard-link" href="Analytics_Sandbox" target="_self">
-      <div class="fcard-util">
-        <div class="fcard-util-icon">🕵️</div>
-        <div class="fcard-util-title">Analytics Sandbox</div>
-        <div class="fcard-util-desc">Power BI Mode · YData Profiling · PyGWalker วิเคราะห์ข้อมูลเชิงลึก</div>
+    <a class="hcard-link" href="Analytics_Sandbox" target="_self">
+      <div class="ucard">
+        <div class="ucard-bar"></div>
+        <div class="ucard-icon">🕵️</div>
+        <div class="ucard-title">Data Analytics Sandbox</div>
+        <div class="ucard-desc">Power BI Mode · YData Profiling · PyGWalker วิเคราะห์ข้อมูลเชิงลึก</div>
       </div>
     </a>""", unsafe_allow_html=True)
-
-# ── Utility Tools (แถว 2: GIS Explorer) ──────────────
-u5, u6, u7, u8 = st.columns(4, gap="medium")
 
 with u5:
     st.markdown("""
-    <a class="fcard-link" href="GIS_Explorer" target="_self">
-      <div class="fcard-util gis-card">
-        <div class="fcard-util-icon gis-icon">🗺️</div>
-        <div class="fcard-util-title">GIS Explorer</div>
-        <div class="fcard-util-desc">แผนที่/ข้อมูลเชิงพื้นที่ · Heatmap · Geoprocessing · WMS Overlay</div>
+    <a class="hcard-link" href="GIS_Explorer" target="_self">
+      <div class="ucard">
+        <div class="ucard-bar"></div>
+        <div class="ucard-icon">🗺️</div>
+        <div class="ucard-title">GIS Explorer</div>
+        <div class="ucard-desc">แผนที่/ข้อมูลเชิงพื้นที่ · Heatmap · Geoprocessing · ตรวจสอบ/ประมวลผล</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
-# u6, u7, u8 — placeholder (ว่างไว้สำหรับเพิ่มในอนาคต)
-with u6:
-    st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
-with u7:
-    st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
-with u8:
-    st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
-
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="infobox">⚠️ การใช้ฟีเจอร์ AI อาจผิดพลาดได้ โปรดตรวจสอบคำตอบอีกครั้ง ระบบไม่มีการจัดเก็บข้อมูลไว้</div>', unsafe_allow_html=True)
+st.markdown('<div class="infobox"><div style="font-size:14px;margin-top:1px;flex-shrink:0">⚠️</div><div>การใช้ฟีเจอร์ AI อาจผิดพลาดได้ โปรดตรวจสอบคำตอบอีกครั้ง ระบบไม่มีการจัดเก็บข้อมูลไว้</div></div>', unsafe_allow_html=True)
