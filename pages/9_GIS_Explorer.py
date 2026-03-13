@@ -23,6 +23,69 @@ except ImportError:
 st.set_page_config(page_title="GIS Explorer", page_icon="🗺️", layout="wide")
 apply_theme()
 
+# ── CSS: แก้สี input/selectbox/multiselect/number_input ให้อ่านง่าย ─────────
+st.markdown("""
+<style>
+/* ── number_input, text_input ── */
+input[type="number"], input[type="text"], input[type="email"], input[type="password"] {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid #d0d0d0 !important;
+    border-radius: 6px !important;
+}
+div[data-baseweb="input"], div[data-baseweb="base-input"] {
+    background-color: #ffffff !important;
+    border-radius: 6px !important;
+}
+div[data-baseweb="input"] > div,
+div[data-baseweb="base-input"] > div {
+    background-color: #ffffff !important;
+}
+/* ── textarea ── */
+textarea {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid #d0d0d0 !important;
+}
+/* ── selectbox ── */
+div[data-baseweb="select"] > div:first-child {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid #d0d0d0 !important;
+    border-radius: 6px !important;
+}
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div[class*="ValueContainer"] {
+    color: #111111 !important;
+}
+div[data-baseweb="select"] svg { fill: #444444 !important; }
+/* ── multiselect tags ── */
+div[data-baseweb="tag"] {
+    background-color: #eef2ff !important;
+    color: #1a1a1a !important;
+    border: 1px solid #b0bbf0 !important;
+}
+div[data-baseweb="tag"] span { color: #1a1a1a !important; }
+/* ── dropdown list ── */
+ul[data-baseweb="menu"] { background-color: #ffffff !important; }
+li[role="option"] { background-color: #ffffff !important; color: #111111 !important; }
+li[role="option"]:hover { background-color: #f0f4ff !important; }
+li[aria-selected="true"] { background-color: #e8edff !important; }
+/* ── file uploader ── */
+div[data-testid="stFileUploaderDropzone"] {
+    background-color: #f9f9fb !important;
+    border: 1.5px dashed #aaaaaa !important;
+    border-radius: 8px !important;
+}
+/* ── color picker label ── */
+input[type="color"] {
+    border: 1px solid #cccccc !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+}
+</style>
+""", unsafe_allow_html=True)
+
 with st.sidebar:
     st.markdown(SIDEBAR_HTML, unsafe_allow_html=True)
     render_provider_sidebar()
@@ -667,9 +730,8 @@ with tab_spatial:
         "⚙️ Geoprocessing",
         "📍 Point-in-Polygon",
         "📋 Query Attribute",
-        "📏 วัดระยะห่าง",
     ])
-    sp_map, sp_geo, sp_pip, sp_query, sp_dist = sp_tabs
+    sp_map, sp_geo, sp_pip, sp_query = sp_tabs
 
     # ─────────────────────────────────────────────────────────────────────────
     # SP_MAP — Interactive map with multi-layer upload
@@ -1098,74 +1160,6 @@ with tab_spatial:
     # ─────────────────────────────────────────────────────────────────────────
     # SP_DIST — วัดระยะห่าง
     # ─────────────────────────────────────────────────────────────────────────
-    with sp_dist:
-        st.markdown("**วัดระยะห่างระหว่างจุด 2 จุด หรือจุดกับ Polygon boundary**")
-        dist_mode = st.radio("โหมด", ["📍 จุด → จุด","📍 จุด → Polygon"], horizontal=True, key="dist_mode")
-        _dd1,_dd2 = st.columns(2)
-        with _dd1:
-            st.markdown("**จุดที่ 1**")
-            d_lat1 = st.number_input("Latitude",  value=13.7563,  format="%.6f", key="d_lat1")
-            d_lon1 = st.number_input("Longitude", value=100.5018, format="%.6f", key="d_lon1")
-        with _dd2:
-            if dist_mode == "📍 จุด → จุด":
-                st.markdown("**จุดที่ 2**")
-                d_lat2 = st.number_input("Latitude",  value=13.8563, format="%.6f", key="d_lat2")
-                d_lon2 = st.number_input("Longitude", value=100.6018, format="%.6f", key="d_lon2")
-            else:
-                st.markdown("**Polygon Layer**")
-                dist_poly = st.file_uploader("GeoJSON / .zip", type=["geojson","json","zip"], key="dist_poly")
-
-        if st.button("📏 วัดระยะ", type="primary", key="run_dist"):
-            try:
-                from shapely.geometry import Point as SPoint
-                _pt1_gdf = gpd.GeoDataFrame(geometry=[SPoint(d_lon1,d_lat1)],crs="EPSG:4326").to_crs(epsg=32647)
-                if dist_mode == "📍 จุด → จุด":
-                    _pt2_gdf = gpd.GeoDataFrame(geometry=[SPoint(d_lon2,d_lat2)],crs="EPSG:4326").to_crs(epsg=32647)
-                    _dm = _pt1_gdf.geometry[0].distance(_pt2_gdf.geometry[0])
-                    st.session_state["dist_result"] = {
-                        "mode":"p2p","dist_m":_dm,"p1":(d_lat1,d_lon1),"p2":(d_lat2,d_lon2)}
-                else:
-                    if "dist_poly" not in dir() or dist_poly is None:
-                        st.warning("กรุณาอัปโหลด Polygon")
-                    else:
-                        _dp = load_vector(dist_poly)
-                        _dp_proj = _dp.to_crs(epsg=32647)
-                        _dp_proj["dist_m"]  = _dp_proj.geometry.boundary.distance(_pt1_gdf.geometry[0]).round(2)
-                        _dp_proj["dist_km"] = (_dp_proj["dist_m"]/1000).round(4)
-                        _rd = _dp.copy()
-                        _rd["dist_m"] = _dp_proj["dist_m"]; _rd["dist_km"] = _dp_proj["dist_km"]
-                        st.session_state["dist_result"] = {
-                            "mode":"p2poly","dist_m":_dp_proj["dist_m"].min(),
-                            "p1":(d_lat1,d_lon1),"gdf_dp":_dp,"result_dist":_rd,
-                            "attr_cols":[c for c in _dp.columns if c!="geometry"],
-                        }
-                st.rerun()
-            except Exception as _e:
-                st.error(f"Error: {_e}")
-
-        if "dist_result" in st.session_state:
-            _dr = st.session_state["dist_result"]
-            if _dr["mode"] == "p2p":
-                st.success(f"📏 ระยะห่าง: **{_dr['dist_m']:,.2f} ม.** ({_dr['dist_m']/1000:,.4f} กม.)")
-                _p1,_p2 = _dr["p1"],_dr["p2"]
-                _md = folium.Map(location=[(_p1[0]+_p2[0])/2,(_p1[1]+_p2[1])/2], zoom_start=10)
-                folium.Marker(_p1, popup="จุดที่ 1", icon=folium.Icon(color="red")).add_to(_md)
-                folium.Marker(_p2, popup="จุดที่ 2", icon=folium.Icon(color="blue")).add_to(_md)
-                folium.PolyLine([_p1,_p2], color="#7A2020", weight=2.5, dash_array="6",
-                    tooltip=f"{_dr['dist_m']:,.2f} ม.").add_to(_md)
-                st_folium(_md, use_container_width=True, height=420, key="dist_map")
-            else:
-                st.success(f"📏 ระยะใกล้ที่สุด: **{_dr['dist_m']:,.2f} ม.**")
-                _rd2 = _dr["result_dist"]
-                st.dataframe(_rd2[_dr["attr_cols"]+["dist_m","dist_km"]].sort_values("dist_m"),
-                    use_container_width=True, hide_index=True)
-                _b   = _dr["gdf_dp"].to_crs(epsg=4326).total_bounds
-                _md2 = folium.Map(location=[(_b[1]+_b[3])/2,(_b[0]+_b[2])/2], zoom_start=9)
-                folium.GeoJson(_dr["gdf_dp"].to_crs(epsg=4326).__geo_interface__,
-                    style_function=lambda x:{"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":1.5}).add_to(_md2)
-                folium.CircleMarker([_dr["p1"][0],_dr["p1"][1]], radius=9,
-                    color="blue", fill=True, fill_color="blue", popup="จุดที่ตรวจสอบ").add_to(_md2)
-                st_folium(_md2, use_container_width=True, height=420, key="dist_map2")
 
 with tab_arcgis:
     st.subheader("🏛️ ArcGIS Online Map Viewer")
