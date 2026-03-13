@@ -144,7 +144,7 @@ a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
 
 /* ── Notice ── */
 .infobox {
-    display: flex; align-items: flex-start; gap: 10px;
+    display: flex; align-items: flex-start; gap: 8px;
     background: #FEFFD3; border: 0.5px solid #e0e098; border-left: 3px solid #7A2020;
     border-radius: 10px; padding: 10px 14px; margin-top: 8px;
     font-size: 14px; color: #555; line-height: 1.6;
