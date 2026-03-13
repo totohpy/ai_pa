@@ -449,31 +449,41 @@ with tab_heatmap:
 
     if heat_csv:
         df_heat = pd.read_csv(heat_csv)
-        c1, c2, c3 = st.columns(3)
-        lat_h = c1.selectbox("Latitude", df_heat.columns.tolist(), key="heat_lat")
-        lon_h = c2.selectbox("Longitude", df_heat.columns.tolist(), key="heat_lon")
-        weight_h = c3.selectbox("Weight (ความหนาแน่น)", ["(นับจำนวนจุด)"] + df_heat.select_dtypes(include='number').columns.tolist(), key="heat_weight")
+        st.session_state["heat_df"]   = df_heat
+        st.session_state["heat_cols"] = df_heat.columns.tolist()
 
+    if "heat_df" in st.session_state:
+        df_heat  = st.session_state["heat_df"]
+        c1,c2,c3 = st.columns(3)
+        lat_h    = c1.selectbox("Latitude",  df_heat.columns.tolist(), key="heat_lat")
+        lon_h    = c2.selectbox("Longitude", df_heat.columns.tolist(), key="heat_lon")
+        weight_h = c3.selectbox("Weight (ความหนาแน่น)",
+            ["(นับจำนวนจุด)"] + df_heat.select_dtypes(include="number").columns.tolist(),
+            key="heat_weight")
         radius = st.slider("Radius", 5, 50, 15, key="heat_radius")
 
-        if st.button("🌡️ สร้าง Heatmap", type="primary"):
+        if st.button("🌡️ สร้าง Heatmap", type="primary", key="build_heat"):
             try:
-                from folium.plugins import HeatMap
                 df_clean = df_heat.dropna(subset=[lat_h, lon_h])
-                center = [df_clean[lat_h].mean(), df_clean[lon_h].mean()]
-                m5 = folium.Map(location=center, zoom_start=8)
-
                 if weight_h == "(นับจำนวนจุด)":
                     heat_data = [[row[lat_h], row[lon_h]] for _, row in df_clean.iterrows()]
                 else:
                     heat_data = [[row[lat_h], row[lon_h], row[weight_h]] for _, row in df_clean.iterrows()]
-
-                HeatMap(heat_data, radius=radius, blur=15, min_opacity=0.4).add_to(m5)
-                st.success(f"✅ Heatmap จาก {len(df_clean):,} จุด")
-                st_folium(m5, use_container_width=True, height=550, key="heat_map")
+                st.session_state["heat_data"]   = heat_data
+                st.session_state["heat_center"] = [df_clean[lat_h].mean(), df_clean[lon_h].mean()]
+                st.session_state["heat_n"]      = len(df_clean)
             except Exception as e:
                 st.error(f"Error: {e}")
 
+        if "heat_data" in st.session_state:
+            from folium.plugins import HeatMap
+            m5 = folium.Map(location=st.session_state["heat_center"], zoom_start=8)
+            HeatMap(st.session_state["heat_data"], radius=radius, blur=15, min_opacity=0.4).add_to(m5)
+            st.success(f"✅ Heatmap จาก {st.session_state['heat_n']:,} จุด")
+            st_folium(m5, use_container_width=True, height=550, key="heat_map")
+
+# TAB 7 — ตรวจสอบพื้นที่ (Spatial Analysis)
+# ═══════════════════════════════════════════════════════════════════════════════
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 7 — ตรวจสอบพื้นที่ (Spatial Analysis)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -488,33 +498,29 @@ with tab_spatial:
         "🔍 WMS GetFeatureInfo",
     ])
 
+    # ── helper ───────────────────────────────────────────────────────────────
+    def load_vector(upload, key_suffix):
+        if upload is None: return None
+        name = upload.name.lower()
+        try:
+            if name.endswith(".zip"):
+                with tempfile.TemporaryDirectory() as tmp:
+                    zpath = os.path.join(tmp, "data.zip")
+                    with open(zpath, "wb") as f: f.write(upload.read())
+                    with zipfile.ZipFile(zpath) as z: z.extractall(tmp)
+                    shps = [f for f in os.listdir(tmp) if f.endswith(".shp")]
+                    if not shps: return None
+                    return gpd.read_file(os.path.join(tmp, shps[0]))
+            else:
+                return gpd.read_file(upload)
+        except Exception as e:
+            st.error(f"โหลดไม่ได้: {e}"); return None
+
     # ─────────────────────────────────────────────────────────────────────────
-    # SP1 — Overlap: upload 2 layers แล้ว intersect
+    # SP1 — Overlap
     # ─────────────────────────────────────────────────────────────────────────
     with sp1:
         st.markdown("**อัปโหลด 2 Layer แล้วตรวจสอบว่าทับซ้อนกันไหม**")
-        st.caption("รองรับ GeoJSON และ Shapefile (.zip)")
-
-        def load_vector(upload, key_suffix):
-            """โหลด GeoJSON หรือ Shapefile zip → GeoDataFrame"""
-            if upload is None:
-                return None
-            name = upload.name.lower()
-            try:
-                if name.endswith(".zip"):
-                    with tempfile.TemporaryDirectory() as tmp:
-                        zpath = os.path.join(tmp, "data.zip")
-                        with open(zpath, "wb") as f: f.write(upload.read())
-                        with zipfile.ZipFile(zpath) as z: z.extractall(tmp)
-                        shps = [f for f in os.listdir(tmp) if f.endswith(".shp")]
-                        if not shps: return None
-                        return gpd.read_file(os.path.join(tmp, shps[0]))
-                else:
-                    return gpd.read_file(upload)
-            except Exception as e:
-                st.error(f"โหลดไม่ได้: {e}")
-                return None
-
         col_a, col_b = st.columns(2)
         with col_a:
             st.markdown("**Layer A**")
@@ -534,104 +540,93 @@ with tab_spatial:
         if st.button("▶️ ประมวลผล", type="primary", key="run_overlap"):
             gdf_a = load_vector(up_a, "a")
             gdf_b = load_vector(up_b, "b")
-
             if gdf_a is None or gdf_b is None:
                 st.warning("กรุณาอัปโหลดทั้ง 2 layer")
             else:
                 try:
-                    # reproject ให้ตรงกัน
-                    gdf_b = gdf_b.to_crs(gdf_a.crs)
-                    gdf_a_proj = gdf_a.to_crs(epsg=32647)
-                    gdf_b_proj = gdf_b.to_crs(epsg=32647)
-
+                    gdf_b2 = gdf_b.to_crs(gdf_a.crs)
                     if "Intersection" in op_type:
-                        result = gpd.overlay(gdf_a, gdf_b, how="intersection", keep_geom_type=False)
-                        label = "พื้นที่ทับซ้อน"
+                        result = gpd.overlay(gdf_a, gdf_b2, how="intersection", keep_geom_type=False); label = "พื้นที่ทับซ้อน"
                     elif "Union" in op_type:
-                        result = gpd.overlay(gdf_a, gdf_b, how="union", keep_geom_type=False)
-                        label = "Union"
+                        result = gpd.overlay(gdf_a, gdf_b2, how="union", keep_geom_type=False); label = "Union"
                     elif "Difference" in op_type:
-                        result = gpd.overlay(gdf_a, gdf_b, how="difference", keep_geom_type=False)
-                        label = "Difference (A-B)"
+                        result = gpd.overlay(gdf_a, gdf_b2, how="difference", keep_geom_type=False); label = "Difference (A-B)"
                     elif "Symmetric" in op_type:
-                        result = gpd.overlay(gdf_a, gdf_b, how="symmetric_difference", keep_geom_type=False)
-                        label = "Symmetric Difference"
+                        result = gpd.overlay(gdf_a, gdf_b2, how="symmetric_difference", keep_geom_type=False); label = "Symmetric Difference"
                     else:
-                        # ตรวจสอบ intersects เท่านั้น
-                        overlap_mask = gdf_a.intersects(gdf_b.unary_union)
-                        n_overlap = overlap_mask.sum()
-                        n_total   = len(gdf_a)
-                        if n_overlap > 0:
-                            st.success(f"✅ พบ **{n_overlap}/{n_total}** features ของ Layer A ที่ทับซ้อนกับ Layer B")
-                        else:
-                            st.info("ℹ️ ไม่มี feature ทับซ้อนกัน")
-
-                        # แสดงบนแผนที่
-                        bounds = gdf_a.total_bounds
-                        mc = [(bounds[1]+bounds[3])/2, (bounds[0]+bounds[2])/2]
-                        mcheck = folium.Map(location=mc, zoom_start=9)
-                        folium.GeoJson(gdf_a.__geo_interface__,
-                            name="Layer A", style_function=lambda x: {
-                                "color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":2}
-                        ).add_to(mcheck)
-                        folium.GeoJson(gdf_b.__geo_interface__,
-                            name="Layer B", style_function=lambda x: {
-                                "color":"#1a5276","fillColor":"#1a5276","fillOpacity":0.2,"weight":2}
-                        ).add_to(mcheck)
-                        folium.LayerControl().add_to(mcheck)
-                        st_folium(mcheck, use_container_width=True, height=450, key="check_map")
-                        st.stop()
+                        overlap_mask = gdf_a.intersects(gdf_b2.unary_union)
+                        st.session_state["sp1_check"] = {
+                            "n": int(overlap_mask.sum()), "total": len(gdf_a),
+                            "gdf_a": gdf_a, "gdf_b": gdf_b2,
+                        }
+                        st.session_state.pop("sp1_result", None)
+                        st.rerun()
 
                     if len(result) == 0:
-                        st.info("ℹ️ ไม่มีพื้นที่ทับซ้อน")
+                        st.session_state["sp1_result"] = {"empty": True, "label": label}
                     else:
-                        result_proj = result.to_crs(epsg=32647)
-                        result["area_m2"]  = result_proj.geometry.area.round(2)
-                        result["area_km2"] = (result_proj.geometry.area / 1e6).round(4)
-                        result["area_rai"] = (result_proj.geometry.area / 1600).round(2)
-                        total_km2 = result["area_km2"].sum()
-                        total_rai = result["area_rai"].sum()
-
-                        st.success(f"✅ {label}: **{len(result):,} features** · รวม **{total_km2:,.4f} km²** ({total_rai:,.2f} ไร่)")
-                        st.dataframe(result.drop(columns="geometry"), use_container_width=True, hide_index=True)
-
-                        # แสดงบนแผนที่
-                        bounds = gdf_a.total_bounds
-                        mc = [(bounds[1]+bounds[3])/2, (bounds[0]+bounds[2])/2]
-                        mres = folium.Map(location=mc, zoom_start=9)
-                        folium.GeoJson(gdf_a.__geo_interface__, name="Layer A",
-                            style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.15,"weight":2}
-                        ).add_to(mres)
-                        folium.GeoJson(gdf_b.__geo_interface__, name="Layer B",
-                            style_function=lambda x: {"color":"#1a5276","fillColor":"#1a5276","fillOpacity":0.15,"weight":2}
-                        ).add_to(mres)
-                        folium.GeoJson(result.__geo_interface__, name=label,
-                            style_function=lambda x: {"color":"#28b463","fillColor":"#28b463","fillOpacity":0.5,"weight":2}
-                        ).add_to(mres)
-                        folium.LayerControl().add_to(mres)
-                        st_folium(mres, use_container_width=True, height=450, key="result_map")
-
-                        st.download_button("⬇️ Export ผลลัพธ์ GeoJSON",
-                            result.to_crs(epsg=4326).to_json(),
-                            f"{label.replace(' ','_')}.geojson", "application/json")
-
+                        rp = result.to_crs(epsg=32647)
+                        result["area_m2"]  = rp.geometry.area.round(2)
+                        result["area_km2"] = (rp.geometry.area / 1e6).round(4)
+                        result["area_rai"] = (rp.geometry.area / 1600).round(2)
+                        st.session_state["sp1_result"] = {
+                            "result": result, "label": label,
+                            "gdf_a": gdf_a, "gdf_b": gdf_b2,
+                        }
+                    st.session_state.pop("sp1_check", None)
+                    st.rerun()
                 except Exception as e:
                     st.error(f"Error: {e}")
+
+        # ── แสดงผล (persistent) ──
+        if "sp1_check" in st.session_state:
+            _c = st.session_state["sp1_check"]
+            if _c["n"] > 0:
+                st.success(f"✅ พบ **{_c['n']}/{_c['total']}** features ของ Layer A ที่ทับซ้อนกับ Layer B")
+            else:
+                st.info("ℹ️ ไม่มี feature ทับซ้อนกัน")
+            bounds = _c["gdf_a"].total_bounds
+            mcheck = folium.Map(location=[(bounds[1]+bounds[3])/2,(bounds[0]+bounds[2])/2], zoom_start=9)
+            folium.GeoJson(_c["gdf_a"].__geo_interface__, name="Layer A",
+                style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":2}).add_to(mcheck)
+            folium.GeoJson(_c["gdf_b"].__geo_interface__, name="Layer B",
+                style_function=lambda x: {"color":"#1a5276","fillColor":"#1a5276","fillOpacity":0.2,"weight":2}).add_to(mcheck)
+            folium.LayerControl().add_to(mcheck)
+            st_folium(mcheck, use_container_width=True, height=450, key="check_map")
+
+        if "sp1_result" in st.session_state:
+            _r = st.session_state["sp1_result"]
+            if _r.get("empty"):
+                st.info("ℹ️ ไม่มีพื้นที่ทับซ้อน")
+            else:
+                result = _r["result"]; label = _r["label"]
+                st.success(f"✅ {label}: **{len(result):,} features** · รวม **{result['area_km2'].sum():,.4f} km²** ({result['area_rai'].sum():,.2f} ไร่)")
+                st.dataframe(result.drop(columns="geometry"), use_container_width=True, hide_index=True)
+                bounds = _r["gdf_a"].total_bounds
+                mres = folium.Map(location=[(bounds[1]+bounds[3])/2,(bounds[0]+bounds[2])/2], zoom_start=9)
+                folium.GeoJson(_r["gdf_a"].__geo_interface__, name="Layer A",
+                    style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.15,"weight":2}).add_to(mres)
+                folium.GeoJson(_r["gdf_b"].__geo_interface__, name="Layer B",
+                    style_function=lambda x: {"color":"#1a5276","fillColor":"#1a5276","fillOpacity":0.15,"weight":2}).add_to(mres)
+                folium.GeoJson(result.__geo_interface__, name=label,
+                    style_function=lambda x: {"color":"#28b463","fillColor":"#28b463","fillOpacity":0.5,"weight":2}).add_to(mres)
+                folium.LayerControl().add_to(mres)
+                st_folium(mres, use_container_width=True, height=450, key="result_map")
+                st.download_button("⬇️ Export ผลลัพธ์ GeoJSON",
+                    result.to_crs(epsg=4326).to_json(),
+                    f"{label.replace(' ','_')}.geojson", "application/json")
 
     # ─────────────────────────────────────────────────────────────────────────
     # SP2 — Point-in-Polygon
     # ─────────────────────────────────────────────────────────────────────────
     with sp2:
         st.markdown("**ตรวจสอบว่าจุด (Lat/Lon) อยู่ใน Polygon ไหน และ attribute อะไร**")
-
-        pip_src = st.radio("แหล่งข้อมูลจุด", ["พิมพ์พิกัดเอง", "อัปโหลด CSV"], horizontal=True, key="pip_src")
-
-        pip_poly = st.file_uploader("อัปโหลด Polygon Layer (GeoJSON / .zip)",
-            type=["geojson","json","zip"], key="pip_poly")
+        pip_src  = st.radio("แหล่งข้อมูลจุด", ["พิมพ์พิกัดเอง","อัปโหลด CSV"], horizontal=True, key="pip_src")
+        pip_poly = st.file_uploader("อัปโหลด Polygon Layer (GeoJSON / .zip)", type=["geojson","json","zip"], key="pip_poly")
 
         if pip_src == "พิมพ์พิกัดเอง":
-            c1, c2 = st.columns(2)
-            pip_lat = c1.number_input("Latitude", value=13.7563, format="%.6f", key="pip_lat")
+            c1,c2 = st.columns(2)
+            pip_lat = c1.number_input("Latitude",  value=13.7563,  format="%.6f", key="pip_lat")
             pip_lon = c2.number_input("Longitude", value=100.5018, format="%.6f", key="pip_lon")
             points_data = [(pip_lat, pip_lon, "จุดที่ป้อน")]
         else:
@@ -639,157 +634,133 @@ with tab_spatial:
             if pip_csv:
                 df_pip = pd.read_csv(pip_csv)
                 st.dataframe(df_pip.head(3), use_container_width=True, hide_index=True)
-                pc1, pc2, pc3 = st.columns(3)
-                lat_c = pc1.selectbox("Latitude column", df_pip.columns, key="pip_lat_col")
+                pc1,pc2,pc3 = st.columns(3)
+                lat_c = pc1.selectbox("Latitude column",  df_pip.columns, key="pip_lat_col")
                 lon_c = pc2.selectbox("Longitude column", df_pip.columns, key="pip_lon_col")
-                lbl_c = pc3.selectbox("Label column", ["(ไม่มี)"] + df_pip.columns.tolist(), key="pip_lbl_col")
+                lbl_c = pc3.selectbox("Label column", ["(ไม่มี)"]+df_pip.columns.tolist(), key="pip_lbl_col")
                 points_data = [
-                    (row[lat_c], row[lon_c],
-                     str(row[lbl_c]) if lbl_c != "(ไม่มี)" else f"จุด {i+1}")
-                    for i, (_, row) in enumerate(df_pip.dropna(subset=[lat_c, lon_c]).iterrows())
+                    (row[lat_c], row[lon_c], str(row[lbl_c]) if lbl_c!="(ไม่มี)" else f"จุด {i+1}")
+                    for i,(_,row) in enumerate(df_pip.dropna(subset=[lat_c,lon_c]).iterrows())
                 ]
             else:
                 points_data = []
 
         if st.button("🔍 ตรวจสอบ", type="primary", key="run_pip"):
-            if pip_poly is None:
-                st.warning("กรุณาอัปโหลด Polygon layer")
-            elif not points_data:
-                st.warning("กรุณาป้อนพิกัดหรืออัปโหลด CSV")
+            if pip_poly is None: st.warning("กรุณาอัปโหลด Polygon layer")
+            elif not points_data: st.warning("กรุณาป้อนพิกัดหรืออัปโหลด CSV")
             else:
                 try:
                     gdf_poly = load_vector(pip_poly, "pip")
-                    if gdf_poly is None:
-                        st.error("โหลด Polygon ไม่ได้")
+                    if gdf_poly is None: st.error("โหลด Polygon ไม่ได้")
                     else:
                         gdf_poly = gdf_poly.to_crs(epsg=4326)
                         attr_cols = [c for c in gdf_poly.columns if c != "geometry"]
-
                         results_pip = []
-                        for lat, lon, label in points_data:
-                            pt = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs="EPSG:4326")
+                        for lat,lon,label in points_data:
+                            pt     = gpd.GeoDataFrame(geometry=[Point(lon,lat)], crs="EPSG:4326")
                             joined = gpd.sjoin(pt, gdf_poly, how="left", predicate="within")
-                            if len(joined) == 0 or joined["index_right"].isna().all():
-                                results_pip.append({"จุด": label, "Lat": lat, "Lon": lon,
-                                                    "สถานะ": "❌ อยู่นอก polygon ทั้งหมด"})
+                            if len(joined)==0 or joined["index_right"].isna().all():
+                                results_pip.append({"จุด":label,"Lat":lat,"Lon":lon,"สถานะ":"❌ อยู่นอก polygon"})
                             else:
                                 row_j = joined.iloc[0]
-                                res = {"จุด": label, "Lat": lat, "Lon": lon, "สถานะ": "✅ อยู่ใน polygon"}
-                                for col in attr_cols[:8]:  # แสดงสูงสุด 8 attribute
-                                    res[col] = row_j.get(col, "-")
+                                res   = {"จุด":label,"Lat":lat,"Lon":lon,"สถานะ":"✅ อยู่ใน polygon"}
+                                for col in attr_cols[:8]: res[col] = row_j.get(col,"-")
                                 results_pip.append(res)
-
-                        df_result = pd.DataFrame(results_pip)
-                        st.dataframe(df_result, use_container_width=True, hide_index=True)
-
-                        # แสดงบนแผนที่
-                        bounds = gdf_poly.total_bounds
-                        mc = [(bounds[1]+bounds[3])/2, (bounds[0]+bounds[2])/2]
-                        mpip = folium.Map(location=mc, zoom_start=9)
-                        folium.GeoJson(gdf_poly.__geo_interface__,
-                            name="Polygon Layer",
-                            style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":1.5},
-                            tooltip=folium.GeoJsonTooltip(fields=attr_cols[:3]) if attr_cols else None
-                        ).add_to(mpip)
-                        for lat, lon, label in points_data:
-                            row_info = df_result[df_result["จุด"]==label].iloc[0].to_dict() if label in df_result["จุด"].values else {}
-                            status = row_info.get("สถานะ","")
-                            color = "green" if "✅" in str(status) else "red"
-                            folium.CircleMarker(
-                                location=[lat, lon], radius=8,
-                                color=color, fill=True, fill_color=color, fill_opacity=0.9,
-                                popup=f"<b>{label}</b><br>{status}"
-                            ).add_to(mpip)
-                        folium.LayerControl().add_to(mpip)
-                        st_folium(mpip, use_container_width=True, height=450, key="pip_map")
-
-                        st.download_button("⬇️ Download ผลลัพธ์ CSV",
-                            df_result.to_csv(index=False, encoding="utf-8-sig"),
-                            "pip_result.csv", "text/csv")
+                        st.session_state["sp2_result"]      = pd.DataFrame(results_pip)
+                        st.session_state["sp2_gdf_poly"]    = gdf_poly
+                        st.session_state["sp2_points_data"] = points_data
+                        st.rerun()
                 except Exception as e:
                     st.error(f"Error: {e}")
+
+        if "sp2_result" in st.session_state:
+            df_r     = st.session_state["sp2_result"]
+            gdf_poly = st.session_state["sp2_gdf_poly"]
+            pts      = st.session_state["sp2_points_data"]
+            st.dataframe(df_r, use_container_width=True, hide_index=True)
+            bounds = gdf_poly.total_bounds
+            mpip = folium.Map(location=[(bounds[1]+bounds[3])/2,(bounds[0]+bounds[2])/2], zoom_start=9)
+            _ac  = [c for c in gdf_poly.columns if c!="geometry"]
+            folium.GeoJson(gdf_poly.__geo_interface__, name="Polygon Layer",
+                style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":1.5},
+                tooltip=folium.GeoJsonTooltip(fields=_ac[:3]) if _ac else None
+            ).add_to(mpip)
+            for lat,lon,label in pts:
+                _status = df_r[df_r["จุด"]==label]["สถานะ"].values[0] if label in df_r["จุด"].values else ""
+                folium.CircleMarker([lat,lon], radius=8,
+                    color="green" if "✅" in str(_status) else "red",
+                    fill=True, fill_opacity=0.9,
+                    popup=f"<b>{label}</b><br>{_status}").add_to(mpip)
+            folium.LayerControl().add_to(mpip)
+            st_folium(mpip, use_container_width=True, height=450, key="pip_map")
+            st.download_button("⬇️ Download CSV",
+                df_r.to_csv(index=False,encoding="utf-8-sig"), "pip_result.csv","text/csv")
 
     # ─────────────────────────────────────────────────────────────────────────
     # SP3 — Query Attribute
     # ─────────────────────────────────────────────────────────────────────────
     with sp3:
         st.markdown("**กรอง / ค้นหา Feature ตาม Attribute**")
-
         if "gdf_loaded" not in st.session_state or st.session_state.gdf_loaded is None:
-            st.warning("⚠️ กรุณาอัปโหลด Shapefile/GeoJSON ในแท็บที่ 2 ก่อน")
+            st.warning("⚠️ กรุณาอัปโหลด Shapefile/GeoJSON ในแท็บแผนที่หลักก่อน")
         else:
-            gdf_q = st.session_state.gdf_loaded
-            attr_cols_q = [c for c in gdf_q.columns if c != "geometry"]
-
-            st.markdown(f"Layer ปัจจุบัน: **{len(gdf_q):,} features** · {len(attr_cols_q)} columns")
+            gdf_q       = st.session_state.gdf_loaded
+            attr_cols_q = [c for c in gdf_q.columns if c!="geometry"]
+            st.markdown(f"Layer: **{len(gdf_q):,} features** · {len(attr_cols_q)} columns")
             st.dataframe(gdf_q[attr_cols_q].head(3), use_container_width=True, hide_index=True)
 
-            col_sel = st.selectbox("เลือก Column ที่จะกรอง", attr_cols_q, key="q_col")
-            unique_vals = gdf_q[col_sel].dropna().unique().tolist()
-
-            q_mode = st.radio("วิธีกรอง", ["เลือกค่า", "พิมพ์เงื่อนไข (query string)"], horizontal=True, key="q_mode")
+            col_sel = st.selectbox("Column ที่จะกรอง", attr_cols_q, key="q_col")
+            q_mode  = st.radio("วิธีกรอง", ["เลือกค่า","พิมพ์เงื่อนไข (query string)"], horizontal=True, key="q_mode")
 
             if q_mode == "เลือกค่า":
-                sel_vals = st.multiselect(f"ค่าของ {col_sel}", sorted([str(v) for v in unique_vals]), key="q_vals")
+                sel_vals = st.multiselect(f"ค่าของ {col_sel}",
+                    sorted([str(v) for v in gdf_q[col_sel].dropna().unique()]), key="q_vals")
                 if sel_vals and st.button("🔍 กรอง", type="primary", key="run_query"):
                     result_q = gdf_q[gdf_q[col_sel].astype(str).isin(sel_vals)]
-                    st.success(f"✅ พบ **{len(result_q):,}** features")
-                    st.dataframe(result_q[attr_cols_q], use_container_width=True, hide_index=True)
-                    # แสดงบนแผนที่
-                    if len(result_q) > 0:
-                        bounds = result_q.total_bounds
-                        mc = [(bounds[1]+bounds[3])/2, (bounds[0]+bounds[2])/2]
-                        mq = folium.Map(location=mc, zoom_start=9)
-                        folium.GeoJson(result_q.__geo_interface__,
-                            style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.4,"weight":2},
-                            tooltip=folium.GeoJsonTooltip(fields=attr_cols_q[:3])
-                        ).add_to(mq)
-                        st_folium(mq, use_container_width=True, height=400, key="query_map")
-                        st.download_button("⬇️ Export GeoJSON",
-                            result_q.to_json(), "query_result.geojson", "application/json")
+                    st.session_state["sp3_result"] = result_q
+                    st.rerun()
             else:
                 st.caption("ตัวอย่าง: `PROVINCE == 'กรุงเทพมหานคร'` หรือ `AREA > 1000`")
-                q_str = st.text_input("Query String", key="q_str",
-                    placeholder="PROVINCE == 'กรุงเทพมหานคร'")
+                q_str = st.text_input("Query String", key="q_str", placeholder="PROVINCE == 'กรุงเทพมหานคร'")
                 if q_str and st.button("🔍 Query", type="primary", key="run_qstr"):
                     try:
                         result_q = gdf_q.query(q_str)
-                        st.success(f"✅ พบ **{len(result_q):,}** features")
-                        st.dataframe(result_q[attr_cols_q], use_container_width=True, hide_index=True)
-                        if len(result_q) > 0:
-                            bounds = result_q.total_bounds
-                            mc = [(bounds[1]+bounds[3])/2, (bounds[0]+bounds[2])/2]
-                            mq2 = folium.Map(location=mc, zoom_start=9)
-                            folium.GeoJson(result_q.__geo_interface__,
-                                style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.4,"weight":2},
-                                tooltip=folium.GeoJsonTooltip(fields=attr_cols_q[:3])
-                            ).add_to(mq2)
-                            st_folium(mq2, use_container_width=True, height=400, key="qstr_map")
-                            st.download_button("⬇️ Export GeoJSON",
-                                result_q.to_json(), "query_result.geojson", "application/json")
+                        st.session_state["sp3_result"] = result_q
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Query error: {e}")
+
+            if "sp3_result" in st.session_state:
+                result_q    = st.session_state["sp3_result"]
+                attr_cols_q = [c for c in result_q.columns if c!="geometry"]
+                st.success(f"✅ พบ **{len(result_q):,}** features")
+                st.dataframe(result_q[attr_cols_q], use_container_width=True, hide_index=True)
+                if len(result_q) > 0:
+                    bounds = result_q.total_bounds
+                    mq = folium.Map(location=[(bounds[1]+bounds[3])/2,(bounds[0]+bounds[2])/2], zoom_start=9)
+                    folium.GeoJson(result_q.__geo_interface__,
+                        style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.4,"weight":2},
+                        tooltip=folium.GeoJsonTooltip(fields=attr_cols_q[:3])
+                    ).add_to(mq)
+                    st_folium(mq, use_container_width=True, height=400, key="query_map")
+                    st.download_button("⬇️ Export GeoJSON",
+                        result_q.to_json(), "query_result.geojson", "application/json")
 
     # ─────────────────────────────────────────────────────────────────────────
     # SP4 — วัดระยะห่าง
     # ─────────────────────────────────────────────────────────────────────────
     with sp4:
         st.markdown("**วัดระยะห่างระหว่างจุดกับ Polygon boundary หรือระหว่างจุด 2 จุด**")
-
-        dist_mode = st.radio("โหมด", [
-            "📍 จุด → จุด",
-            "📍 จุด → Polygon (ระยะถึง boundary)",
-        ], horizontal=True, key="dist_mode")
-
-        dc1, dc2 = st.columns(2)
+        dist_mode = st.radio("โหมด", ["📍 จุด → จุด","📍 จุด → Polygon"], horizontal=True, key="dist_mode")
+        dc1,dc2 = st.columns(2)
         with dc1:
             st.markdown("**จุดที่ 1**")
-            d_lat1 = st.number_input("Latitude", value=13.7563, format="%.6f", key="d_lat1")
+            d_lat1 = st.number_input("Latitude",  value=13.7563,  format="%.6f", key="d_lat1")
             d_lon1 = st.number_input("Longitude", value=100.5018, format="%.6f", key="d_lon1")
         with dc2:
             if dist_mode == "📍 จุด → จุด":
                 st.markdown("**จุดที่ 2**")
-                d_lat2 = st.number_input("Latitude", value=13.8563, format="%.6f", key="d_lat2")
+                d_lat2 = st.number_input("Latitude",  value=13.8563, format="%.6f", key="d_lat2")
                 d_lon2 = st.number_input("Longitude", value=100.6018, format="%.6f", key="d_lon2")
             else:
                 st.markdown("**Polygon Layer**")
@@ -798,228 +769,158 @@ with tab_spatial:
         if st.button("📏 วัดระยะ", type="primary", key="run_dist"):
             try:
                 from shapely.geometry import Point as SPoint
-                import math
-
-                pt1 = SPoint(d_lon1, d_lat1)
-                gpt1 = gpd.GeoDataFrame(geometry=[pt1], crs="EPSG:4326").to_crs(epsg=32647)
-
+                pt1   = gpd.GeoDataFrame(geometry=[SPoint(d_lon1,d_lat1)],crs="EPSG:4326").to_crs(epsg=32647)
                 if dist_mode == "📍 จุด → จุด":
-                    pt2 = SPoint(d_lon2, d_lat2)
-                    gpt2 = gpd.GeoDataFrame(geometry=[pt2], crs="EPSG:4326").to_crs(epsg=32647)
-                    dist_m = gpt1.geometry[0].distance(gpt2.geometry[0])
-                    st.success(f"📏 ระยะห่าง: **{dist_m:,.2f} เมตร** ({dist_m/1000:,.4f} กม.)")
-
-                    # แผนที่
-                    mdist = folium.Map(location=[(d_lat1+d_lat2)/2, (d_lon1+d_lon2)/2], zoom_start=10)
-                    folium.Marker([d_lat1, d_lon1], popup="จุดที่ 1", icon=folium.Icon(color="red")).add_to(mdist)
-                    folium.Marker([d_lat2, d_lon2], popup="จุดที่ 2", icon=folium.Icon(color="blue")).add_to(mdist)
-                    folium.PolyLine([[d_lat1,d_lon1],[d_lat2,d_lon2]],
-                        color="#7A2020", weight=2, dash_array="6",
-                        tooltip=f"{dist_m:,.2f} ม.").add_to(mdist)
-                    st_folium(mdist, use_container_width=True, height=400, key="dist_map")
-
+                    pt2   = gpd.GeoDataFrame(geometry=[SPoint(d_lon2,d_lat2)],crs="EPSG:4326").to_crs(epsg=32647)
+                    dist_m = pt1.geometry[0].distance(pt2.geometry[0])
+                    st.session_state["sp4_result"] = {
+                        "mode":"p2p","dist_m":dist_m,
+                        "p1":(d_lat1,d_lon1),"p2":(d_lat2,d_lon2),
+                    }
                 else:
-                    if 'dist_poly' not in dir() or dist_poly is None:
+                    if "dist_poly" not in dir() or dist_poly is None:
                         st.warning("กรุณาอัปโหลด Polygon layer")
                     else:
-                        gdf_dp = load_vector(dist_poly, "dp")
+                        gdf_dp      = load_vector(dist_poly,"dp")
                         gdf_dp_proj = gdf_dp.to_crs(epsg=32647)
-                        pt1_proj = gpt1.geometry[0]
-
-                        gdf_dp_proj["dist_m"] = gdf_dp_proj.geometry.boundary.distance(pt1_proj).round(2)
-                        gdf_dp_proj["dist_km"] = (gdf_dp_proj["dist_m"] / 1000).round(4)
-                        nearest_idx = gdf_dp_proj["dist_m"].idxmin()
-                        nearest = gdf_dp_proj.loc[nearest_idx]
-
-                        attr_cols_d = [c for c in gdf_dp.columns if c != "geometry"]
-                        st.success(f"📏 ระยะใกล้ที่สุด: **{nearest['dist_m']:,.2f} ม.** ({nearest['dist_km']:,.4f} กม.)")
-
+                        gdf_dp_proj["dist_m"]  = gdf_dp_proj.geometry.boundary.distance(pt1.geometry[0]).round(2)
+                        gdf_dp_proj["dist_km"] = (gdf_dp_proj["dist_m"]/1000).round(4)
                         result_dist = gdf_dp.copy()
-                        result_dist["dist_m"] = gdf_dp_proj["dist_m"]
+                        result_dist["dist_m"]  = gdf_dp_proj["dist_m"]
                         result_dist["dist_km"] = gdf_dp_proj["dist_km"]
-                        st.dataframe(result_dist[attr_cols_d + ["dist_m","dist_km"]].sort_values("dist_m"),
-                            use_container_width=True, hide_index=True)
-
-                        bounds = gdf_dp.to_crs(epsg=4326).total_bounds
-                        mc = [(bounds[1]+bounds[3])/2, (bounds[0]+bounds[2])/2]
-                        mdist2 = folium.Map(location=mc, zoom_start=9)
-                        folium.GeoJson(gdf_dp.to_crs(epsg=4326).__geo_interface__,
-                            style_function=lambda x: {"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":1.5}
-                        ).add_to(mdist2)
-                        folium.CircleMarker([d_lat1, d_lon1], radius=8,
-                            color="blue", fill=True, fill_color="blue",
-                            popup="จุดที่ตรวจสอบ").add_to(mdist2)
-                        st_folium(mdist2, use_container_width=True, height=400, key="dist_map2")
-
+                        st.session_state["sp4_result"] = {
+                            "mode":"p2poly","dist_m":gdf_dp_proj["dist_m"].min(),
+                            "p1":(d_lat1,d_lon1),"gdf_dp":gdf_dp,"result_dist":result_dist,
+                            "attr_cols":[c for c in gdf_dp.columns if c!="geometry"],
+                        }
+                st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
 
+        if "sp4_result" in st.session_state:
+            _r = st.session_state["sp4_result"]
+            if _r["mode"] == "p2p":
+                st.success(f"📏 ระยะห่าง: **{_r['dist_m']:,.2f} เมตร** ({_r['dist_m']/1000:,.4f} กม.)")
+                _p1,_p2 = _r["p1"],_r["p2"]
+                mdist = folium.Map(location=[(_p1[0]+_p2[0])/2,(_p1[1]+_p2[1])/2], zoom_start=10)
+                folium.Marker([_p1[0],_p1[1]], popup="จุดที่ 1", icon=folium.Icon(color="red")).add_to(mdist)
+                folium.Marker([_p2[0],_p2[1]], popup="จุดที่ 2", icon=folium.Icon(color="blue")).add_to(mdist)
+                folium.PolyLine([[_p1[0],_p1[1]],[_p2[0],_p2[1]]],color="#7A2020",weight=2,dash_array="6",
+                    tooltip=f"{_r['dist_m']:,.2f} ม.").add_to(mdist)
+                st_folium(mdist, use_container_width=True, height=400, key="dist_map")
+            else:
+                st.success(f"📏 ระยะใกล้ที่สุด: **{_r['dist_m']:,.2f} ม.**")
+                st.dataframe(_r["result_dist"][_r["attr_cols"]+["dist_m","dist_km"]].sort_values("dist_m"),
+                    use_container_width=True, hide_index=True)
+                bounds = _r["gdf_dp"].to_crs(epsg=4326).total_bounds
+                mdist2 = folium.Map(location=[(bounds[1]+bounds[3])/2,(bounds[0]+bounds[2])/2], zoom_start=9)
+                folium.GeoJson(_r["gdf_dp"].to_crs(epsg=4326).__geo_interface__,
+                    style_function=lambda x:{"color":"#7A2020","fillColor":"#7A2020","fillOpacity":0.2,"weight":1.5}).add_to(mdist2)
+                folium.CircleMarker([_r["p1"][0],_r["p1"][1]], radius=8, color="blue",
+                    fill=True, fill_color="blue", popup="จุดที่ตรวจสอบ").add_to(mdist2)
+                st_folium(mdist2, use_container_width=True, height=400, key="dist_map2")
+
     # ─────────────────────────────────────────────────────────────────────────
-    # SP5 — WMS GetFeatureInfo: คลิกแผนที่ → ถาม WMS server ว่า attribute อะไร
+    # SP5 — WMS GetFeatureInfo
     # ─────────────────────────────────────────────────────────────────────────
     with sp5:
         st.markdown("**คลิกบนแผนที่ → ถาม WMS server ว่าตำแหน่งนั้นมีข้อมูลอะไร**")
-        st.caption("ใช้ GetFeatureInfo request ไปยัง WMS server โดยตรง — รองรับเฉพาะ WMS ที่เปิด GetFeatureInfo")
+        st.caption("ใช้ GetFeatureInfo request ไปยัง WMS server — รองรับเฉพาะ WMS ที่เปิด GetFeatureInfo")
 
-        # ── เลือก WMS layer ──────────────────────────────────────────────────
         GFI_LAYERS = {
-            "🗺️ Longdo Icons (ไทย)":           {"url": "https://ms.longdo.com/mapproxy/service", "layers": "longdo_icons"},
-            "🏙️ ผังเมือง DPT":                  {"url": "https://ms.longdo.com/mapproxy/service", "layers": "cityplan_dpt"},
-            "🏙️ ผังเมือง ทั่วประเทศ":            {"url": "https://ms.longdo.com/mapproxy/service", "layers": "cityplan_thailand"},
-            "🏛️ กรมที่ดิน (DOL)":               {"url": "https://ms.longdo.com/mapproxy/service", "layers": "dol"},
-            "🏛️ การใช้ที่ดิน LDD":              {"url": "https://ms.longdo.com/mapproxy/service", "layers": "ldd_landuse_2561_2563"},
-            "🚗 อุบัติเหตุ 2564":               {"url": "https://ms.longdo.com/mapproxy/service", "layers": "accident_3Bura_2564"},
-            "🇹🇭 RTSD แผนที่ฐาน":               {"url": "https://geoportal.rtsd.mi.th/arcgis/services/FGDS/Base_Map/MapServer/WMSServer", "layers": "0"},
-            "🌳 กรมป่าไม้ (RFD)":               {"url": "https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer", "layers": "0"},
-            "🔧 กำหนด URL เอง":                  {"url": "", "layers": ""},
+            "🏙️ ผังเมือง DPT":             {"url":_L,"layers":"cityplan_dpt"},
+            "🏙️ ผังเมือง ทั่วประเทศ":       {"url":_L,"layers":"cityplan_thailand"},
+            "🏛️ กรมที่ดิน (DOL)":           {"url":_L,"layers":"dol"},
+            "🏛️ การใช้ที่ดิน LDD":          {"url":_L,"layers":"ldd_landuse_2561_2563"},
+            "🚗 อุบัติเหตุ 2564":           {"url":_L,"layers":"accident_3Bura_2564"},
+            "🌳 กรมป่าไม้ (RFD)":           {"url":"https://gis.forest.go.th/arcgis/services/RFD_BASEMAP/MapServer/WMSServer","layers":"0"},
+            "🔧 กำหนด URL เอง":             {"url":"","layers":""},
         }
 
         gfi_sel = st.selectbox("เลือก WMS Layer", list(GFI_LAYERS.keys()), key="gfi_layer_sel")
         gfi_cfg = GFI_LAYERS[gfi_sel]
-
         if gfi_sel == "🔧 กำหนด URL เอง":
-            gc1, gc2 = st.columns(2)
-            gfi_url    = gc1.text_input("WMS URL", key="gfi_url_custom")
+            gc1,gc2 = st.columns(2)
+            gfi_url    = gc1.text_input("WMS URL",    key="gfi_url_custom")
             gfi_layers = gc2.text_input("Layer name", key="gfi_layers_custom")
         else:
             gfi_url    = gfi_cfg["url"]
             gfi_layers = gfi_cfg["layers"]
 
-        st.info("👇 ป้อนพิกัดที่ต้องการสอบถาม (หรือคลิกบนแผนที่แล้วดูพิกัดจากแท็บอื่น)")
+        st.info("👇 ป้อนพิกัด หรือคลิกบนแผนที่ด้านล่าง")
+        g1,g2 = st.columns(2)
+        gfi_lat = g1.number_input("Latitude",  value=st.session_state.get("gfi_clat",13.7563),  format="%.6f", key="gfi_lat")
+        gfi_lon = g2.number_input("Longitude", value=st.session_state.get("gfi_clon",100.5018), format="%.6f", key="gfi_lon")
+        gfi_fmt = st.selectbox("Response Format", ["text/plain","text/html","application/json","text/xml"], key="gfi_fmt")
 
-        g1, g2 = st.columns(2)
-        gfi_lat = g1.number_input("Latitude", value=13.7563, format="%.6f", key="gfi_lat")
-        gfi_lon = g2.number_input("Longitude", value=100.5018, format="%.6f", key="gfi_lon")
-
-        gfi_fmt = st.selectbox("Response Format", [
-            "text/plain", "text/html", "application/json", "text/xml"
-        ], key="gfi_fmt")
-
-        # ── แสดงแผนที่ preview พร้อม marker ─────────────────────────────────
-        mgfi = folium.Map(location=[gfi_lat, gfi_lon], zoom_start=12)
-
-        # เพิ่ม WMS layer ที่เลือก
+        mgfi = folium.Map(location=[gfi_lat,gfi_lon], zoom_start=12)
         if gfi_url and gfi_layers:
             folium.raster_layers.WmsTileLayer(
-                url=gfi_url,
-                layers=gfi_layers,
-                fmt="image/png",
-                transparent=True,
-                version="1.3.0",
-                name=gfi_sel,
-                show=True,
+                url=gfi_url, layers=gfi_layers, fmt="image/png",
+                transparent=True, version="1.3.0", name=gfi_sel, show=True,
             ).add_to(mgfi)
-
-        folium.Marker(
-            [gfi_lat, gfi_lon],
-            popup=f"Query point<br>({gfi_lat:.6f}, {gfi_lon:.6f})",
-            icon=folium.Icon(color="red", icon="crosshairs", prefix="fa"),
-        ).add_to(mgfi)
-
+        folium.Marker([gfi_lat,gfi_lon], popup=f"({gfi_lat:.6f},{gfi_lon:.6f})",
+            icon=folium.Icon(color="red",icon="crosshairs",prefix="fa")).add_to(mgfi)
         folium.LayerControl().add_to(mgfi)
         map_data = st_folium(mgfi, use_container_width=True, height=380, key="gfi_map")
 
-        # ดึง Lat/Lon จากการคลิกแผนที่ (ถ้ามี)
         if map_data and map_data.get("last_clicked"):
-            clicked = map_data["last_clicked"]
-            gfi_lat = clicked["lat"]
-            gfi_lon = clicked["lng"]
-            st.success(f"📍 ตำแหน่งที่คลิก: **{gfi_lat:.6f}, {gfi_lon:.6f}** (ใช้พิกัดนี้สำหรับ query)")
+            _lc = map_data["last_clicked"]
+            st.session_state["gfi_clat"] = _lc["lat"]
+            st.session_state["gfi_clon"] = _lc["lng"]
+            st.success(f"📍 คลิก: **{_lc['lat']:.6f}, {_lc['lng']:.6f}**")
 
-        # ── ส่ง GetFeatureInfo request ────────────────────────────────────────
         if st.button("🔍 ขอข้อมูล GetFeatureInfo", type="primary", key="run_gfi"):
             if not gfi_url or not gfi_layers:
                 st.warning("กรุณาระบุ WMS URL และ Layer name")
             else:
                 try:
                     import requests as _req
-                    from pyproj import Transformer
-
-                    # แปลง Lat/Lon → pixel bbox สำหรับ WMS 1.3.0
-                    # ใช้ bbox เล็กๆ รอบจุด (1 เมตร) ใน EPSG:4326
-                    delta = 0.001  # ~100 ม.
-                    bbox_str = f"{gfi_lat-delta},{gfi_lon-delta},{gfi_lat+delta},{gfi_lon+delta}"
-
+                    _lat = st.session_state.get("gfi_clat", gfi_lat)
+                    _lon = st.session_state.get("gfi_clon", gfi_lon)
+                    delta = 0.001
                     params = {
-                        "SERVICE":      "WMS",
-                        "VERSION":      "1.3.0",
-                        "REQUEST":      "GetFeatureInfo",
-                        "LAYERS":       gfi_layers,
-                        "QUERY_LAYERS": gfi_layers,
-                        "STYLES":       "",
-                        "CRS":          "EPSG:4326",
-                        "BBOX":         bbox_str,
-                        "WIDTH":        "101",
-                        "HEIGHT":       "101",
-                        "I":            "50",
-                        "J":            "50",
-                        "INFO_FORMAT":  gfi_fmt,
-                        "FEATURE_COUNT":"10",
+                        "SERVICE":"WMS","VERSION":"1.3.0","REQUEST":"GetFeatureInfo",
+                        "LAYERS":gfi_layers,"QUERY_LAYERS":gfi_layers,"STYLES":"",
+                        "CRS":"EPSG:4326","BBOX":f"{_lat-delta},{_lon-delta},{_lat+delta},{_lon+delta}",
+                        "WIDTH":"101","HEIGHT":"101","I":"50","J":"50",
+                        "INFO_FORMAT":gfi_fmt,"FEATURE_COUNT":"10",
                     }
-
                     resp = _req.get(gfi_url, params=params, timeout=15)
                     resp.raise_for_status()
-                    content = resp.text.strip()
-
-                    st.markdown("---")
-                    st.markdown(f"**📡 Response จาก WMS server** · HTTP {resp.status_code}")
-                    st.caption(f"URL: `{resp.url[:120]}...`")
-
-                    if not content or "no features" in content.lower() or content == "":
-                        st.info("ℹ️ WMS server ตอบกลับ: ไม่พบข้อมูลที่ตำแหน่งนี้")
-                    elif "text/plain" in gfi_fmt:
-                        st.code(content, language="text")
-                    elif "application/json" in gfi_fmt:
-                        try:
-                            import json
-                            gfi_json = json.loads(content)
-                            features = gfi_json.get("features", [])
-                            if features:
-                                st.success(f"✅ พบ {len(features)} feature(s)")
-                                for i, feat in enumerate(features):
-                                    with st.expander(f"Feature {i+1}"):
-                                        props = feat.get("properties", {})
-                                        st.json(props)
-                            else:
-                                st.info("ℹ️ ไม่พบ feature ที่ตำแหน่งนี้")
-                                st.json(gfi_json)
-                        except:
-                            st.code(content, language="json")
-                    elif "html" in gfi_fmt:
-                        st.components.v1.html(content, height=300, scrolling=True)
-                    else:
-                        st.code(content, language="xml")
-
-                    # ปุ่ม download raw response
-                    ext = {"text/plain":"txt","text/html":"html",
-                           "application/json":"json","text/xml":"xml"}.get(gfi_fmt,"txt")
-                    st.download_button(
-                        "⬇️ Download raw response",
-                        content.encode("utf-8"),
-                        f"gfi_response.{ext}",
-                        gfi_fmt,
-                        key="dl_gfi"
-                    )
-
+                    st.session_state["sp5_result"] = {"content":resp.text.strip(),"fmt":gfi_fmt,"status":resp.status_code,"url":resp.url}
+                    st.rerun()
                 except Exception as e:
                     st.error(f"GetFeatureInfo error: {e}")
-                    st.caption("💡 WMS บางตัวไม่รองรับ GetFeatureInfo หรืออาจต้องการ API key")
 
-        # ── Tips ──────────────────────────────────────────────────────────────
-        with st.expander("💡 WMS layers ที่น่าจะรองรับ GetFeatureInfo"):
-            st.markdown("""
-| WMS Layer | โอกาสสำเร็จ | หมายเหตุ |
-|---|---|---|
-| Longdo cityplan_dpt | ⭐⭐⭐ | ข้อมูลผังเมือง อาจมี zone attribute |
-| Longdo dol | ⭐⭐⭐ | ข้อมูลกรมที่ดิน |
-| Longdo accident_* | ⭐⭐⭐ | ข้อมูลอุบัติเหตุ |
-| RTSD แผนที่ฐาน | ⭐ | มักไม่เปิด GFI |
-| กรมป่าไม้ RFD | ⭐⭐ | ขึ้นกับ server |
+        if "sp5_result" in st.session_state:
+            _res = st.session_state["sp5_result"]
+            content = _res["content"]; gfi_fmt2 = _res["fmt"]
+            st.markdown(f"**📡 Response** · HTTP {_res['status']}")
+            st.caption(f"`{_res['url'][:120]}…`")
+            if not content or "no features" in content.lower():
+                st.info("ℹ️ ไม่พบข้อมูลที่ตำแหน่งนี้")
+            elif "text/plain" in gfi_fmt2:
+                st.code(content, language="text")
+            elif "application/json" in gfi_fmt2:
+                try:
+                    import json; gfi_json = json.loads(content)
+                    features = gfi_json.get("features",[])
+                    if features:
+                        st.success(f"✅ พบ {len(features)} feature(s)")
+                        for i,feat in enumerate(features):
+                            with st.expander(f"Feature {i+1}"): st.json(feat.get("properties",{}))
+                    else:
+                        st.info("ℹ️ ไม่พบ feature"); st.json(gfi_json)
+                except: st.code(content,language="json")
+            elif "html" in gfi_fmt2:
+                st.components.v1.html(content, height=300, scrolling=True)
+            else:
+                st.code(content, language="xml")
+            ext = {"text/plain":"txt","text/html":"html","application/json":"json","text/xml":"xml"}.get(gfi_fmt2,"txt")
+            st.download_button("⬇️ Download response", content.encode("utf-8"),
+                f"gfi_response.{ext}", gfi_fmt2, key="dl_gfi")
 
-> หาก server ตอบ `no features found` อาจต้องลอง zoom เข้าแล้วใช้พิกัดที่แม่นขึ้น หรือ layer นั้นไม่รองรับ GFI
-""")
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # TAB 8 — PyDeck  (ArcGIS-style interactive 3D map)
 # ═══════════════════════════════════════════════════════════════════════════════
 with tab_kepler:
