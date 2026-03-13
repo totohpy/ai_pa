@@ -100,7 +100,7 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 }
 .mcard-grid::before {
     content: ''; position: absolute; top: -80px; right: -80px;
-    width: 160px; height: 160px; border-radius: 50%;
+    width: 180px; height: 180px; border-radius: 50%;
     background: rgba(76, 175, 80, 0.06);
 }
 .mcard-grid::after {
