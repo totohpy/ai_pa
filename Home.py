@@ -39,7 +39,7 @@ st.markdown("""
         repeating-linear-gradient(90deg, transparent, transparent 39px, #fff 39px, #fff 40px);
 }
 .hero-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
-.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,200,0.03); }
 
 .hero-badge {
     display: inline-flex; align-items: center; gap: 7px;
