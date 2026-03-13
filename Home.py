@@ -95,14 +95,20 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 }
 .mcard-grid {
     position: absolute; inset: 0; pointer-events: none;
-    /* สร้างวงกลมสีเทาอ่อนจางๆ 2 วง วางคนละมุม */
+    /* ลวดลายเรขาคณิตสีเขียวอ่อน */
     background-image: 
-        radial-gradient(circle at 85% 20%, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 130px, transparent 131px),
-        radial-gradient(circle at 20% 100%, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 100px, transparent 101px);
+        linear-gradient(135deg, rgba(76, 175, 80, 0.03) 25%, transparent 25%),
+        linear-gradient(225deg, rgba(76, 175, 80, 0.03) 25%, transparent 25%),
+        linear-gradient(45deg, rgba(76, 175, 80, 0.03) 25%, transparent 25%),
+        linear-gradient(315deg, rgba(76, 175, 80, 0.03) 25%, transparent 25%),
+        linear-gradient(90deg, rgba(129, 199, 132, 0.02) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(129, 199, 132, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 40px 40px, 40px 40px, 20px 20px, 20px 20px;
+    background-position: 0 0, 0 0, 20px 20px, 20px 20px, 0 0, 0 0;
     opacity: 0; transition: opacity .25s;
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
-a.hcard-link:hover .mcard .mcard-grid  { opacity: 0.35; }
+a.hcard-link:hover .mcard .mcard-grid  { opacity: 1; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
 
 .mcard-stripe {
@@ -167,8 +173,7 @@ st.markdown("""
     Auditor-Driven
   </div>
   <div class="hero-title">
-    <span>Performance Audit</span><br>
-    <span>Planning Studio</span>
+    <span>Performance Audit Planning Studio</span>
   </div>
   <div class="hero-sub">เครื่องมืออัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · SAO</div>
 </div>
