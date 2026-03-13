@@ -60,7 +60,7 @@ st.markdown("""
 .hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
 
 .hero-title {
-    font-size: 34px; font-weight: 700; color: #fff;
+    font-size: 32px; font-weight: 700; color: #fff;
     position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
 }
 .hero-title span {
@@ -214,7 +214,7 @@ with m3:
 
 # ── Utility Tools ─────────────────────────────────────
 st.markdown('<div class="sec" style="margin-top:24px;"><div class="sec-title">ยูทิลิตี้</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
-u1, u2, u3, u4, u5 = st.columns(5, gap="medium")
+u1, u2, u3, u4, u5 = st.columns(5, gap="small")
 
 with u1:
     st.markdown("""
