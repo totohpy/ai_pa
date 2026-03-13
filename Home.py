@@ -60,7 +60,7 @@ st.markdown("""
 .hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
 
 .hero-title {
-    font-size: 28px; font-weight: 700; color: #fff;
+    font-size: 32px; font-weight: 700; color: #fff;
     position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
 }
 .hero-title span {
@@ -69,7 +69,7 @@ st.markdown("""
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .hero-sub {
-    font-size: 13.5px; color: rgba(255,255,255,0.62);
+    font-size: 16px; color: rgba(255,255,255,0.62);
     line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
 }
 
@@ -78,7 +78,7 @@ st.markdown("""
     margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
 }
 .sec-title {
-    font-size: 11px; font-weight: 600; color: #888;
+    font-size: 13px; font-weight: 600; color: #888;
     letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;
 }
 .sec-line { flex: 1; height: 1px; background: #e5e5e5; }
@@ -113,10 +113,10 @@ a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
     width: 46px; height: 46px; border-radius: 12px;
     background: #f7f7f7; border: 0.5px solid #e5e5e5;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; margin-bottom: 14px; position: relative; z-index: 1;
+    font-size: 24px; margin-bottom: 14px; position: relative; z-index: 1;
 }
-.mcard-title { font-size: 14.5px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
-.mcard-desc  { font-size: 12.5px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
+.mcard-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
+.mcard-desc  { font-size: 14px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
 
 /* ── Utility cards ── */
 .ucard {
@@ -137,17 +137,17 @@ a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
     width: 34px; height: 34px; border-radius: 8px;
     background: #f7f7f7;
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px; margin-bottom: 10px;
+    font-size: 18px; margin-bottom: 10px;
 }
-.ucard-title { font-size: 13px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
-.ucard-desc  { font-size: 11.5px; color: #888;      line-height: 1.6; }
+.ucard-title { font-size: 16px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
+.ucard-desc  { font-size: 14px; color: #888;      line-height: 1.6; }
 
 /* ── Notice ── */
 .infobox {
     display: flex; align-items: flex-start; gap: 10px;
     background: #FEFFD3; border: 0.5px solid #e0e098; border-left: 3px solid #7A2020;
     border-radius: 10px; padding: 10px 14px; margin-top: 8px;
-    font-size: 12.5px; color: #555; line-height: 1.6;
+    font-size: 14px; color: #555; line-height: 1.6;
 }
 </style>
 """, unsafe_allow_html=True)
