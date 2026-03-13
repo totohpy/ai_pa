@@ -101,11 +101,11 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 .mcard-grid::before {
     content: ''; position: absolute; top: -80px; right: -80px;
     width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(76, 175, 80, 0.06);
+    background: rgba(76, 175, 80, 0.1);
 }
 .mcard-grid::after {
     content: ''; position: absolute; top: 20px; right: 20px;
-    width: 120px; height: 120px; border-radius: 50%;
+    width: 220px; height: 220px; border-radius: 50%;
     background: rgba(129, 199, 132, 0.04);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
