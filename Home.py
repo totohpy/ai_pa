@@ -95,9 +95,10 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 }
 .mcard-grid {
     position: absolute; inset: 0; pointer-events: none;
+    /* สร้างวงกลมสีเทาอ่อนจางๆ 2 วง วางคนละมุม */
     background-image: 
-        linear-gradient(115deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 40%, transparent 40%),
-        linear-gradient(250deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 30%, transparent 30%);
+        radial-gradient(circle at 85% 20%, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.03) 130px, transparent 131px),
+        radial-gradient(circle at 20% 100%, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 100px, transparent 101px);
     opacity: 0; transition: opacity .25s;
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
