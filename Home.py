@@ -62,15 +62,17 @@ st.markdown("""
 .hero-title {
     font-size: 32px; font-weight: 700; color: #fff;
     position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
+    white-space: nowrap;
 }
 .hero-title span {
-    display: inline-block;
+    display: inline;
     background: linear-gradient(90deg, #fff, rgba(255,255,255,0.72));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .hero-sub {
     font-size: 18px; color: rgba(255,255,255,0.62);
     line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
+    white-space: nowrap;
 }
 
 /* ── Section label ── */
@@ -105,10 +107,9 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
         linear-gradient(0deg, rgba(129, 199, 132, 0.02) 1px, transparent 1px);
     background-size: 40px 40px, 40px 40px, 40px 40px, 40px 40px, 20px 20px, 20px 20px;
     background-position: 0 0, 0 0, 20px 20px, 20px 20px, 0 0, 0 0;
-    opacity: 0; transition: opacity .25s;
+    opacity: 1;
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
-a.hcard-link:hover .mcard .mcard-grid  { opacity: 1; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
 
 .mcard-stripe {
