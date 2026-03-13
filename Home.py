@@ -88,7 +88,7 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 
 /* ── Main cards ── */
 .mcard {
-    background: #fff; border: 0.5px solid #e0e0e0;
+    background: linear-gradient(135deg, #501313 0%, #791F1F 45%, #A32D2D 100%);
     border-radius: 14px; padding: 22px 20px 20px;
     position: relative; overflow: hidden; height: 100%;
     transition: transform .22s, border-color .22s;
