@@ -71,13 +71,18 @@ st.markdown("""
 }
 .hero-sub {
     font-size: 18px; color: rgba(255,255,255,0.62);
-    line-height: 1.7; position: relative; z-index: 1;
+    line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
     white-space: nowrap;
 }
 
 /* ── Section label ── */
-.sec { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
-.sec-title { font-size: 13px; font-weight: 600; color: #888; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; }
+.sec {
+    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+}
+.sec-title {
+    font-size: 13px; font-weight: 600; color: #888;
+    letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;
+}
 .sec-line { flex: 1; height: 1px; background: #e5e5e5; }
 
 /* ── Links ── */
@@ -90,16 +95,17 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
     position: relative; overflow: hidden; height: 100%;
     transition: transform .22s, border-color .22s;
 }
-
-/* ── Geometric pattern: hexagons + triangles สีเขียวอ่อน ── */
-.mcard-geo {
-    position: absolute; inset: 0; pointer-events: none; z-index: 0;
-    opacity: 0; transition: opacity .3s;
+.mcard-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    /* ลวดลายวงกลมซ้อนกันสีเขียวอ่อน */
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(76, 175, 80, 0) 0%, rgba(76, 175, 80, 0.15) 30%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(129, 199, 132, 0) 0%, rgba(129, 199, 132, 0.12) 30%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(76, 175, 80, 0) 0%, rgba(76, 175, 80, 0.1) 40%, transparent 60%),
+        radial-gradient(circle at 90% 20%, rgba(56, 142, 60, 0) 0%, rgba(56, 142, 60, 0.08) 35%, transparent 55%);
+    opacity: 1;
 }
-.mcard-geo svg { width: 100%; height: 100%; }
-
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
-a.hcard-link:hover .mcard .mcard-geo   { opacity: 1; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
 
 .mcard-stripe {
@@ -107,14 +113,15 @@ a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
     background: linear-gradient(90deg, #791F1F, #E24B4A);
     transform: scaleX(0); transform-origin: left; transition: transform .24s ease;
 }
+
 .mcard-icon {
     width: 46px; height: 46px; border-radius: 12px;
     background: #f7f7f7; border: 0.5px solid #e5e5e5;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; margin-bottom: 14px; position: relative; z-index: 1;
 }
-.mcard-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
-.mcard-desc  { font-size: 13px; color: #666; line-height: 1.65; position: relative; z-index: 1; }
+.mcard-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
+.mcard-desc  { font-size: 13px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
 
 /* ── Utility cards ── */
 .ucard {
@@ -123,8 +130,9 @@ a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
     position: relative; overflow: hidden; height: 100%;
     transition: transform .2s, border-color .2s;
 }
-a.hcard-link:hover .ucard            { transform: translateY(-3px); border-color: #c8c8c8; }
-a.hcard-link:hover .ucard .ucard-bar { transform: scaleX(1); }
+a.hcard-link:hover .ucard             { transform: translateY(-3px); border-color: #c8c8c8; }
+a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
+
 .ucard-bar {
     position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, #185FA5, #378ADD);
@@ -136,8 +144,8 @@ a.hcard-link:hover .ucard .ucard-bar { transform: scaleX(1); }
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; margin-bottom: 10px;
 }
-.ucard-title { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
-.ucard-desc  { font-size: 12px; color: #888; line-height: 1.6; }
+.ucard-title { font-size: 14px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
+.ucard-desc  { font-size: 12px; color: #888;      line-height: 1.6; }
 
 /* ── Notice ── */
 .infobox {
@@ -148,34 +156,6 @@ a.hcard-link:hover .ucard .ucard-bar { transform: scaleX(1); }
 }
 </style>
 """, unsafe_allow_html=True)
-
-# ── Geometric SVG pattern (hexagons + triangles, light green) ────────────────
-GEO_SVG = """
-<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 300 200' preserveAspectRatio='xMidYMid slice'>
-  <!-- Hexagons -->
-  <polygon points='240,20 258,30 258,50 240,60 222,50 222,30' fill='none' stroke='#6B9E51' stroke-width='1' opacity='0.18'/>
-  <polygon points='270,55 288,65 288,85 270,95 252,85 252,65' fill='none' stroke='#6B9E51' stroke-width='1' opacity='0.13'/>
-  <polygon points='210,70 228,80 228,100 210,110 192,100 192,80' fill='none' stroke='#6B9E51' stroke-width='0.8' opacity='0.1'/>
-  <polygon points='255,110 273,120 273,140 255,150 237,140 237,120' fill='none' stroke='#6B9E51' stroke-width='1' opacity='0.15'/>
-  <!-- Small filled hexagons -->
-  <polygon points='285,18 291,22 291,30 285,34 279,30 279,22' fill='#6B9E51' opacity='0.08'/>
-  <polygon points='195,140 201,144 201,152 195,156 189,152 189,144' fill='#6B9E51' opacity='0.06'/>
-  <!-- Triangles -->
-  <polygon points='220,155 234,178 206,178' fill='none' stroke='#5a8a3e' stroke-width='0.8' opacity='0.12'/>
-  <polygon points='265,130 275,148 255,148' fill='none' stroke='#5a8a3e' stroke-width='0.8' opacity='0.1'/>
-  <polygon points='248,8  256,22  240,22' fill='#6B9E51' opacity='0.07'/>
-  <!-- Dots -->
-  <circle cx='230' cy='40'  r='2' fill='#6B9E51' opacity='0.15'/>
-  <circle cx='270' cy='105' r='1.5' fill='#6B9E51' opacity='0.12'/>
-  <circle cx='200' cy='55'  r='1.5' fill='#6B9E51' opacity='0.10'/>
-  <circle cx='285' cy='75'  r='2'   fill='#6B9E51' opacity='0.08'/>
-  <circle cx='215' cy='130' r='1'   fill='#6B9E51' opacity='0.10'/>
-  <!-- Light connecting lines -->
-  <line x1='240' y1='60' x2='252' y2='65' stroke='#6B9E51' stroke-width='0.6' opacity='0.12'/>
-  <line x1='258' y1='50' x2='252' y2='65' stroke='#6B9E51' stroke-width='0.6' opacity='0.10'/>
-  <line x1='270' y1='95' x2='255' y2='110' stroke='#6B9E51' stroke-width='0.6' opacity='0.10'/>
-</svg>
-"""
 
 # ── Hero ──────────────────────────────────────────────
 st.markdown("""
@@ -189,7 +169,9 @@ st.markdown("""
     <div class="hero-sep"></div>
     Auditor-Driven
   </div>
-  <div class="hero-title"><span>Performance Audit Planning Studio</span></div>
+  <div class="hero-title">
+    <span>Performance Audit Planning Studio</span>
+  </div>
   <div class="hero-sub">เครื่องมืออัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · SAO</div>
 </div>
 """, unsafe_allow_html=True)
@@ -199,22 +181,22 @@ st.markdown('<div class="sec"><div class="sec-title">เครื่องมื
 m1, m2, m3 = st.columns(3, gap="medium")
 
 with m1:
-    st.markdown(f"""
+    st.markdown("""
     <a class="hcard-link" href="Audit_Design_Assistant" target="_self">
       <div class="mcard">
-        <div class="mcard-geo">{GEO_SVG}</div>
+        <div class="mcard-grid"></div>
         <div class="mcard-stripe"></div>
         <div class="mcard-icon">🏳️</div>
         <div class="mcard-title">Audit Design Assistant</div>
-        <div class="mcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · ค้นหาข้อตรวจพบที่ผ่านมา · AI แนะนำประเด็น · ร่างรายงาน</div>
+        <div class="mcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · ค้นหาข้อตรวจพบที่ผ่านมา · AI แนะนำประเด็น · ร่างรายงาน </div>
       </div>
     </a>""", unsafe_allow_html=True)
 
 with m2:
-    st.markdown(f"""
+    st.markdown("""
     <a class="hcard-link" href="Audit_Plan_Generator" target="_self">
       <div class="mcard">
-        <div class="mcard-geo">{GEO_SVG}</div>
+        <div class="mcard-grid"></div>
         <div class="mcard-stripe"></div>
         <div class="mcard-icon">🔮</div>
         <div class="mcard-title">Audit Plan Generator</div>
@@ -223,10 +205,10 @@ with m2:
     </a>""", unsafe_allow_html=True)
 
 with m3:
-    st.markdown(f"""
+    st.markdown("""
     <a class="hcard-link" href="PA_Assistant_Chat" target="_self">
       <div class="mcard">
-        <div class="mcard-geo">{GEO_SVG}</div>
+        <div class="mcard-grid"></div>
         <div class="mcard-stripe"></div>
         <div class="mcard-icon">🤖</div>
         <div class="mcard-title">PA Assistant Chat</div>
@@ -236,7 +218,7 @@ with m3:
 
 # ── Utility Tools ─────────────────────────────────────
 st.markdown('<div class="sec" style="margin-top:24px;"><div class="sec-title">ยูทิลิตี้</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
-u1, u2, u3, u4, u5 = st.columns(5, gap="small")
+u1, u2, u3, u4, u5 = st.columns(5, gap="xxsmall")
 
 with u1:
     st.markdown("""
