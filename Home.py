@@ -99,7 +99,7 @@ a.fcard-link:hover .fcard-main::before { transform:scaleX(1); }
 .fcard-title { font-size:15px; font-weight:700; color:#1a1a1a; margin-bottom:7px; font-family:'Noto Serif Thai',serif; }
 .fcard-desc  { font-size:13px; color:#666; line-height:1.7; }
 
-/* ── Utility cards 4x1 ── */
+/* ── Utility cards ── */
 .fcard-util {
     background:#fff; border:1px solid #d8d9b4; border-radius:14px;
     padding:16px 16px 14px; position:relative; overflow:hidden; height:100%;
@@ -120,6 +120,15 @@ a.fcard-link:hover .fcard-util::after { transform:scaleX(1); }
 }
 .fcard-util-title { font-size:13.5px; font-weight:700; color:#1a1a1a; margin-bottom:5px; font-family:'Noto Serif Thai',serif; }
 .fcard-util-desc  { font-size:12px; color:#7a7a7a; line-height:1.6; }
+
+/* ── GIS card accent (สีเขียว-น้ำเงิน แทน แดง) ── */
+.fcard-util.gis-card::after { background:linear-gradient(90deg,#1a6b3c,#1565c0); }
+.fcard-util.gis-card { border-color:#b8cfd8; }
+a.fcard-link:hover .fcard-util.gis-card { box-shadow:0 6px 24px rgba(21,101,192,0.13); }
+.fcard-util-icon.gis-icon {
+    background:rgba(21,101,192,0.08);
+    border:1px solid rgba(21,101,192,0.15);
+}
 
 .infobox {
     background:#FEFFD3; border:1px solid #e0e098; border-left:4px solid #7A2020;
@@ -177,7 +186,7 @@ with m3:
       </div>
     </a>""", unsafe_allow_html=True)
 
-# ── Utility Tools (4x1) ───────────────────────────────
+# ── Utility Tools (แถว 1: 4 cards) ───────────────────
 st.markdown('<div class="sec-lbl" style="margin-top:24px;">ยูทิลิตี้</div>', unsafe_allow_html=True)
 u1, u2, u3, u4 = st.columns(4, gap="medium")
 
@@ -217,10 +226,30 @@ with u4:
       <div class="fcard-util">
         <div class="fcard-util-icon">🕵️</div>
         <div class="fcard-util-title">Analytics Sandbox</div>
-        <div class="fcard-util-desc">Power BI Mode · YData Profiling· PyGWalker วิเคราะห์ข้อมูลเชิงลึก</div>
+        <div class="fcard-util-desc">Power BI Mode · YData Profiling · PyGWalker วิเคราะห์ข้อมูลเชิงลึก</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
+# ── Utility Tools (แถว 2: GIS Explorer) ──────────────
+u5, u6, u7, u8 = st.columns(4, gap="medium")
+
+with u5:
+    st.markdown("""
+    <a class="fcard-link" href="GIS_Explorer" target="_self">
+      <div class="fcard-util gis-card">
+        <div class="fcard-util-icon gis-icon">🗺️</div>
+        <div class="fcard-util-title">GIS Explorer</div>
+        <div class="fcard-util-desc">แผนที่/ข้อมูลเชิงพื้นที่ · Heatmap · Geoprocessing · WMS Overlay</div>
+      </div>
+    </a>""", unsafe_allow_html=True)
+
+# u6, u7, u8 — placeholder (ว่างไว้สำหรับเพิ่มในอนาคต)
+with u6:
+    st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
+with u7:
+    st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
+with u8:
+    st.markdown("<div style='height:1px'></div>", unsafe_allow_html=True)
+
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="infobox">⚠️ การใช้ฟีเจอร์ AI อาจผิดพลาดได้ โปรดตรวจสอบคำตอบอีกครั้ง ระบบไม่มีการจัดเก็บข้อมูลไว้</div>', unsafe_allow_html=True)
-
