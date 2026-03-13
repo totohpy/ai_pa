@@ -109,9 +109,6 @@ a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
     background: linear-gradient(90deg, #791F1F, #E24B4A);
     transform: scaleX(0); transform-origin: left; transition: transform .24s ease;
 }
-.mcard-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
-.mcard-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.03)
-}
 
 .mcard-icon {
     width: 46px; height: 46px; border-radius: 12px;
@@ -119,8 +116,8 @@ a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; margin-bottom: 14px; position: relative; z-index: 1;
 }
-.mcard-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
-.mcard-desc  { font-size: 14px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
+.mcard-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
+.mcard-desc  { font-size: 13px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
 
 /* ── Utility cards ── */
 .ucard {
