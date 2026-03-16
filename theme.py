@@ -164,25 +164,32 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 .viewerBadge_link__qRIco      { display:none !important; }
 
 /* ═══ CAMOUFLAGE TOOLBAR BUTTONS (Share / Star / Edit / GitHub) ═══ */
-/* ทำให้ปุ่มบน toolbar กลมกลืนกับ background — ไม่ลบ แค่ซ่อนด้วยสี */
-header[data-testid="stHeader"] {
-    background-color: #f8f9ee !important;
-}
-header[data-testid="stHeader"] button,
-header[data-testid="stHeader"] a,
-[data-testid="stToolbar"] button,
-[data-testid="stToolbar"] a,
-[data-testid="stToolbarActions"] button,
-[data-testid="stToolbarActions"] a {
-    color: #f8f9ee !important;
-    background: transparent !important;
-    border: none !important;
+/* ซ่อนเฉพาะ toolbar actions ด้วย opacity=0 — ไม่แตะ header bg */
+[data-testid="stToolbar"],
+[data-testid="stToolbarActions"] {
     opacity: 0 !important;
     pointer-events: none !important;
 }
-[data-testid="stToolbar"],
-[data-testid="stToolbarActions"] {
-    background: #f8f9ee !important;
+
+/* คืน collapsedControl (ปุ่ม >> เรียก sidebar) ให้มองเห็นชัดเจน */
+[data-testid="collapsedControl"] {
+    background-color: #7A2020 !important;
+    border-radius: 0 8px 8px 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    pointer-events: auto !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2) !important;
+    z-index: 9999 !important;
+}
+[data-testid="collapsedControl"] button {
+    background: transparent !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+[data-testid="collapsedControl"] svg {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
 }
 </style>
 """
