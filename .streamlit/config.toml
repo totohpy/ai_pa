@@ -12,3 +12,7 @@ toolbarMode = "viewer"
 
 [browser]
 gatherUsageStats = false
+
+[client]
+showSidebarNavigation = true
+toolbarMode = "minimal"   # เปลี่ยนจาก "viewer" เป็น "minimal" หรือ "developer"
