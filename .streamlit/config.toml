@@ -5,14 +5,11 @@ backgroundColor          = "#f8f9ee"
 secondaryBackgroundColor = "#7A2020"
 textColor                = "#1a1a1a"
 font                     = "sans serif"
-
+ 
 [client]
 showSidebarNavigation = true
 toolbarMode = "viewer"
-
+ 
 [browser]
 gatherUsageStats = false
-
-[client]
-showSidebarNavigation = true
-toolbarMode = "minimal"   # เปลี่ยนจาก "viewer" เป็น "minimal" หรือ "developer"
+ 
