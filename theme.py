@@ -140,6 +140,7 @@ span[data-testid="stFileUploaderDropzone"] {
 .stTextInput label,.stTextArea label,.stSelectbox label,
 .stNumberInput label,.stSlider label,.stFileUploader label,
 .stMultiSelect label,.stDateInput label {
+    background:#ffffff !important;
     color:var(--text-mute) !important;
     font-size:12px !important;
     font-weight:700 !important;
