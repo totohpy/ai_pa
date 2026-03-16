@@ -337,3 +337,23 @@ div[class*="loading"], div[class*="splash"] {
 })();
 </script>
 """, height=0)
+
+/* ═══ ซ่อน Streamlit toolbar (ขวาบน) และ deploy button ═══ */
+[data-testid="stToolbar"],
+[data-testid="stToolbarActions"],
+.stToolbar,
+header[data-testid="stHeader"],
+[data-testid="stHeader"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ซ่อน bottom-right badge และ fork button */
+[data-testid="stActionButton"],
+.stDeployButton,
+a[href*="streamlit.io"],
+div[class*="reportview"] footer,
+footer {
+    display: none !important;
+    visibility: hidden !important;
+}
