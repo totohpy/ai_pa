@@ -2,10 +2,17 @@ import streamlit as st
 import sys, os, pathlib
 
 _here = pathlib.Path(__file__).resolve().parent
-for _p in [_here, pathlib.Path(os.getcwd())]:
+for _p in [_here, _here.parent, pathlib.Path(os.getcwd()), pathlib.Path(os.getcwd()).parent]:
     if (_p / "theme.py").exists():
-        if str(_p) not in sys.path: sys.path.insert(0, str(_p))
+        if str(_p) not in sys.path:
+            sys.path.insert(0, str(_p))
         break
+else:
+    # fallback: add both cwd and file dir unconditionally
+    for _p in [_here, pathlib.Path(os.getcwd())]:
+        if str(_p) not in sys.path:
+            sys.path.insert(0, str(_p))
+
 try:
     from theme import apply_theme, SIDEBAR_HTML
     from ai_provider import render_provider_sidebar
