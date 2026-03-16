@@ -1,7 +1,5 @@
 # theme.py — PA Planning Studio v6.1
-# เพิ่ม AI Provider selector ใน sidebar
-# Fix: file uploader white bg using comprehensive selectors
-# Fix: sidebar red + white text via CSS (config.toml secondaryBg = cream)
+# Fix: date input white background (override primaryColor #7A2020)
 
 GOV_CSS = """
 <style>
@@ -46,11 +44,9 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
     border:1px solid rgba(255,255,255,0.28) !important;
     opacity:1 !important;
 }
-/* ลด padding ของ sidebar โดยรวม */
 [data-testid="stSidebarNav"] ul { padding:0 6px !important; margin:0 !important; }
 [data-testid="stSidebarNav"] li { margin-bottom:2px !important; }
 
-/* ── Sidebar: ทำให้ radio / text_input / expander ภายใน sidebar อ่านได้ ── */
 [data-testid="stSidebar"] .stRadio label,
 [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {
     color:#ffffff !important;
@@ -85,7 +81,6 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
     color:#f0f0f0 !important;
     border-radius:4px !important;
 }
-/* radio dot color in sidebar */
 [data-testid="stSidebar"] input[type="radio"] { accent-color:#ffffff !important; }
 
 /* ═══ FILE UPLOADER — force WHITE ═══ */
@@ -102,8 +97,6 @@ span[data-testid="stFileUploaderDropzone"] {
     background-color:#ffffff !important;
     background:#ffffff !important;
 }
-
-/* border ของ file uploader */
 [data-testid="stFileUploaderDropzone"],
 [data-testid="stFileUploader"] > section {
     border:1.5px dashed #c8c9aa !important;
@@ -113,8 +106,6 @@ span[data-testid="stFileUploaderDropzone"] {
 [data-testid="stFileUploader"] > section:hover {
     border-color:var(--red) !important;
 }
-
-/* icon และ text ใน file uploader ให้ชัด */
 [data-testid="stFileUploaderDropzone"] span,
 [data-testid="stFileUploaderDropzone"] p,
 [data-testid="stFileUploaderDropzone"] small {
@@ -146,6 +137,38 @@ span[data-testid="stFileUploaderDropzone"] {
     font-weight:700 !important;
     text-transform:uppercase;
     letter-spacing:0.5px;
+}
+
+/* ═══ DATE INPUT — force white background (override primaryColor #7A2020) ═══ */
+.stDateInput > div > div,
+.stDateInput > div > div > div,
+.stDateInput div[data-baseweb="base-input"],
+.stDateInput div[data-baseweb="base-input"] > div,
+.stDateInput div[data-baseweb="base-input"] input,
+.stDateInput input,
+div[data-testid="stDateInput"] div[data-baseweb="base-input"],
+div[data-testid="stDateInput"] input {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: var(--text-h) !important;
+}
+.stDateInput > div > div {
+    border: 1px solid var(--border-card) !important;
+    border-radius: 9px !important;
+}
+.stDateInput > div > div:focus-within {
+    border-color: var(--red) !important;
+    box-shadow: 0 0 0 3px rgba(122,32,32,0.07) !important;
+}
+/* ไอคอนปฏิทินให้เป็นสีแดงบนพื้นขาว */
+.stDateInput svg {
+    fill: var(--red) !important;
+    color: var(--red) !important;
+}
+/* placeholder text */
+.stDateInput input::placeholder {
+    color: var(--text-mute) !important;
+    opacity: 0.7 !important;
 }
 
 /* ═══ BUTTONS ═══ */
@@ -186,7 +209,6 @@ h2 { font-size:19px !important; font-weight:700 !important; color:var(--text-h) 
 h3 { font-size:16px !important; font-weight:600 !important; color:var(--text-h) !important; }
 h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !important; text-transform:uppercase; letter-spacing:1px; border-bottom:none !important; }
 .stSelectbox>div>div,.stMultiSelect>div>div { background:#ffffff !important; border:1px solid var(--border-card) !important; border-radius:9px !important; }
-/* multiselect tags — พื้นขาว ตัวอักษรแดง อ่านง่าย */
 [data-baseweb="tag"] {
     background-color: rgba(122,32,32,0.12) !important;
     border: 1px solid rgba(122,32,32,0.35) !important;
@@ -199,7 +221,6 @@ h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !im
 [data-baseweb="tag"] [role="presentation"] svg {
     fill: #7A2020 !important;
 }
-/* ── ปุ่ม << ซ่อน sidebar (ใน sidebar) ── */
 [data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
 [data-testid="stSidebarCollapseButton"] {
     background-color: rgba(255,255,255,0.85) !important;
@@ -210,7 +231,6 @@ h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !im
     fill: #7A2020 !important;
     stroke: #7A2020 !important;
 }
-/* ── ปุ่ม >> เปิด sidebar (นอก sidebar) — ต้องเห็นชัดบน main ── */
 [data-testid="collapsedControl"] {
     background-color: #7A2020 !important;
     border-radius: 0 8px 8px 0 !important;
@@ -251,8 +271,6 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 </style>
 """
 
-# SIDEBAR_HTML เป็น HTML-only ส่วน (footer card)
-# AI Provider selector ถูก render ด้วย render_provider_sidebar() จาก ai_provider.py
 SIDEBAR_HTML = """
 <div class="sb-footer">
   <div class="sb-footer-card">
@@ -268,10 +286,8 @@ SIDEBAR_HTML = """
 
 def apply_theme():
     import streamlit as st
-    # ── Anti-flash: sidebar สีแดงทันที + fade-in content ──
     st.markdown("""
 <style>
-/* sidebar พื้นหลังแดงทันทีไม่มี flash */
 [data-testid="stSidebar"],
 [data-testid="stSidebar"]>div,
 [data-testid="stSidebar"]>div>div,
@@ -282,7 +298,6 @@ def apply_theme():
 [data-testid="stAppViewContainer"] {
     background-color:#f8f9ee !important;
 }
-/* fade-in sidebar content ทั้งหมด */
 [data-testid="stSidebar"] > div:first-child {
     animation: sidebarFadeIn 0.35s ease-in forwards;
 }
@@ -290,20 +305,13 @@ def apply_theme():
     from { opacity: 0; }
     to   { opacity: 1; }
 }
-/* ซ่อน Streamlit loading splash shapes */
 #loading-spinner, .stSpinner,
 [data-testid="stSkeleton"],
 div[class*="loading"], div[class*="splash"] {
     display: none !important;
 }
-/* ซ่อน geometric shapes ของ Streamlit loading screen */
-.element-container svg,
-[data-testid="stAppViewContainer"] > div:first-child > div:first-child > svg {
-    display: none !important;
-}
 </style>""", unsafe_allow_html=True)
     st.markdown(GOV_CSS, unsafe_allow_html=True)
-    # ── ซ่อน toolbar ด้วย components.html (ทำงานกับทุก user บน Streamlit Cloud) ──
     import streamlit.components.v1 as components
     components.html("""
 <script>
