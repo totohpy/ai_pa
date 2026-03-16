@@ -14,15 +14,13 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stAppViewContainer"]>.main { background-color:var(--bg) !important; }
 .block-container { padding-top:1.6rem !important; padding-bottom:3rem !important; }
 
-/* ═══ HIDE STREAMLIT UI CHROME ═══ */
-/* ซ่อนเฉพาะ toolbar/menu/badge — ไม่แตะ header หรือ sidebar controls เลย */
-#MainMenu { visibility: hidden !important; }
-[data-testid="stToolbar"] { display: none !important; }
-[data-testid="stDecoration"],
-#stDecoration { display: none !important; }
-footer { visibility: hidden !important; }
-.viewerBadge_container__r5tak,
-.viewerBadge_link__qRIco { display: none !important; }
+/* ═══ HIDE STREAMLIT BRANDING ONLY ═══ */
+#MainMenu                      { visibility: hidden !important; display: none !important; }
+[data-testid="stDecoration"]   { visibility: hidden !important; display: none !important; }
+#stDecoration                  { display: none !important; }
+.viewerBadge_container__r5tak  { display: none !important; }
+.viewerBadge_link__qRIco       { display: none !important; }
+footer                         { visibility: hidden !important; }
 
 /* ═══ SIDEBAR ═══ */
 [data-testid="stSidebar"],
