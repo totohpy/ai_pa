@@ -15,52 +15,14 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 .block-container { padding-top:1.6rem !important; padding-bottom:3rem !important; }
 
 /* ═══ HIDE STREAMLIT UI CHROME ═══ */
-/* ไม่ซ่อน stHeader ทั้งก้อน เพราะมีปุ่ม collapse sidebar อยู่ข้างใน */
-#MainMenu,
-[data-testid="stToolbar"],
-[data-testid="stToolbarActions"],
+/* ซ่อนเฉพาะ toolbar/menu/badge — ไม่แตะ header หรือ sidebar controls เลย */
+#MainMenu { visibility: hidden !important; }
+[data-testid="stToolbar"] { display: none !important; }
 [data-testid="stDecoration"],
-#stDecoration,
-[data-testid="stActionButton"],
-.stDeployButton,
-footer,
-footer a,
+#stDecoration { display: none !important; }
+footer { visibility: hidden !important; }
 .viewerBadge_container__r5tak,
-.viewerBadge_link__qRIco {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-}
-
-/* ทำให้ header bar โปร่งใสและไม่กินพื้นที่ แต่ยังอยู่ใน DOM */
-header[data-testid="stHeader"] {
-    background: transparent !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    overflow: visible !important;
-}
-
-/* คืนปุ่ม collapse sidebar ให้กดได้ปกติ */
-header[data-testid="stHeader"] button[data-testid="stSidebarCollapseButton"],
-[data-testid="stSidebarCollapseButton"] {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    position: fixed !important;
-    top: 0.4rem !important;
-    left: 0.4rem !important;
-    z-index: 9999 !important;
-    background-color: rgba(255,255,255,0.85) !important;
-    border-radius: 6px !important;
-    border: 1px solid rgba(255,255,255,0.95) !important;
-}
-[data-testid="stSidebarCollapseButton"] svg {
-    fill: #7A2020 !important;
-    stroke: #7A2020 !important;
-}
+.viewerBadge_link__qRIco { display: none !important; }
 
 /* ═══ SIDEBAR ═══ */
 [data-testid="stSidebar"],
