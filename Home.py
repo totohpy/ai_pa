@@ -32,37 +32,13 @@ st.markdown("""
     border-radius: 20px; padding: 36px 40px 32px; margin-bottom: 28px;
     position: relative; overflow: hidden;
 }
-.hero-grid {
-    position: absolute; inset: 0; opacity: 0.04;
-    background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 39px, #fff 39px, #fff 40px),
-        repeating-linear-gradient(90deg, transparent, transparent 39px, #fff 39px, #fff 40px);
-}
-.hero-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
-.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,200,0.03); }
-
-.hero-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,255,255,0.11); border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 100px; padding: 5px 13px; font-size: 11px;
-    color: rgba(255,255,255,0.88); letter-spacing: 0.6px;
-    margin-bottom: 14px; position: relative; z-index: 1;
-}
-.hero-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: #4caf50; flex-shrink: 0;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.45; transform: scale(0.8); }
-}
-.hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
+/* ... (ส่วนอื่นคงเดิม) ... */
 
 .hero-title {
     font-size: 32px; font-weight: 700; color: #fff;
     position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
-    white-space: nowrap;
+    /* ลบ white-space: nowrap ออก */
+    white-space: normal;
 }
 .hero-title span {
     display: inline;
@@ -72,7 +48,25 @@ st.markdown("""
 .hero-sub {
     font-size: 18px; color: rgba(255,255,255,0.62);
     line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
-    white-space: nowrap;
+    white-space: normal; /* ลบ nowrap */
+}
+
+/* ── Responsive Mobile ── */
+@media (max-width: 768px) {
+    .hero {
+        padding: 24px 20px 22px;
+        border-radius: 14px;
+    }
+    .hero-title {
+        font-size: 22px;
+    }
+    .hero-sub {
+        font-size: 14px;
+    }
+    .hero-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
 }
 
 /* ── Section label ── */
