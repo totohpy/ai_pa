@@ -75,7 +75,7 @@ st.markdown("""
 }
 .hero-sub {
     font-size: 18px; color: rgba(255,255,255,0.62);
-    line-height: 1.7; position: relative; z-index: 1; max-width: 520px;
+    line-height: 1.7; position: relative; z-index: 1; max-width: 100%;
     white-space: normal; /* ลบ nowrap */
 }
 
