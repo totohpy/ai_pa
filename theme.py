@@ -1,5 +1,5 @@
-# theme.py — PA Planning Studio v6.1
-# Fix: date input white background (override primaryColor #7A2020)
+# theme.py — PA Planning Studio v6.2
+# Fix: removed stray CSS block outside Python string (caused SyntaxError on import)
 
 GOV_CSS = """
 <style>
@@ -13,6 +13,24 @@ GOV_CSS = """
 html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stAppViewContainer"]>.main { background-color:var(--bg) !important; }
 .block-container { padding-top:1.6rem !important; padding-bottom:3rem !important; }
+
+/* ═══ HIDE STREAMLIT UI CHROME ═══ */
+#MainMenu,
+[data-testid="stToolbar"],
+[data-testid="stToolbarActions"],
+[data-testid="stDecoration"],
+#stDecoration,
+header[data-testid="stHeader"],
+[data-testid="stActionButton"],
+.stDeployButton,
+footer,
+footer a,
+.viewerBadge_container__r5tak,
+.viewerBadge_link__qRIco {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+}
 
 /* ═══ SIDEBAR ═══ */
 [data-testid="stSidebar"],
@@ -139,7 +157,7 @@ span[data-testid="stFileUploaderDropzone"] {
     letter-spacing:0.5px;
 }
 
-/* ═══ DATE INPUT — force white background (override primaryColor #7A2020) ═══ */
+/* ═══ DATE INPUT — force white background ═══ */
 .stDateInput > div > div,
 .stDateInput > div > div > div,
 .stDateInput div[data-baseweb="base-input"],
@@ -160,12 +178,10 @@ div[data-testid="stDateInput"] input {
     border-color: var(--red) !important;
     box-shadow: 0 0 0 3px rgba(122,32,32,0.07) !important;
 }
-/* ไอคอนปฏิทินให้เป็นสีแดงบนพื้นขาว */
 .stDateInput svg {
     fill: var(--red) !important;
     color: var(--red) !important;
 }
-/* placeholder text */
 .stDateInput input::placeholder {
     color: var(--text-mute) !important;
     opacity: 0.7 !important;
@@ -214,13 +230,8 @@ h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !im
     border: 1px solid rgba(122,32,32,0.35) !important;
     border-radius: 6px !important;
 }
-[data-baseweb="tag"] span {
-    color: #7A2020 !important;
-    font-weight: 600 !important;
-}
-[data-baseweb="tag"] [role="presentation"] svg {
-    fill: #7A2020 !important;
-}
+[data-baseweb="tag"] span { color: #7A2020 !important; font-weight: 600 !important; }
+[data-baseweb="tag"] [role="presentation"] svg { fill: #7A2020 !important; }
 [data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
 [data-testid="stSidebarCollapseButton"] {
     background-color: rgba(255,255,255,0.85) !important;
@@ -239,13 +250,8 @@ h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !im
     display: flex !important;
     box-shadow: 2px 0 8px rgba(0,0,0,0.2) !important;
 }
-[data-testid="collapsedControl"] button {
-    background: transparent !important;
-}
-[data-testid="collapsedControl"] svg {
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-}
+[data-testid="collapsedControl"] button { background: transparent !important; }
+[data-testid="collapsedControl"] svg { fill: #ffffff !important; stroke: #ffffff !important; }
 .stSlider>div>div>div>div { background:var(--red) !important; }
 .stDownloadButton>button { background:var(--green-pale) !important; color:#2d5a1a !important; border:1px solid var(--green-lt) !important; border-radius:9px !important; font-weight:600 !important; }
 div[data-testid="stMetric"] { background:var(--bg-card) !important; border:1px solid var(--border-card) !important; border-radius:12px !important; padding:16px !important; }
@@ -261,13 +267,6 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 .sb-emblem { width:32px; height:32px; background:rgba(255,255,255,0.22); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:17px; }
 .sb-name { font-size:13px; font-weight:700; display:block; color:#ffffff !important; }
 .sb-org  { font-size:11px; opacity:0.70; margin-top:1px; display:block; color:#ffffff !important; }
-
-/* ── ซ่อนเฉพาะ Streamlit branding ── */
-#MainMenu                        { visibility:hidden !important; display:none !important; }
-[data-testid="stDecoration"]     { visibility:hidden !important; display:none !important; }
-#stDecoration                    { display:none !important; }
-.viewerBadge_container__r5tak   { display:none !important; }
-.viewerBadge_link__qRIco        { display:none !important; }
 </style>
 """
 
@@ -286,6 +285,8 @@ SIDEBAR_HTML = """
 
 def apply_theme():
     import streamlit as st
+    import streamlit.components.v1 as components
+
     st.markdown("""
 <style>
 [data-testid="stSidebar"],
@@ -311,8 +312,9 @@ div[class*="loading"], div[class*="splash"] {
     display: none !important;
 }
 </style>""", unsafe_allow_html=True)
+
     st.markdown(GOV_CSS, unsafe_allow_html=True)
-    import streamlit.components.v1 as components
+
     components.html("""
 <script>
 (function() {
@@ -337,23 +339,3 @@ div[class*="loading"], div[class*="splash"] {
 })();
 </script>
 """, height=0)
-
-/* ═══ ซ่อน Streamlit toolbar (ขวาบน) และ deploy button ═══ */
-[data-testid="stToolbar"],
-[data-testid="stToolbarActions"],
-.stToolbar,
-header[data-testid="stHeader"],
-[data-testid="stHeader"] {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-/* ซ่อน bottom-right badge และ fork button */
-[data-testid="stActionButton"],
-.stDeployButton,
-a[href*="streamlit.io"],
-div[class*="reportview"] footer,
-footer {
-    display: none !important;
-    visibility: hidden !important;
-}
