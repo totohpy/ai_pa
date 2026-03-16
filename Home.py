@@ -34,45 +34,7 @@ with st.sidebar:
 st.markdown("""
 <style>
 
-/* ══════════════════════════════════════════════
-   HIDE STREAMLIT UI CHROME
-══════════════════════════════════════════════ */
-
-/* Header / toolbar bar (top-right icons) */
-[data-testid="stToolbar"],
-[data-testid="stToolbarActions"],
-header[data-testid="stHeader"] {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-}
-
-/* Deploy / Fork / GitHub buttons */
-[data-testid="stActionButton"],
-.stDeployButton,
-button[title="Fork this app"],
-button[title="View on GitHub"],
-button[kind="header"] {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-/* Bottom-right Streamlit badge / "Made with Streamlit" */
-footer,
-footer a,
-.viewerBadge_container__r5tak,
-.viewerBadge_link__qRIco,
-[data-testid="stDecoration"],
-#stDecoration {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-/* Main menu hamburger (top-right ⋮) */
-#MainMenu {
-    display: none !important;
-    visibility: hidden !important;
-}
+/* Chrome hiding handled by theme.py */
 
 
 /* ══════════════════════════════════════════════
