@@ -67,8 +67,9 @@ st.markdown("""
 }
 .hero-title span {
     display: inline;
-    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.80));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;  /* ← override gradient เดิม */
+    background: none;
 }
 .hero-sub {
     font-size: 18px; color: rgba(255,255,255,0.78);
