@@ -2,10 +2,17 @@ import streamlit as st
 import sys, os, pathlib
 
 _here = pathlib.Path(__file__).resolve().parent
-for _p in [_here, pathlib.Path(os.getcwd())]:
+for _p in [_here, _here.parent, pathlib.Path(os.getcwd()), pathlib.Path(os.getcwd()).parent]:
     if (_p / "theme.py").exists():
-        if str(_p) not in sys.path: sys.path.insert(0, str(_p))
+        if str(_p) not in sys.path:
+            sys.path.insert(0, str(_p))
         break
+else:
+    # fallback: add both cwd and file dir unconditionally
+    for _p in [_here, pathlib.Path(os.getcwd())]:
+        if str(_p) not in sys.path:
+            sys.path.insert(0, str(_p))
+
 try:
     from theme import apply_theme, SIDEBAR_HTML
     from ai_provider import render_provider_sidebar
@@ -26,28 +33,46 @@ with st.sidebar:
 
 st.markdown("""
 <style>
-/* ── Hero ── */
-.hero {
-    background: linear-gradient(135deg, #501313 0%, #791F1F 45%, #A32D2D 100%);
-    border-radius: 20px; padding: 36px 40px 32px; margin-bottom: 28px;
-    position: relative; overflow: hidden;
-}
 
+/* Chrome hiding handled by theme.py */
+
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+.hero {
+    background: linear-gradient(135deg, #004d3d 0%, #007a65 45%, #00c9a7 100%);
+    border-radius: 20px;
+    padding: 36px 40px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+}
 .hero-grid {
     position: absolute; inset: 0; opacity: 0.04;
     background-image:
         repeating-linear-gradient(0deg, transparent, transparent 39px, #fff 39px, #fff 40px),
         repeating-linear-gradient(90deg, transparent, transparent 39px, #fff 39px, #fff 40px);
 }
-.hero-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
-.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,200,0.03); }
+.hero-accent  {
+    position: absolute; right: -40px; top: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+}
+.hero-accent2 {
+    position: absolute; right: 80px; bottom: -60px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: rgba(255,255,200,0.03);
+}
 
 .hero-badge {
     display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,255,255,0.11); border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 100px; padding: 5px 13px; font-size: 11px;
-    color: rgba(255,255,255,0.88); letter-spacing: 0.6px;
-    margin-bottom: 14px; position: relative; z-index: 1;
+    background: rgba(255,255,255,0.11);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 100px; padding: 5px 13px;
+    font-size: 11px; color: rgba(255,255,255,0.88);
+    letter-spacing: 0.6px; margin-bottom: 14px;
+    position: relative; z-index: 1;
 }
 .hero-dot {
     width: 7px; height: 7px; border-radius: 50%;
@@ -58,99 +83,132 @@ st.markdown("""
     0%, 100% { opacity: 1; transform: scale(1); }
     50%       { opacity: 0.45; transform: scale(0.8); }
 }
-.hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
-
-/* ... (ส่วนอื่นคงเดิม) ... */
+.hero-sep {
+    width: 1px; height: 11px;
+    background: rgba(255,255,255,0.25); flex-shrink: 0;
+}
 
 .hero-title {
     font-size: 32px; font-weight: 700; color: #fff;
-    position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
-    /* ลบ white-space: nowrap ออก */
+    position: relative; z-index: 1;
+    margin-bottom: 8px; line-height: 1.3;
     white-space: normal;
 }
 .hero-title span {
-    display: inline;
     background: linear-gradient(90deg, #fff, rgba(255,255,255,0.72));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 .hero-sub {
-    font-size: 18px; color: rgba(255,255,255,0.62);
-    line-height: 1.7; position: relative; z-index: 1; max-width: 100%;
-    white-space: normal; /* ลบ nowrap */
+    font-size: 16px; color: rgba(255,255,255,0.62);
+    line-height: 1.7; position: relative; z-index: 1;
+    max-width: 100%; white-space: normal;
 }
 
-/* ── Responsive Mobile ── */
+/* ── Mobile Hero ── */
 @media (max-width: 768px) {
     .hero {
-        padding: 24px 20px 22px;
+        padding: 22px 18px 20px;
         border-radius: 14px;
+        margin-bottom: 20px;
     }
-    .hero-title {
-        font-size: 22px;
-    }
-    .hero-sub {
-        font-size: 14px;
-    }
-    .hero-badge {
-        font-size: 10px;
-        padding: 4px 10px;
-    }
+    .hero-accent, .hero-accent2 { display: none; }
+    .hero-title { font-size: 20px; }
+    .hero-sub   { font-size: 13px; line-height: 1.6; }
+    .hero-badge { font-size: 10px; padding: 4px 10px; margin-bottom: 10px; }
 }
 
-/* ── Section label ── */
+
+/* ══════════════════════════════════════════════
+   SECTION LABEL
+══════════════════════════════════════════════ */
 .sec {
-    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; display: flex;
+    align-items: center; gap: 10px;
 }
 .sec-title {
     font-size: 13px; font-weight: 600; color: #888;
-    letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;
+    letter-spacing: 2px; text-transform: uppercase;
+    white-space: nowrap;
 }
 .sec-line { flex: 1; height: 1px; background: #e5e5e5; }
 
-/* ── Links ── */
-a.hcard-link { text-decoration: none !important; color: inherit !important; display: block; height: 100%; }
 
-/* ── Main cards ── */
+/* ══════════════════════════════════════════════
+   CARD LINKS
+══════════════════════════════════════════════ */
+a.hcard-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block; height: 100%;
+}
+
+
+/* ══════════════════════════════════════════════
+   MAIN CARDS
+══════════════════════════════════════════════ */
 .mcard {
-    background: #fff; border: 0.5px solid #e0e0e0;
+    background: #fff;
+    border: 0.5px solid #e0e0e0;
     border-radius: 14px; padding: 22px 20px 20px;
     position: relative; overflow: hidden; height: 100%;
     transition: transform .22s, border-color .22s;
 }
 .mcard-grid {
-    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    position: absolute; inset: 0;
+    pointer-events: none; overflow: hidden;
 }
 .mcard-grid::before {
     content: ''; position: absolute; top: -80px; right: -80px;
     width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(76, 175, 80, 0.06);
+    background: rgba(76,175,80,0.06);
 }
 .mcard-grid::after {
     content: ''; position: absolute; top: 20px; right: -20px;
     width: 240px; height: 240px; border-radius: 50%;
-    background: rgba(129, 199, 132, 0.08);
+    background: rgba(129,199,132,0.08);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
 
 .mcard-stripe {
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #791F1F, #E24B4A);
-    transform: scaleX(0); transform-origin: left; transition: transform .24s ease;
+    background: linear-gradient(90deg, #007a65, #4d8076);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .24s ease;
 }
-
 .mcard-icon {
     width: 46px; height: 46px; border-radius: 12px;
     background: #f7f7f7; border: 0.5px solid #e5e5e5;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; margin-bottom: 14px; position: relative; z-index: 1;
 }
-.mcard-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
-.mcard-desc  { font-size: 13px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
+.mcard-title {
+    font-size: 15px; font-weight: 700; color: #1a1a1a;
+    margin-bottom: 6px; position: relative; z-index: 1;
+    font-family: 'Noto Serif Thai', serif;
+}
+.mcard-desc {
+    font-size: 13px; color: #666;
+    line-height: 1.65; position: relative; z-index: 1;
+}
 
-/* ── Utility cards ── */
+/* ── Mobile Main Cards ── */
+@media (max-width: 768px) {
+    .mcard { padding: 16px 14px 14px; }
+    .mcard-icon { width: 38px; height: 38px; font-size: 20px; margin-bottom: 10px; }
+    .mcard-title { font-size: 14px; }
+    .mcard-desc  { font-size: 12px; }
+}
+
+
+/* ══════════════════════════════════════════════
+   UTILITY CARDS
+══════════════════════════════════════════════ */
 .ucard {
-    background: #fff; border: 0.5px solid #e0e0e0;
+    background: #fff;
+    border: 0.5px solid #e0e0e0;
     border-radius: 14px; padding: 16px 16px 15px;
     position: relative; overflow: hidden; height: 100%;
     transition: transform .2s, border-color .2s;
@@ -160,8 +218,9 @@ a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
 
 .ucard-bar {
     position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #185FA5, #378ADD);
-    transform: scaleX(0); transform-origin: left; transition: transform .22s ease;
+    background: linear-gradient(90deg, #4d8076, #00c9a7);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .22s ease;
 }
 .ucard-icon {
     width: 34px; height: 34px; border-radius: 8px;
@@ -169,20 +228,43 @@ a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; margin-bottom: 10px;
 }
-.ucard-title { font-size: 14px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
-.ucard-desc  { font-size: 12px; color: #888;      line-height: 1.6; }
+.ucard-title {
+    font-size: 14px; font-weight: 700; color: #1a1a1a;
+    margin-bottom: 4px;
+    font-family: 'Noto Serif Thai', serif;
+}
+.ucard-desc { font-size: 12px; color: #888; line-height: 1.6; }
 
-/* ── Notice ── */
+/* ── Mobile Utility Cards ── */
+@media (max-width: 768px) {
+    .ucard { padding: 12px 12px 12px; }
+    .ucard-icon { width: 28px; height: 28px; font-size: 15px; margin-bottom: 8px; }
+    .ucard-title { font-size: 12px; }
+    .ucard-desc  { font-size: 11px; }
+}
+
+
+/* ══════════════════════════════════════════════
+   NOTICE BOX
+══════════════════════════════════════════════ */
 .infobox {
     display: flex; align-items: flex-start; gap: 8px;
-    background: #FEFFD3; border: 0.5px solid #e0e098; border-left: 3px solid #7A2020;
+    background: #e6fdf8;
+    border: 0.5px solid #a0e4d0;
+    border-left: 3px solid #00c9a7;
     border-radius: 10px; padding: 10px 14px; margin-top: 8px;
     font-size: 14px; color: #555; line-height: 1.6;
 }
+
+@media (max-width: 768px) {
+    .infobox { font-size: 12px; padding: 8px 12px; }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# ── Hero ──────────────────────────────────────────────
+
+# ── Hero ──────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
   <div class="hero-grid"></div>
@@ -197,12 +279,20 @@ st.markdown("""
   <div class="hero-title">
     <span>Performance Audit Planning Studio</span>
   </div>
-  <div class="hero-sub">เครื่องมืออัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · SAO</div>
+  <div class="hero-sub">
+    เครื่องมืออัจฉริยะสำหรับการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพดำเนินงาน · SAO
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ── Main Tools ────────────────────────────────────────
-st.markdown('<div class="sec"><div class="sec-title">เครื่องมือหลัก</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
+
+# ── Main Tools ────────────────────────────────────────────────────────────────
+st.markdown(
+    '<div class="sec"><div class="sec-title">เครื่องมือหลัก</div>'
+    '<div class="sec-line"></div></div>',
+    unsafe_allow_html=True
+)
+
 m1, m2, m3 = st.columns(3, gap="medium")
 
 with m1:
@@ -213,7 +303,7 @@ with m1:
         <div class="mcard-stripe"></div>
         <div class="mcard-icon">🏳️</div>
         <div class="mcard-title">Audit Design Assistant</div>
-        <div class="mcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · ค้นหาข้อตรวจพบที่ผ่านมา · AI แนะนำประเด็น · ร่างรายงาน </div>
+        <div class="mcard-desc">วิเคราะห์และสรุปเรื่อง 6W2H · Logic Model · ค้นหาข้อตรวจพบที่ผ่านมา · AI แนะนำประเด็น · ร่างรายงาน</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
@@ -241,9 +331,15 @@ with m3:
       </div>
     </a>""", unsafe_allow_html=True)
 
-# ── Utility Tools ─────────────────────────────────────
-st.markdown('<div class="sec" style="margin-top:24px;"><div class="sec-title">ยูทิลิตี้</div><div class="sec-line"></div></div>', unsafe_allow_html=True)
-u1, u2, u3, u4, u5 = st.columns(5, gap="xxsmall")
+
+# ── Utility Tools ─────────────────────────────────────────────────────────────
+st.markdown(
+    '<div class="sec" style="margin-top:24px;"><div class="sec-title">ยูทิลิตี้</div>'
+    '<div class="sec-line"></div></div>',
+    unsafe_allow_html=True
+)
+
+u1, u2, u3, u4, u5 = st.columns(5, gap="small")
 
 with u1:
     st.markdown("""
@@ -274,7 +370,7 @@ with u3:
         <div class="ucard-bar"></div>
         <div class="ucard-icon">📊</div>
         <div class="ucard-title">Audit Dashboard</div>
-        <div class="ucard-desc">Dashboard ตัวช่วยสรุปข้อมูลและนำเสนอข้อมูลด้วยภาพ</div>
+        <div class="ucard-desc">Dashboard ตัวช่วยสรุปข้อมูลและนำเสนอด้วยภาพ</div>
       </div>
     </a>""", unsafe_allow_html=True)
 
@@ -300,5 +396,13 @@ with u5:
       </div>
     </a>""", unsafe_allow_html=True)
 
+
+# ── Notice ────────────────────────────────────────────────────────────────────
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="infobox"><div style="font-size:14px;margin-top:1px;flex-shrink:0">⚠️</div><div>การใช้ฟีเจอร์ AI อาจผิดพลาดได้ โปรดตรวจสอบคำตอบอีกครั้ง ระบบไม่มีการจัดเก็บข้อมูลไว้</div></div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="infobox">'
+    '<div style="font-size:14px;margin-top:1px;flex-shrink:0">⚠️</div>'
+    '<div>การใช้ฟีเจอร์ AI อาจผิดพลาดได้ โปรดตรวจสอบคำตอบอีกครั้ง ระบบไม่มีการจัดเก็บข้อมูลไว้</div>'
+    '</div>',
+    unsafe_allow_html=True
+)
