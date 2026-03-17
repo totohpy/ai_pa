@@ -28,91 +28,76 @@ st.markdown("""
 <style>
 /* ── Hero ── */
 .hero {
-    background: linear-gradient(135deg, #501313 0%, #791F1F 45%, #A32D2D 100%);
+    background: linear-gradient(135deg, #007a67 0%, #00b396 45%, #00c9a7 100%);
     border-radius: 20px; padding: 36px 40px 32px; margin-bottom: 28px;
     position: relative; overflow: hidden;
 }
 
 .hero-grid {
-    position: absolute; inset: 0; opacity: 0.04;
+    position: absolute; inset: 0; opacity: 0.05;
     background-image:
         repeating-linear-gradient(0deg, transparent, transparent 39px, #fff 39px, #fff 40px),
         repeating-linear-gradient(90deg, transparent, transparent 39px, #fff 39px, #fff 40px);
 }
-.hero-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
-.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,200,0.03); }
+.hero-accent  { position: absolute; right: -40px; top: -40px;   width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.07); }
+.hero-accent2 { position: absolute; right: 80px;  bottom: -60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,200,0.04); }
 
 .hero-badge {
     display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,255,255,0.11); border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
     border-radius: 100px; padding: 5px 13px; font-size: 11px;
-    color: rgba(255,255,255,0.88); letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.92); letter-spacing: 0.6px;
     margin-bottom: 14px; position: relative; z-index: 1;
 }
 .hero-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: #4caf50; flex-shrink: 0;
+    background: #c4fcef; flex-shrink: 0;
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50%       { opacity: 0.45; transform: scale(0.8); }
 }
-.hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
-
-/* ... (ส่วนอื่นคงเดิม) ... */
+.hero-sep { width: 1px; height: 11px; background: rgba(255,255,255,0.30); flex-shrink: 0; }
 
 .hero-title {
     font-size: 32px; font-weight: 700; color: #fff;
     position: relative; z-index: 1; margin-bottom: 8px; line-height: 1.3;
-    /* ลบ white-space: nowrap ออก */
     white-space: normal;
 }
 .hero-title span {
     display: inline;
-    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.72));
+    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.80));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .hero-sub {
-    font-size: 18px; color: rgba(255,255,255,0.62);
+    font-size: 18px; color: rgba(255,255,255,0.78);
     line-height: 1.7; position: relative; z-index: 1; max-width: 100%;
-    white-space: normal; /* ลบ nowrap */
+    white-space: normal;
 }
 
 /* ── Responsive Mobile ── */
 @media (max-width: 768px) {
-    .hero {
-        padding: 24px 20px 22px;
-        border-radius: 14px;
-    }
-    .hero-title {
-        font-size: 22px;
-    }
-    .hero-sub {
-        font-size: 14px;
-    }
-    .hero-badge {
-        font-size: 10px;
-        padding: 4px 10px;
-    }
+    .hero { padding: 24px 20px 22px; border-radius: 14px; }
+    .hero-title { font-size: 22px; }
+    .hero-sub { font-size: 14px; }
+    .hero-badge { font-size: 10px; padding: 4px 10px; }
 }
 
 /* ── Section label ── */
-.sec {
-    margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
-}
+.sec { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
 .sec-title {
-    font-size: 13px; font-weight: 600; color: #888;
+    font-size: 13px; font-weight: 600; color: #4d8076;
     letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;
 }
-.sec-line { flex: 1; height: 1px; background: #e5e5e5; }
+.sec-line { flex: 1; height: 1px; background: #b2ede2; }
 
 /* ── Links ── */
 a.hcard-link { text-decoration: none !important; color: inherit !important; display: block; height: 100%; }
 
 /* ── Main cards ── */
 .mcard {
-    background: #fff; border: 0.5px solid #e0e0e0;
+    background: #fff; border: 0.5px solid #c8f0e8;
     border-radius: 14px; padding: 22px 20px 20px;
     position: relative; overflow: hidden; height: 100%;
     transition: transform .22s, border-color .22s;
@@ -123,61 +108,61 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
 .mcard-grid::before {
     content: ''; position: absolute; top: -80px; right: -80px;
     width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(76, 175, 80, 0.06);
+    background: rgba(0,201,167,0.06);
 }
 .mcard-grid::after {
     content: ''; position: absolute; top: 20px; right: -20px;
     width: 240px; height: 240px; border-radius: 50%;
-    background: rgba(129, 199, 132, 0.08);
+    background: rgba(196,252,239,0.10);
 }
-a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #c8c8c8; }
+a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #00c9a7; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
 
 .mcard-stripe {
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #791F1F, #E24B4A);
+    background: linear-gradient(90deg, #00b396, #00c9a7);
     transform: scaleX(0); transform-origin: left; transition: transform .24s ease;
 }
 
 .mcard-icon {
     width: 46px; height: 46px; border-radius: 12px;
-    background: #f7f7f7; border: 0.5px solid #e5e5e5;
+    background: #e6faf6; border: 0.5px solid #b2ede2;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; margin-bottom: 14px; position: relative; z-index: 1;
 }
-.mcard-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;  position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
-.mcard-desc  { font-size: 13px; color: #666;     line-height: 1.65; position: relative; z-index: 1; }
+.mcard-title { font-size: 15px; font-weight: 700; color: #0d2b25; margin-bottom: 6px; position: relative; z-index: 1; font-family: 'Noto Serif Thai', serif; }
+.mcard-desc  { font-size: 13px; color: #4d8076; line-height: 1.65; position: relative; z-index: 1; }
 
 /* ── Utility cards ── */
 .ucard {
-    background: #fff; border: 0.5px solid #e0e0e0;
+    background: #fff; border: 0.5px solid #c8f0e8;
     border-radius: 14px; padding: 16px 16px 15px;
     position: relative; overflow: hidden; height: 100%;
     transition: transform .2s, border-color .2s;
 }
-a.hcard-link:hover .ucard             { transform: translateY(-3px); border-color: #c8c8c8; }
+a.hcard-link:hover .ucard             { transform: translateY(-3px); border-color: #00c9a7; }
 a.hcard-link:hover .ucard .ucard-bar  { transform: scaleX(1); }
 
 .ucard-bar {
     position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #185FA5, #378ADD);
+    background: linear-gradient(90deg, #4d8076, #00c9a7);
     transform: scaleX(0); transform-origin: left; transition: transform .22s ease;
 }
 .ucard-icon {
     width: 34px; height: 34px; border-radius: 8px;
-    background: #f7f7f7;
+    background: #e6faf6;
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; margin-bottom: 10px;
 }
-.ucard-title { font-size: 14px;   font-weight: 700; color: #1a1a1a; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
-.ucard-desc  { font-size: 12px; color: #888;      line-height: 1.6; }
+.ucard-title { font-size: 14px; font-weight: 700; color: #0d2b25; margin-bottom: 4px; font-family: 'Noto Serif Thai', serif; }
+.ucard-desc  { font-size: 12px; color: #4d8076; line-height: 1.6; }
 
 /* ── Notice ── */
 .infobox {
     display: flex; align-items: flex-start; gap: 8px;
-    background: #FEFFD3; border: 0.5px solid #e0e098; border-left: 3px solid #7A2020;
+    background: #e6faf6; border: 0.5px solid #b2ede2; border-left: 3px solid #00c9a7;
     border-radius: 10px; padding: 10px 14px; margin-top: 8px;
-    font-size: 14px; color: #555; line-height: 1.6;
+    font-size: 14px; color: #1e4a40; line-height: 1.6;
 }
 </style>
 """, unsafe_allow_html=True)
