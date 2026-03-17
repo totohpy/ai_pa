@@ -315,12 +315,17 @@ div[data-testid="stChatMessage"] {
     border-radius:12px !important;
     margin-bottom:8px !important;
 }
-.stChatInput>div {
+.stChatInput textarea,
+.stChatInput input,
+[data-testid="stChatInput"] textarea,
+[data-testid="stChatInputContainer"] {
     background:#ffffff !important;
-    border:1px solid var(--border-card) !important;
-    border-radius:12px !important;
+    color:var(--text-h) !important;
 }
-.stChatInput>div:focus-within { border-color:var(--primary) !important; }
+[data-testid="stChatInput"] > div,
+[data-testid="stChatInputContainer"] > div {
+    background:#ffffff !important;
+}
 
 /* ═══ TYPOGRAPHY ═══ */
 h1 {
