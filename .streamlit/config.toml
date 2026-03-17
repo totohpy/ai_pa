@@ -1,9 +1,9 @@
 [theme]
 base                     = "light"
-primaryColor             = "#7A2020"
-backgroundColor          = "#f8f9ee"
-secondaryBackgroundColor = "#7A2020"
-textColor                = "#1a1a1a"
+primaryColor             = "#00c9a7"
+backgroundColor          = "#f0fdf9"
+secondaryBackgroundColor = "#00b396"
+textColor                = "#0d2b25"
 font                     = "sans serif"
  
 [client]
@@ -12,4 +12,3 @@ toolbarMode = "viewer"
  
 [browser]
 gatherUsageStats = false
- 
