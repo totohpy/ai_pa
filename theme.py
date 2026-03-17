@@ -1,29 +1,29 @@
-# theme.py — PA Planning Studio v6.2
-# Color update: Emerald Green scheme
-# Primary: #00c9a7 | Light bg: #e6faf6 | Dark hover: #4d8076
+# theme.py — PA Planning Studio v6.3
+# Color update: Deep Teal scheme
+# Primary: #008b74 | Accent: #4ffbdf | Dark hover: #005b44
 
 GOV_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Serif+Thai:wght@400;600;700&display=swap');
 :root {
-    --primary:#00c9a7;
-    --primary-dark:#4d8076;
-    --primary-light:#c4fcef;
-    --primary-pale:#e6faf6;
-    --primary-hover:#00b396;
-    --bg:#f0fdf9;
+    --primary:#008b74;
+    --primary-dark:#005b44;
+    --primary-light:#4ffbdf;
+    --primary-pale:#e0fdf7;
+    --primary-hover:#007060;
+    --bg:#f0fdfb;
     --bg-card:#ffffff;
-    --border:#b2ede2;
-    --border-card:#c8f0e8;
-    --text-h:#0d2b25;
-    --text-b:#1e4a40;
-    --text-mute:#4d8076;
-    --cream:#e6faf6;
-    --sidebar:#00b396;
-    --sidebar-dark:#007a67;
-    --green:#4d8076;
-    --green-lt:#b2ede2;
-    --green-pale:#e6faf6;
+    --border:#a8f0e0;
+    --border-card:#c0f5ea;
+    --text-h:#002a1f;
+    --text-b:#1a3d32;
+    --text-mute:#3d7a68;
+    --cream:#e0fdf7;
+    --sidebar:#008b74;
+    --sidebar-dark:#005b44;
+    --green:#005b44;
+    --green-lt:#a8f0e0;
+    --green-pale:#e0fdf7;
 }
 html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stAppViewContainer"]>.main { background-color:var(--bg) !important; }
@@ -141,7 +141,7 @@ span[data-testid="stFileUploaderDropzone"] {
 .stTextInput>div>div>input:focus,
 .stTextArea>div>div>textarea:focus {
     border-color:var(--primary) !important;
-    box-shadow:0 0 0 3px rgba(0,201,167,0.12) !important;
+    box-shadow:0 0 0 3px rgba(0,139,116,0.12) !important;
 }
 .stTextInput label,.stTextArea label,.stSelectbox label,
 .stNumberInput label,.stSlider label,.stFileUploader label,
@@ -161,16 +161,15 @@ span[data-testid="stFileUploaderDropzone"] {
 div[data-testid="stDateInput"] div[data-baseweb="base-input"] {
     background-color: #ffffff !important;
     border-radius: 9px !important;
-    /* ใช้ box-shadow inset แทน border — BaseWeb จะ override border ปกติ */
-    box-shadow: inset 0 0 0 1px #c8f0e8 !important;
+    box-shadow: inset 0 0 0 1px #c0f5ea !important;
     border: none !important;
 }
 div[data-testid="stDateInput"] div[data-baseweb="base-input"]:focus-within {
-    box-shadow: inset 0 0 0 1px #00c9a7, 0 0 0 3px rgba(0,201,167,0.12) !important;
+    box-shadow: inset 0 0 0 1px #008b74, 0 0 0 3px rgba(0,139,116,0.12) !important;
 }
 div[data-testid="stDateInput"] div[data-baseweb="base-input"] input {
     background-color: #ffffff !important;
-    color: #0d2b25 !important;
+    color: #002a1f !important;
     font-family: 'Sarabun', sans-serif !important;
     font-size: 15px !important;
 }
@@ -188,7 +187,7 @@ div[data-testid="stDateInput"] svg {
 }
 button[data-testid="baseButton-primary"] {
     background:var(--primary) !important;
-    color:#0d2b25 !important;
+    color:#ffffff !important;
     border:none !important;
     font-weight:700 !important;
 }
@@ -196,7 +195,7 @@ button[data-testid="baseButton-primary"]:hover {
     background:var(--primary-dark) !important;
     color:#ffffff !important;
     transform:translateY(-1px) !important;
-    box-shadow:0 4px 16px rgba(0,201,167,0.30) !important;
+    box-shadow:0 4px 16px rgba(0,139,116,0.30) !important;
 }
 button[data-testid="baseButton-secondary"] {
     background:#fff !important;
@@ -238,7 +237,7 @@ button[data-baseweb="tab"]:hover {
 }
 button[data-baseweb="tab"][aria-selected="true"] {
     background:var(--primary) !important;
-    color:#0d2b25 !important;
+    color:#ffffff !important;
     font-weight:700 !important;
 }
 
@@ -269,7 +268,7 @@ div[data-testid="stInfo"] p, div[data-testid="stInfo"] span {
     color:var(--text-b) !important;
 }
 div[data-testid="stSuccess"] {
-    background:#e6faf6 !important;
+    background:#e0fdf7 !important;
     border:1px solid var(--green-lt) !important;
     border-left:4px solid var(--primary) !important;
     border-radius:10px !important;
@@ -289,8 +288,8 @@ div[data-testid="stWarning"] p, div[data-testid="stWarning"] span {
     color:#5a3e00 !important;
 }
 div[data-testid="stError"] {
-    background:rgba(0,201,167,0.06) !important;
-    border:1px solid rgba(0,201,167,0.25) !important;
+    background:rgba(0,139,116,0.06) !important;
+    border:1px solid rgba(0,139,116,0.25) !important;
     border-left:4px solid var(--primary) !important;
     border-radius:10px !important;
     color:var(--text-b) !important;
@@ -352,8 +351,8 @@ h4 {
     color:var(--text-h) !important;
 }
 [data-baseweb="tag"] {
-    background-color: rgba(0,201,167,0.15) !important;
-    border: 1px solid rgba(0,201,167,0.40) !important;
+    background-color: rgba(0,139,116,0.12) !important;
+    border: 1px solid rgba(0,139,116,0.35) !important;
     border-radius: 6px !important;
 }
 [data-baseweb="tag"] span {
@@ -402,7 +401,7 @@ h4 {
 }
 .stDownloadButton>button:hover {
     background:var(--primary-light) !important;
-    color:#0d2b25 !important;
+    color:#002a1f !important;
 }
 
 /* ═══ METRICS ═══ */
@@ -431,7 +430,7 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 
 /* ═══ SCROLLBAR ═══ */
 ::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-thumb { background:rgba(0,201,167,0.25); border-radius:10px; }
+::-webkit-scrollbar-thumb { background:rgba(0,139,116,0.25); border-radius:10px; }
 
 /* ═══ SIDEBAR FOOTER CARD ═══ */
 .sb-footer { padding:12px; border-top:1px solid rgba(255,255,255,0.22); margin-top:12px; }
@@ -500,10 +499,10 @@ def apply_theme():
 [data-testid="stSidebar"]>div>div,
 [data-testid="stSidebar"]>div>div>div,
 [data-testid="stSidebarNav"] {
-    background-color:#00b396 !important;
+    background-color:#008b74 !important;
 }
 [data-testid="stAppViewContainer"] {
-    background-color:#f0fdf9 !important;
+    background-color:#f0fdfb !important;
 }
 [data-testid="stSidebar"] > div:first-child {
     animation: sidebarFadeIn 0.35s ease-in forwards;
