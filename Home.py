@@ -106,14 +106,18 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
     position: absolute; inset: 0; pointer-events: none; overflow: hidden;
 }
 .mcard-grid::before {
-    content: ''; position: absolute; top: -80px; right: -80px;
-    width: 180px; height: 180px; border-radius: 50%;
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    border-radius: 0;
+    transform: rotate(45deg);
     background: rgba(230, 139, 139, 0.1);
 }
 .mcard-grid::after {
-    content: ''; position: absolute; top: 20px; right: -20px;
-    width: 240px; height: 240px; border-radius: 50%;
-    background: rgba(230, 139, 139, 0.1);
+    content: ''; position: absolute; top: 30px; right: -80px;
+    width: 240px; height: 240px;
+    border-radius: 0;
+    transform: rotate(45deg);
+    background: rgba(230, 139, 139, 0.07);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #00c9a7; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
