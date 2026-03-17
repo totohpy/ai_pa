@@ -395,6 +395,19 @@ h4 {
     stroke: #ffffff !important;
 }
 
+[data-testid="stSidebar"] details p,
+[data-testid="stSidebar"] details code,
+[data-testid="stSidebar"] details pre {
+    color: #1a1a1a !important;        /* ← เปลี่ยนจาก rgba(255,255,255,0.85) */
+    font-size:11px !important;
+}
+[data-testid="stSidebar"] code,
+[data-testid="stSidebar"] pre {
+    background: rgba(0,0,0,0.12) !important;
+    color: #1a1a1a !important;        /* ← เปลี่ยนจาก #f0f0f0 */
+    border-radius: 4px !important;
+}
+
 /* ═══ SLIDER ═══ */
 .stSlider>div>div>div>div { background:var(--primary) !important; }
 
