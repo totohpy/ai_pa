@@ -319,12 +319,12 @@ div[data-testid="stChatMessage"] {
 .stChatInput input,
 [data-testid="stChatInput"] textarea,
 [data-testid="stChatInputContainer"] {
-    background:#ffffff !important;
+    background:#e8e6e6 !important;
     color:var(--text-h) !important;
 }
 [data-testid="stChatInput"] > div,
 [data-testid="stChatInputContainer"] > div {
-    background:#ffffff !important;
+    background:#e8e6e6 !important;
 }
 
 /* ═══ TYPOGRAPHY ═══ */
