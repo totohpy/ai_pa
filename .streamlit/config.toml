@@ -2,7 +2,7 @@
 base                     = "light"
 primaryColor             = "#008b74"
 backgroundColor          = "#f0fdfb"
-secondaryBackgroundColor = "#008b74"
+secondaryBackgroundColor = "#f0fdfb"  /* ← เปลี่ยนจาก #008b74 */
 textColor                = "#002b22"
 font                     = "sans serif"
  
