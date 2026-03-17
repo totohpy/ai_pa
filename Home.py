@@ -51,7 +51,7 @@ st.markdown("""
 }
 .hero-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: #c4fcef; flex-shrink: 0;
+    background: #ff4444; flex-shrink: 0;
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
