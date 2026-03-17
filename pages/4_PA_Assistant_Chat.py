@@ -103,7 +103,7 @@ files_changed = current_files_set != st.session_state.last_processed_files
 first_load    = not st.session_state.file_context and (uploaded_files or os.path.isdir("Doc"))
 
 if files_changed or first_load:
-    with st.spinner("📖 กำลังอ่านและแบ่ง chunks..."):
+    with st.spinner("📖 กำลังอ่านข้อมูลในระบบ..."):
         raw_text = extract_text_from_files(uploaded_files)
     if raw_text:
         chunks = split_chunks(raw_text)
@@ -118,7 +118,7 @@ if files_changed or first_load:
 col_s1, col_s2 = st.columns(2)
 with col_s1:
     if st.session_state.doc_chunks:
-        st.caption(f"🟢 RAG พร้อม · {len(st.session_state.doc_chunks)} chunks")
+        st.caption(f"🟢 คลังข้อมูลพร้อม · {len(st.session_state.doc_chunks)} chunks")
     else:
         st.caption("⚪ ยังไม่มีเอกสาร")
 with col_s2:
@@ -145,9 +145,9 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                            if chunks else "ไม่พบข้อมูลในเอกสาร ตอบตามความรู้ทั่วไป")
 
                 sys_msg = (
-                    "คุณคือ PA Assistant ผู้เชี่ยวชาญการตรวจสอบผลสัมฤทธิ์ภาครัฐ\n"
+                    "คุณคือ PA Assistant ผู้เชี่ยวชาญการตรวจสอบผลสัมฤทธิ์และประสิทธิภาพการดำเนินงาน (Performance Audit)\n"
                     "ตอบคำถามโดยอ้างอิงเนื้อหาต่อไปนี้ "
-                    "ถ้าไม่พบให้บอกว่า 'ไม่พบข้อมูลในเอกสารที่เกี่ยวข้อง'\n"
+                    "ถ้าไม่พบให้บอกว่า 'ไม่พบข้อมูลในเอกสารที่เกี่ยวข้อง' และให้เดาว่าคำถามอาจจะหมายถึงอย่างอื่นที่ใกล้เคียงกัน หรืออาจจะพิมพ์คำถามผิด\n"
                     f"--- เนื้อหาที่เกี่ยวข้อง ---\n{context}\n--------------------------"
                 )
                 msgs = [
