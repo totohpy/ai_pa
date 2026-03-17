@@ -500,7 +500,7 @@ div[data-testid="stProgressBar"] > div > div {
 SIDEBAR_HTML = """
 <div class="sb-footer">
   <div class="sb-footer-card">
-    <div class="sb-emblem">🏛️</div>
+    <div class="sb-emblem">🪙</div>
     <div>
       <span class="sb-name">Audit Intelligence Team</span>
       <span class="sb-org">By PAO1 · สตง.</span>
