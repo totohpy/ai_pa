@@ -51,7 +51,7 @@ st.markdown("""
 }
 .hero-dot {
     width: 8px; height: 8px; border-radius: 50%;
-    background: #3FFFF00;
+    background: #FFFF00;
     flex-shrink: 0;
     animation: pulse 2s infinite;
     box-shadow: 0 0 0 2px rgba(255,51,51,0.3),
