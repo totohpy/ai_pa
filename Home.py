@@ -50,9 +50,12 @@ st.markdown("""
     margin-bottom: 14px; position: relative; z-index: 1;
 }
 .hero-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: #ff4444; flex-shrink: 0;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ff3333;
+    flex-shrink: 0;
     animation: pulse 2s infinite;
+    box-shadow: 0 0 0 2px rgba(255,51,51,0.3),
+                0 0 8px rgba(255,51,51,0.7);
 }
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
