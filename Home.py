@@ -117,7 +117,7 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
     width: 240px; height: 240px;
     border-radius: 0;
     transform: rotate(45deg);
-    rgba(134, 152, 249, 0.15);
+    background: rgba(134, 152, 249, 0.15);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #00c9a7; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
