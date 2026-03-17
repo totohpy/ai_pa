@@ -167,21 +167,24 @@ div[data-testid="stDateInput"] input {
     background: #ffffff !important;
     color: var(--text-h) !important;
 }
+
+/* ← เพิ่ม/แก้ตรงนี้: ขอบเหมือนช่องอื่นเลย */
 .stDateInput > div > div {
-    border: 1px solid var(--border-card) !important;
+    border: 1px solid var(--border-card) !important;  /* #c8f0e8 เหมือนช่องอื่น */
     border-radius: 9px !important;
+    outline: none !important;
+    box-shadow: none !important;           /* ← ลบ glow สีเขียวเข้มออก */
 }
 .stDateInput > div > div:focus-within {
-    border-color: var(--primary) !important;
+    border-color: var(--primary) !important;   /* #00c9a7 เมื่อ focus */
     box-shadow: 0 0 0 3px rgba(0,201,167,0.12) !important;
 }
-.stDateInput svg {
-    fill: var(--primary) !important;
-    color: var(--primary) !important;
-}
-.stDateInput input::placeholder {
-    color: var(--text-mute) !important;
-    opacity: 0.7 !important;
+
+/* ลบ outline อัตโนมัติจาก primaryColor */
+.stDateInput [data-baseweb="base-input"]:focus-within,
+.stDateInput [data-baseweb="base-input"] {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 /* ═══ BUTTONS ═══ */
