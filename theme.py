@@ -45,12 +45,14 @@ html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
     padding:3px 6px !important;
     margin-bottom:0px !important;
     font-size:14.5px !important;
-    opacity:0.88;
+    opacity:1 !important;          /* ← เปลี่ยนจาก 0.88 เป็น 1 */
     transition:background 0.05s !important;
     white-space:nowrap !important;
     overflow:hidden !important;
     text-overflow:ellipsis !important;
     display:block !important;
+    text-shadow: none !important;  /* ← เผื่อมีเงาติดมา */
+    font-weight: 500 !important;   /* ← เพิ่มความหนาให้อ่านง่ายขึ้น */
 }
 [data-testid="stSidebarNav"] a:hover { background:rgba(255,255,255,0.18) !important; opacity:1 !important; }
 [data-testid="stSidebarNav"] a[aria-current="page"] {
