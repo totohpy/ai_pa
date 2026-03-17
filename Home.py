@@ -110,14 +110,14 @@ a.hcard-link { text-decoration: none !important; color: inherit !important; disp
     width: 180px; height: 180px;
     border-radius: 0;
     transform: rotate(45deg);
-    background: rgba(230, 139, 139, 0.1);
+    background: rgba(230, 139, 139, 0.07);
 }
 .mcard-grid::after {
     content: ''; position: absolute; top: 30px; right: -80px;
     width: 240px; height: 240px;
     border-radius: 0;
     transform: rotate(45deg);
-    background: rgba(230, 139, 139, 0.07);
+    rgba(134, 152, 249, 0.15);
 }
 a.hcard-link:hover .mcard              { transform: translateY(-4px); border-color: #00c9a7; }
 a.hcard-link:hover .mcard .mcard-stripe{ transform: scaleX(1); }
