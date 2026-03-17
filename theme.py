@@ -154,37 +154,28 @@ span[data-testid="stFileUploaderDropzone"] {
     letter-spacing:0.5px;
 }
 
-/* ═══ DATE INPUT — force white background ═══ */
-.stDateInput > div > div,
-.stDateInput > div > div > div,
-.stDateInput div[data-baseweb="base-input"],
-.stDateInput div[data-baseweb="base-input"] > div,
-.stDateInput div[data-baseweb="base-input"] input,
-.stDateInput input,
-div[data-testid="stDateInput"] div[data-baseweb="base-input"],
-div[data-testid="stDateInput"] input {
+/* ═══ DATE INPUT ═══
+   BaseWeb วาดขอบด้วย box-shadow ไม่ใช่ border
+   ต้องใช้ box-shadow inset แทน border เพื่อให้ตรงกับช่องอื่น
+═══════════════════════════════════════════════════════════ */
+div[data-testid="stDateInput"] div[data-baseweb="base-input"] {
     background-color: #ffffff !important;
-    background: #ffffff !important;
-    color: var(--text-h) !important;
-}
-
-/* ← เพิ่ม/แก้ตรงนี้: ขอบเหมือนช่องอื่นเลย */
-.stDateInput > div > div {
-    border: 1px solid var(--border-card) !important;  /* #c8f0e8 เหมือนช่องอื่น */
     border-radius: 9px !important;
-    outline: none !important;
-    box-shadow: none !important;           /* ← ลบ glow สีเขียวเข้มออก */
+    /* ใช้ box-shadow inset แทน border — BaseWeb จะ override border ปกติ */
+    box-shadow: inset 0 0 0 1px #c8f0e8 !important;
+    border: none !important;
 }
-.stDateInput > div > div:focus-within {
-    border-color: var(--primary) !important;   /* #00c9a7 เมื่อ focus */
-    box-shadow: 0 0 0 3px rgba(0,201,167,0.12) !important;
+div[data-testid="stDateInput"] div[data-baseweb="base-input"]:focus-within {
+    box-shadow: inset 0 0 0 1px #00c9a7, 0 0 0 3px rgba(0,201,167,0.12) !important;
 }
-
-/* ลบ outline อัตโนมัติจาก primaryColor */
-.stDateInput [data-baseweb="base-input"]:focus-within,
-.stDateInput [data-baseweb="base-input"] {
-    outline: none !important;
-    box-shadow: none !important;
+div[data-testid="stDateInput"] div[data-baseweb="base-input"] input {
+    background-color: #ffffff !important;
+    color: #0d2b25 !important;
+    font-family: 'Sarabun', sans-serif !important;
+    font-size: 15px !important;
+}
+div[data-testid="stDateInput"] svg {
+    fill: var(--primary-dark) !important;
 }
 
 /* ═══ BUTTONS ═══ */
