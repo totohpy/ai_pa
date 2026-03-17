@@ -1,145 +1,251 @@
-# theme.py — PA Planning Studio v6.1 (restored)
+# theme.py — PA Planning Studio v6.1
+# Fix: date input white background (override primaryColor #7A2020)
 
 GOV_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Serif+Thai:wght@400;600;700&display=swap');
 :root {
-    --red:#00c9a7; --red-dark:#4d8076;
-    --cream:#e6fdf8; --green:#6D9E51; --green-lt:#BCD9A2; --green-pale:#e8f5e0;
-    --bg:#f0fdf9; --bg-card:#ffffff; --border:#b2ece0;
-    --border-card:#9dddd0; --text-h:#1a1a1a; --text-b:#404040; --text-mute:#7a7a7a;
+    --red:#7A2020; --red-dark:#621a1a;
+    --cream:#FEFFD3; --green:#6D9E51; --green-lt:#BCD9A2; --green-pale:#e8f5e0;
+    --bg:#f8f9ee; --bg-card:#ffffff; --border:#e3e4c4;
+    --border-card:#d8d9b4; --text-h:#1a1a1a; --text-b:#404040; --text-mute:#7a7a7a;
 }
 html,body,[class*="css"],.stApp { font-family:'Sarabun',sans-serif !important; }
 [data-testid="stAppViewContainer"]>.main { background-color:var(--bg) !important; }
 .block-container { padding-top:1.6rem !important; padding-bottom:3rem !important; }
 
-/* SIDEBAR */
+/* ═══ SIDEBAR ═══ */
 [data-testid="stSidebar"],
 [data-testid="stSidebar"] > div,
 [data-testid="stSidebar"] > div > div,
 [data-testid="stSidebar"] > div > div > div {
-    background-color:#00c9a7 !important;
+    background-color:#7A2020 !important;
 }
 [data-testid="stSidebarNav"] a,
 [data-testid="stSidebarNav"] a span,
 [data-testid="stSidebarNav"] a p,
 [data-testid="stSidebarNav"] li a {
-    color:#ffffff !important; border-radius:4px !important; padding:3px 6px !important;
-    margin-bottom:0px !important; font-size:14.5px !important; opacity:0.88;
-    white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important;
+    color:#ffffff !important;
+    border-radius:4px !important;
+    padding:3px 6px !important;
+    margin-bottom:0px !important;
+    font-size:14.5px !important;
+    opacity:0.88;
+    transition:background 0.05s !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    display:block !important;
 }
 [data-testid="stSidebarNav"] a:hover { background:rgba(255,255,255,0.15) !important; opacity:1 !important; }
 [data-testid="stSidebarNav"] a[aria-current="page"] {
-    background:rgba(255,255,255,0.22) !important; font-weight:700 !important;
-    border:1px solid rgba(255,255,255,0.28) !important; opacity:1 !important;
+    background:rgba(255,255,255,0.22) !important;
+    font-weight:700 !important;
+    border:1px solid rgba(255,255,255,0.28) !important;
+    opacity:1 !important;
 }
 [data-testid="stSidebarNav"] ul { padding:0 6px !important; margin:0 !important; }
 [data-testid="stSidebarNav"] li { margin-bottom:2px !important; }
+
 [data-testid="stSidebar"] .stRadio label,
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label { color:#ffffff !important; font-size:13px !important; }
-[data-testid="stSidebar"] .stRadio div[data-testid="stMarkdownContainer"] p { color:#ffffff !important; }
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {
+    color:#ffffff !important;
+    font-size:13px !important;
+}
+[data-testid="stSidebar"] .stRadio div[data-testid="stMarkdownContainer"] p {
+    color:#ffffff !important;
+}
 [data-testid="stSidebar"] .stTextInput label,
-[data-testid="stSidebar"] .stTextInput input { color:#1a1a1a !important; font-size:13px !important; }
-[data-testid="stSidebar"] details summary { color:rgba(255,255,255,0.75) !important; font-size:12px !important; }
-[data-testid="stSidebar"] details { background:rgba(255,255,255,0.08) !important; border-radius:8px !important; padding:4px 8px !important; }
+[data-testid="stSidebar"] .stTextInput input {
+    color:#1a1a1a !important;
+    font-size:13px !important;
+}
+[data-testid="stSidebar"] details summary {
+    color:rgba(255,255,255,0.75) !important;
+    font-size:12px !important;
+}
+[data-testid="stSidebar"] details {
+    background:rgba(255,255,255,0.08) !important;
+    border-radius:8px !important;
+    padding:4px 8px !important;
+}
 [data-testid="stSidebar"] details p,
 [data-testid="stSidebar"] details code,
-[data-testid="stSidebar"] details pre { color:rgba(255,255,255,0.80) !important; font-size:11px !important; }
+[data-testid="stSidebar"] details pre {
+    color:rgba(255,255,255,0.80) !important;
+    font-size:11px !important;
+}
 [data-testid="stSidebar"] code,
-[data-testid="stSidebar"] pre { background:rgba(0,0,0,0.25) !important; color:#f0f0f0 !important; border-radius:4px !important; }
+[data-testid="stSidebar"] pre {
+    background:rgba(0,0,0,0.25) !important;
+    color:#f0f0f0 !important;
+    border-radius:4px !important;
+}
 [data-testid="stSidebar"] input[type="radio"] { accent-color:#ffffff !important; }
 
-/* FILE UPLOADER */
+/* ═══ FILE UPLOADER — force WHITE ═══ */
 [data-testid="stFileUploader"],
 [data-testid="stFileUploader"] > div,
 [data-testid="stFileUploader"] > section,
 [data-testid="stFileUploaderDropzone"],
-[data-testid="stFileUploaderDropzone"] > div { background-color:#ffffff !important; background:#ffffff !important; }
+[data-testid="stFileUploaderDropzone"] > div,
+div[data-baseweb="file-uploader"],
+div[data-baseweb="file-uploader"] > div,
+div[class*="uploadedFile"],
+div[class*="fileUploader"],
+span[data-testid="stFileUploaderDropzone"] {
+    background-color:#ffffff !important;
+    background:#ffffff !important;
+}
 [data-testid="stFileUploaderDropzone"],
-[data-testid="stFileUploader"] > section { border:1.5px dashed #8acfc2 !important; border-radius:12px !important; }
+[data-testid="stFileUploader"] > section {
+    border:1.5px dashed #c8c9aa !important;
+    border-radius:12px !important;
+}
 [data-testid="stFileUploaderDropzone"]:hover,
-[data-testid="stFileUploader"] > section:hover { border-color:var(--red) !important; }
+[data-testid="stFileUploader"] > section:hover {
+    border-color:var(--red) !important;
+}
 [data-testid="stFileUploaderDropzone"] span,
 [data-testid="stFileUploaderDropzone"] p,
-[data-testid="stFileUploaderDropzone"] small { color:var(--text-mute) !important; }
+[data-testid="stFileUploaderDropzone"] small {
+    color:var(--text-mute) !important;
+}
 
-/* TEXT AREA & INPUT */
+/* ═══ TEXT AREA & INPUT — WHITE bg ═══ */
 .stTextInput>div>div>input,
 .stTextArea>div>div>textarea,
 .stNumberInput>div>div>input {
-    background:#ffffff !important; border:1px solid var(--border-card) !important;
-    border-radius:9px !important; color:var(--text-h) !important;
-    font-family:'Sarabun',sans-serif !important; font-size:15px !important;
+    background:#ffffff !important;
+    border:1px solid var(--border-card) !important;
+    border-radius:9px !important;
+    color:var(--text-h) !important;
+    font-family:'Sarabun',sans-serif !important;
+    font-size:15px !important;
 }
 .stTextInput>div>div>input:focus,
-.stTextArea>div>div>textarea:focus { border-color:var(--red) !important; box-shadow:0 0 0 3px rgba(122,32,32,0.07) !important; }
+.stTextArea>div>div>textarea:focus {
+    border-color:var(--red) !important;
+    box-shadow:0 0 0 3px rgba(122,32,32,0.07) !important;
+}
 .stTextInput label,.stTextArea label,.stSelectbox label,
 .stNumberInput label,.stSlider label,.stFileUploader label,
 .stMultiSelect label,.stDateInput label {
-    background:#ffffff !important; color:var(--text-mute) !important;
-    font-size:12px !important; font-weight:700 !important; text-transform:uppercase; letter-spacing:0.5px;
+    background:#ffffff !important;
+    color:var(--text-mute) !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
 }
 
-/* DATE INPUT */
+/* ═══ DATE INPUT — force white background (override primaryColor #7A2020) ═══ */
 .stDateInput > div > div,
+.stDateInput > div > div > div,
 .stDateInput div[data-baseweb="base-input"],
 .stDateInput div[data-baseweb="base-input"] > div,
+.stDateInput div[data-baseweb="base-input"] input,
 .stDateInput input,
+div[data-testid="stDateInput"] div[data-baseweb="base-input"],
 div[data-testid="stDateInput"] input {
-    background-color:#ffffff !important; background:#ffffff !important; color:var(--text-h) !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: var(--text-h) !important;
 }
-.stDateInput > div > div { border:1px solid var(--border-card) !important; border-radius:9px !important; }
-.stDateInput > div > div:focus-within { border-color:var(--red) !important; box-shadow:0 0 0 3px rgba(122,32,32,0.07) !important; }
-.stDateInput svg { fill:var(--red) !important; color:var(--red) !important; }
-.stDateInput input::placeholder { color:var(--text-mute) !important; opacity:0.7 !important; }
+.stDateInput > div > div {
+    border: 1px solid var(--border-card) !important;
+    border-radius: 9px !important;
+}
+.stDateInput > div > div:focus-within {
+    border-color: var(--red) !important;
+    box-shadow: 0 0 0 3px rgba(122,32,32,0.07) !important;
+}
+/* ไอคอนปฏิทินให้เป็นสีแดงบนพื้นขาว */
+.stDateInput svg {
+    fill: var(--red) !important;
+    color: var(--red) !important;
+}
+/* placeholder text */
+.stDateInput input::placeholder {
+    color: var(--text-mute) !important;
+    opacity: 0.7 !important;
+}
 
-/* BUTTONS */
+/* ═══ BUTTONS ═══ */
 .stButton>button { border-radius:9px !important; font-family:'Sarabun',sans-serif !important; font-weight:600 !important; font-size:14px !important; transition:all 0.18s !important; }
 button[data-testid="baseButton-primary"] { background:var(--red) !important; color:#fff !important; border:none !important; }
 button[data-testid="baseButton-primary"]:hover { background:var(--red-dark) !important; transform:translateY(-1px) !important; box-shadow:0 4px 16px rgba(122,32,32,0.28) !important; }
 button[data-testid="baseButton-secondary"] { background:#fff !important; color:var(--text-h) !important; border:1px solid var(--border-card) !important; }
 button[data-testid="baseButton-secondary"]:hover { border-color:var(--red) !important; color:var(--red) !important; }
 
-/* TABS */
+/* ═══ TABS ═══ */
 div[data-baseweb="tab-list"] { background:#fff !important; border:1px solid var(--border-card) !important; border-radius:12px !important; padding:5px !important; gap:3px !important; border-bottom:none !important; flex-wrap:wrap !important; margin-bottom:16px !important; }
-button[data-baseweb="tab"] { background:transparent !important; border-radius:8px !important; color:var(--text-mute) !important; font-size:13px !important; font-weight:500 !important; padding:7px 14px !important; border:none !important; box-shadow:none !important; transition:all 0.16s !important; font-family:'Sarabun',sans-serif !important; }
+button[data-baseweb="tab"] { background:transparent !important; border-radius:8px !important; color:var(--text-mute) !important; font-size:13px !important; font-weight:500 !important; padding:7px 14px !important; border:none !important; box-shadow:none !important; transition:all 0.16s !important; transform:none !important; font-family:'Sarabun',sans-serif !important; }
 button[data-baseweb="tab"]:hover { background:var(--cream) !important; color:var(--text-h) !important; }
 button[data-baseweb="tab"][aria-selected="true"] { background:var(--red) !important; color:#fff !important; font-weight:600 !important; }
 
-/* DATAFRAME */
+/* ═══ DATAFRAME ═══ */
 .stDataFrame,.stDataEditor { border-radius:12px !important; overflow:hidden !important; border:1px solid var(--border-card) !important; }
 .stDataFrame thead th { background:rgba(254,255,211,0.85) !important; color:var(--red) !important; font-size:11.5px !important; font-weight:700 !important; text-transform:uppercase !important; }
 .stDataFrame tbody td { color:var(--text-b) !important; font-size:14px !important; }
 
-/* ALERTS */
-div[data-testid="stInfo"]    { background:var(--cream) !important; border:1px solid #a0e4d0 !important; border-left:4px solid var(--red) !important; border-radius:10px !important; }
+/* ═══ ALERTS ═══ */
+div[data-testid="stInfo"]    { background:var(--cream) !important; border:1px solid #e0e098 !important; border-left:4px solid var(--red) !important; border-radius:10px !important; }
 div[data-testid="stSuccess"] { background:var(--green-pale) !important; border:1px solid var(--green-lt) !important; border-left:4px solid var(--green) !important; border-radius:10px !important; }
 div[data-testid="stWarning"] { background:#fff8e1 !important; border:1px solid #ffe082 !important; border-left:4px solid #f59e0b !important; border-radius:10px !important; }
 div[data-testid="stError"]   { background:rgba(122,32,32,0.05) !important; border:1px solid rgba(122,32,32,0.2) !important; border-left:4px solid var(--red) !important; border-radius:10px !important; }
 
-/* CONTAINER */
+/* ═══ CONTAINER ═══ */
 div[data-testid="stVerticalBlockBorderWrapper"]>div { background:var(--bg-card) !important; border:1px solid var(--border-card) !important; border-radius:14px !important; padding:18px !important; }
 
-/* CHAT */
+/* ═══ CHAT ═══ */
 div[data-testid="stChatMessage"] { background:var(--bg-card) !important; border:1px solid var(--border) !important; border-radius:12px !important; margin-bottom:8px !important; }
 .stChatInput>div { background:#ffffff !important; border:1px solid var(--border-card) !important; border-radius:12px !important; }
 .stChatInput>div:focus-within { border-color:var(--red) !important; }
 
-/* MISC */
+/* ═══ MISC ═══ */
 h1 { font-size:24px !important; font-weight:700 !important; color:var(--text-h) !important; font-family:'Noto Serif Thai',serif !important; }
 h2 { font-size:19px !important; font-weight:700 !important; color:var(--text-h) !important; font-family:'Noto Serif Thai',serif !important; }
 h3 { font-size:16px !important; font-weight:600 !important; color:var(--text-h) !important; }
 h4 { font-size:12px !important; font-weight:700 !important; color:var(--red) !important; text-transform:uppercase; letter-spacing:1px; border-bottom:none !important; }
 .stSelectbox>div>div,.stMultiSelect>div>div { background:#ffffff !important; border:1px solid var(--border-card) !important; border-radius:9px !important; }
-[data-baseweb="tag"] { background-color:rgba(122,32,32,0.12) !important; border:1px solid rgba(122,32,32,0.35) !important; border-radius:6px !important; }
-[data-baseweb="tag"] span { color:#00c9a7 !important; font-weight:600 !important; }
-[data-baseweb="tag"] [role="presentation"] svg { fill:#00c9a7 !important; }
+[data-baseweb="tag"] {
+    background-color: rgba(122,32,32,0.12) !important;
+    border: 1px solid rgba(122,32,32,0.35) !important;
+    border-radius: 6px !important;
+}
+[data-baseweb="tag"] span {
+    color: #7A2020 !important;
+    font-weight: 600 !important;
+}
+[data-baseweb="tag"] [role="presentation"] svg {
+    fill: #7A2020 !important;
+}
 [data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
-[data-testid="stSidebarCollapseButton"] { background-color:rgba(255,255,255,0.85) !important; border:1px solid rgba(255,255,255,0.95) !important; border-radius:6px !important; }
-[data-testid="stSidebarCollapseButton"] svg { fill:#00c9a7 !important; stroke:#00c9a7 !important; }
-[data-testid="collapsedControl"] { background-color:#00c9a7 !important; border-radius:0 8px 8px 0 !important; opacity:1 !important; visibility:visible !important; display:flex !important; box-shadow:2px 0 8px rgba(0,0,0,0.2) !important; }
-[data-testid="collapsedControl"] button { background:transparent !important; }
-[data-testid="collapsedControl"] svg { fill:#ffffff !important; stroke:#ffffff !important; }
+[data-testid="stSidebarCollapseButton"] {
+    background-color: rgba(255,255,255,0.85) !important;
+    border: 1px solid rgba(255,255,255,0.95) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stSidebarCollapseButton"] svg {
+    fill: #7A2020 !important;
+    stroke: #7A2020 !important;
+}
+[data-testid="collapsedControl"] {
+    background-color: #7A2020 !important;
+    border-radius: 0 8px 8px 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2) !important;
+}
+[data-testid="collapsedControl"] button {
+    background: transparent !important;
+}
+[data-testid="collapsedControl"] svg {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
 .stSlider>div>div>div>div { background:var(--red) !important; }
 .stDownloadButton>button { background:var(--green-pale) !important; color:#2d5a1a !important; border:1px solid var(--green-lt) !important; border-radius:9px !important; font-weight:600 !important; }
 div[data-testid="stMetric"] { background:var(--bg-card) !important; border:1px solid var(--border-card) !important; border-radius:12px !important; padding:16px !important; }
@@ -149,48 +255,19 @@ hr { border-color:var(--border) !important; margin:20px 0 !important; }
 ::-webkit-scrollbar { width:5px; height:5px; }
 ::-webkit-scrollbar-thumb { background:rgba(122,32,32,0.2); border-radius:10px; }
 
-/* SIDEBAR FOOTER CARD */
+/* ═══ SIDEBAR FOOTER CARD ═══ */
 .sb-footer { padding:12px; border-top:1px solid rgba(255,255,255,0.18); margin-top:12px; }
 .sb-footer-card { background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.22); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px; }
 .sb-emblem { width:32px; height:32px; background:rgba(255,255,255,0.22); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:17px; }
 .sb-name { font-size:13px; font-weight:700; display:block; color:#ffffff !important; }
 .sb-org  { font-size:11px; opacity:0.70; margin-top:1px; display:block; color:#ffffff !important; }
 
-/* HIDE STREAMLIT BRANDING ONLY */
-#MainMenu                     { visibility:hidden !important; display:none !important; }
-[data-testid="stDecoration"]  { visibility:hidden !important; display:none !important; }
-#stDecoration                 { display:none !important; }
-.viewerBadge_container__r5tak { display:none !important; }
-.viewerBadge_link__qRIco      { display:none !important; }
-
-/* ═══ CAMOUFLAGE TOOLBAR BUTTONS (Share / Star / Edit / GitHub) ═══ */
-/* ซ่อนเฉพาะ toolbar actions ด้วย opacity=0 — ไม่แตะ header bg */
-[data-testid="stToolbar"],
-[data-testid="stToolbarActions"] {
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
-/* คืน collapsedControl (ปุ่ม >> เรียก sidebar) ให้มองเห็นชัดเจน */
-[data-testid="collapsedControl"] {
-    background-color: #00c9a7 !important;
-    border-radius: 0 8px 8px 0 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: flex !important;
-    pointer-events: auto !important;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.2) !important;
-    z-index: 9999 !important;
-}
-[data-testid="collapsedControl"] button {
-    background: transparent !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-}
-[data-testid="collapsedControl"] svg {
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-}
+/* ── ซ่อนเฉพาะ Streamlit branding ── */
+#MainMenu                        { visibility:hidden !important; display:none !important; }
+[data-testid="stDecoration"]     { visibility:hidden !important; display:none !important; }
+#stDecoration                    { display:none !important; }
+.viewerBadge_container__r5tak   { display:none !important; }
+.viewerBadge_link__qRIco        { display:none !important; }
 </style>
 """
 
@@ -209,7 +286,6 @@ SIDEBAR_HTML = """
 
 def apply_theme():
     import streamlit as st
-    import streamlit.components.v1 as components
     st.markdown("""
 <style>
 [data-testid="stSidebar"],
@@ -217,17 +293,33 @@ def apply_theme():
 [data-testid="stSidebar"]>div>div,
 [data-testid="stSidebar"]>div>div>div,
 [data-testid="stSidebarNav"] {
-    background-color:#00c9a7 !important;
+    background-color:#7A2020 !important;
 }
 [data-testid="stAppViewContainer"] {
-    background-color:#f0fdf9 !important;
+    background-color:#f8f9ee !important;
+}
+[data-testid="stSidebar"] > div:first-child {
+    animation: sidebarFadeIn 0.35s ease-in forwards;
+}
+@keyframes sidebarFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+#loading-spinner, .stSpinner,
+[data-testid="stSkeleton"],
+div[class*="loading"], div[class*="splash"] {
+    display: none !important;
 }
 </style>""", unsafe_allow_html=True)
     st.markdown(GOV_CSS, unsafe_allow_html=True)
+    import streamlit.components.v1 as components
     components.html("""
 <script>
 (function() {
-    const SELECTORS = ['.viewerBadge_container__r5tak','.viewerBadge_link__qRIco'];
+    const SELECTORS = [
+        '.viewerBadge_container__r5tak',
+        '.viewerBadge_link__qRIco',
+    ];
     function hideAll() {
         var parent = window.parent.document;
         SELECTORS.forEach(function(sel) {
@@ -237,8 +329,11 @@ def apply_theme():
         });
     }
     hideAll();
-    new MutationObserver(hideAll).observe(window.parent.document.body,{childList:true,subtree:true});
-    var n=0,t=setInterval(function(){ hideAll(); if(++n>=20) clearInterval(t); },300);
+    new MutationObserver(hideAll).observe(
+        window.parent.document.body,
+        {childList:true, subtree:true}
+    );
+    var n=0, t=setInterval(function(){ hideAll(); if(++n>=20) clearInterval(t); },300);
 })();
 </script>
 """, height=0)
