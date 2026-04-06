@@ -749,8 +749,8 @@ with tab_spatial:
                     "🗺️ OpenStreetMap", "🛰️ Esri Satellite",
                 ], key="sp_basemap", label_visibility="collapsed")
             SP_BASEMAPS = {
-                "🚗 Google Roads":    ("https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}", "© Google", 20),
                 "🛰️ Google Hybrid":   ("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", "© Google", 20),
+                "🚗 Google Roads":    ("https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}", "© Google", 20),
                 "🗺️ OpenStreetMap":   ("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png","© OpenStreetMap", 19),
                 "🛰️ Esri Satellite":  ("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}","© Esri", 19),
             }
