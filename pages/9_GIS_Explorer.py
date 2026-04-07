@@ -745,7 +745,7 @@ with tab_spatial:
             # Basemap
             with st.expander("🗺️ Basemap", expanded=True):
                 sp_basemap = st.radio("เลือก Basemap", [
-                    "🚗 Google Roads", "🛰️ Google Hybrid",
+                    "🛰️ Google Hybrid", "🚗 Google Roads", 
                     "🗺️ OpenStreetMap", "🛰️ Esri Satellite",
                 ], key="sp_basemap", label_visibility="collapsed")
             SP_BASEMAPS = {
