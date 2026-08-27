@@ -2,10 +2,10 @@
 # ใช้ร่วมกันทุกหน้า เลือก provider จาก st.session_state["ai_provider"]
 
 import streamlit as st
-import json, os
+import os
 
 # ─── Provider Constants ────────────────────────────────────────────────────────
-PROVIDER_CLOUD     = "cloud"      # Typhoon (default) / Vertex AI (Chat only)
+PROVIDER_CLOUD     = "cloud"      # Claude (Anthropic) — ทุกหน้า
 PROVIDER_LOCAL     = "local"      # Ollama
 PROVIDER_ONPREMISE = "onpremise"  # On-Premise OpenAI-compatible
 
@@ -16,10 +16,8 @@ AI_PROVIDER_OPTIONS = {
 }
 
 # ─── Default model per provider ───────────────────────────────────────────────
-TYPHOON_BASE_URL = "https://api.opentyphoon.ai/v1"
-TYPHOON_MODEL    = "typhoon-v2.5-30b-a3b-instruct"
-VERTEX_LOCATION  = "asia-southeast1"
-VERTEX_MODEL     = "gemini-2.5-flash"
+# Cloud = Claude (Anthropic). เปลี่ยนมาจาก Typhoon (Model-1) และ Vertex/Gemini (Model-2)
+ANTHROPIC_MODEL = "claude-sonnet-5"
 
 
 def init_provider_state():
@@ -31,16 +29,9 @@ def init_provider_state():
     ss.setdefault("onpremise_url",    "http://your-server:11434/v1")
     ss.setdefault("onpremise_model",  "typhoon2-8b")
 
-    # Typhoon API key (ใช้หน้าอื่น ยกเว้น Chat)
-    try:    ss["api_key_global"]    = st.secrets["api_key"]
-    except: ss.setdefault("api_key_global", "")
-
-    # Vertex AI secrets (ใช้หน้า Chat)
-    try:    ss["vertex_project_id"] = st.secrets["vertex_project_id"]
-    except: ss.setdefault("vertex_project_id", "")
-
-    try:    ss["vertex_sa_json"]    = st.secrets["vertex_sa_json"]
-    except: ss.setdefault("vertex_sa_json", "")
+    # Anthropic (Claude) API key — ใช้ Cloud AI ทุกหน้า
+    try:    ss["anthropic_api_key"] = st.secrets["anthropic_api_key"]
+    except: ss.setdefault("anthropic_api_key", os.getenv("ANTHROPIC_API_KEY", ""))
 
 
 def render_provider_sidebar():
@@ -67,14 +58,12 @@ def render_provider_sidebar():
 
     current = ss["ai_provider"]
 
-    # ── Cloud AI ──
+    # ── Cloud AI (Claude) ──
     if current == PROVIDER_CLOUD:
-        typhoon_ok = bool(ss.get("api_key_global"))
-        vertex_ok  = bool(ss.get("vertex_project_id") and ss.get("vertex_sa_json"))
+        claude_ok = bool(ss.get("anthropic_api_key"))
         st.markdown(
             f"<small style='color:rgba(255,255,255,0.65);'>"
-            f"{'✅' if typhoon_ok else '❌'} Model-1 (default)<br>"
-            f"{'✅' if vertex_ok  else '⚠️'} Model-2 <br>"
+            f"{'✅' if claude_ok else '❌'} Claude ({ANTHROPIC_MODEL})<br>"
             f"</small>",
             unsafe_allow_html=True
         )
@@ -138,77 +127,106 @@ URL: `http://<server-ip>:8000/v1`
 """)
 
 
+# ─── Claude (Anthropic) adapter ──────────────────────────────────────────────
+# หน้าเดิมเรียก client.chat.completions.create(...) แบบ OpenAI SDK
+# adapter นี้ห่อ anthropic SDK ตัวจริงไว้ ให้ interface เดิมใช้ได้โดยไม่ต้องแก้หน้า
+
+class _Message:
+    def __init__(self, content): self.content = content
+
+class _Choice:
+    def __init__(self, content): self.message = _Message(content)
+
+class _ChatResponse:
+    def __init__(self, content): self.choices = [_Choice(content)]
+
+class _Delta:
+    def __init__(self, content): self.content = content
+
+class _StreamChoice:
+    def __init__(self, content): self.delta = _Delta(content)
+
+class _ChatChunk:
+    def __init__(self, content): self.choices = [_StreamChoice(content)]
+
+
+def _split_messages(messages):
+    """แยก OpenAI-style messages → (system_text, conversation)
+    Anthropic รับ system เป็น top-level และ messages เฉพาะ user/assistant"""
+    system_parts, conv = [], []
+    for m in messages:
+        role    = m.get("role")
+        content = m.get("content", "")
+        if role == "system":
+            if content:
+                system_parts.append(content)
+        else:  # user / assistant
+            conv.append({"role": role, "content": content})
+    return "\n\n".join(system_parts), conv
+
+
+class _ClaudeChatClient:
+    """ห่อ anthropic.Anthropic ให้เรียกแบบ client.chat.completions.create(...)"""
+
+    def __init__(self, api_key, model):
+        import anthropic
+        self._client = anthropic.Anthropic(api_key=api_key)
+        self._model  = model
+        # ให้ client.chat.completions.create(...) วิ่งมาที่ self.create
+        self.chat = self
+        self.completions = self
+
+    def create(self, model=None, messages=None, stream=False,
+               max_tokens=1024, **kwargs):
+        # kwargs เช่น temperature / top_p ถูกละทิ้ง — Claude Sonnet 5 ไม่รับ sampling params
+        system, conv = _split_messages(messages or [])
+        mdl = model or self._model
+        req = {"model": mdl, "max_tokens": max_tokens, "messages": conv}
+        if system:
+            req["system"] = system
+
+        if stream:
+            return self._stream(req)
+
+        resp = self._client.messages.create(**req)
+        text = "".join(b.text for b in resp.content if b.type == "text")
+        return _ChatResponse(text)
+
+    def _stream(self, req):
+        with self._client.messages.stream(**req) as stream:
+            for text in stream.text_stream:
+                yield _ChatChunk(text)
+
+
 def get_openai_client_and_model(page: str = "default"):
     """
     คืนค่า (client, model_name) ตาม provider ที่เลือก
-    page="chat" → ใช้ Vertex AI เมื่อเป็น Cloud
-    page อื่น   → ใช้ Typhoon
+    Cloud → Claude (Anthropic) ทุกหน้า
+    Local / On-Premise → OpenAI-compatible (Ollama / vLLM)
     """
-    from openai import OpenAI
     init_provider_state()
     ss = st.session_state
     provider = ss.get("ai_provider", PROVIDER_CLOUD)
 
     if provider == PROVIDER_CLOUD:
-        if page == "chat":
-            # ── Vertex AI via OpenAI-compatible endpoint ──────────────────────
-            # Vertex AI มี OpenAI-compatible endpoint ที่ต้องใช้ Bearer token
-            # จาก Service Account → generate access token
-            try:
-                import google.auth
-                import google.auth.transport.requests
-                from google.oauth2 import service_account
-
-                sa_json   = ss.get("vertex_sa_json", "")
-                project   = ss.get("vertex_project_id", "")
-                location  = VERTEX_LOCATION
-
-                if not sa_json or not project:
-                    available = list(st.secrets.keys()) if hasattr(st, 'secrets') else []
-                    raise ValueError(
-                        f"ไม่พบ vertex_project_id หรือ vertex_sa_json ใน Secrets\n"
-                        f"(keys ที่พบใน secrets: {available})"
-                    )
-
-                sa_info = json.loads(sa_json)
-                creds   = service_account.Credentials.from_service_account_info(
-                    sa_info,
-                    scopes=["https://www.googleapis.com/auth/cloud-platform"]
-                )
-                auth_req = google.auth.transport.requests.Request()
-                creds.refresh(auth_req)
-                token = creds.token
-
-                base_url = (
-                    f"https://{location}-aiplatform.googleapis.com/v1beta1/"
-                    f"projects/{project}/locations/{location}/endpoints/openapi"
-                )
-                client = OpenAI(api_key=token, base_url=base_url)
-                model  = f"google/{VERTEX_MODEL}"
-                return client, model
-
-            except Exception as e:
-                # หน้า chat ใช้ Vertex เท่านั้น — ไม่ fallback ไป Typhoon
-                raise ValueError(
-                    f"Vertex AI ใช้งานไม่ได้: {e}\n\n"
-                    "กรุณาตรวจสอบ Secrets:\n"
-                    "• vertex_project_id = \"pa-gen-ai\"\n"
-                    "• vertex_sa_json = '{...}' (JSON แบบ single line)"
-                )
-
-        else:
-            # ── Typhoon (default cloud) ───────────────────────────────────────
-            api_key = ss.get("api_key_global", "")
-            if not api_key:
-                raise ValueError("ไม่พบ api_key ใน Streamlit Secrets")
-            return OpenAI(api_key=api_key, base_url=TYPHOON_BASE_URL), TYPHOON_MODEL
+        # ── Claude (Anthropic) ────────────────────────────────────────────────
+        api_key = ss.get("anthropic_api_key", "") or os.getenv("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            raise ValueError(
+                "ไม่พบ anthropic_api_key ใน Streamlit Secrets\n\n"
+                "กรุณาเพิ่มใน Secrets:\n"
+                '• anthropic_api_key = "sk-ant-..."'
+            )
+        return _ClaudeChatClient(api_key, ANTHROPIC_MODEL), ANTHROPIC_MODEL
 
     elif provider == PROVIDER_LOCAL:
+        from openai import OpenAI
         url   = ss.get("local_url", "http://localhost:11434/v1")
         model = ss.get("local_model", "typhoon2-8b")
         return OpenAI(api_key="ollama", base_url=url), model
 
     elif provider == PROVIDER_ONPREMISE:
+        from openai import OpenAI
         url   = ss.get("onpremise_url", "")
         model = ss.get("onpremise_model", "")
         if not url:
@@ -222,7 +240,7 @@ def get_provider_display_name() -> str:
     """แสดงชื่อ provider ปัจจุบันสั้นๆ"""
     ss = st.session_state
     p = ss.get("ai_provider", PROVIDER_CLOUD)
-    if p == PROVIDER_CLOUD:    return "☁️ Cloud AI"
+    if p == PROVIDER_CLOUD:    return "☁️ Cloud AI (Claude)"
     if p == PROVIDER_LOCAL:    return f"💻 Local ({ss.get('local_model','ollama')})"
     if p == PROVIDER_ONPREMISE: return f"🖥️ On-Premise ({ss.get('onpremise_model','')})"
     return "Unknown"

@@ -184,7 +184,7 @@ if prompt := st.chat_input("พิมพ์คำถามของคุณ..."
                     f"⚠️ ไม่สามารถเชื่อมต่อ AI ได้ ({provider})\n\n"
                     f"รายละเอียด: `{e}`\n\n"
                     "💡 กรุณาตรวจสอบ:\n"
-                    "- Secrets: `api_key`, `vertex_project_id`, `vertex_sa_json`\n"
+                    "- Secrets: `anthropic_api_key`\n"
                     "- หรือเปลี่ยนเป็น Local / On-Premise ใน sidebar"
                 )
 
