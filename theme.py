@@ -315,6 +315,30 @@ div[data-testid="stChatMessage"] {
     border-radius:12px !important;
     margin-bottom:8px !important;
 }
+/* คำตอบในแชทให้ใช้ Sarabun ทั้งหมด (รวมหัวข้อ markdown) ไม่ใช้ serif */
+div[data-testid="stChatMessage"],
+div[data-testid="stChatMessage"] h1,
+div[data-testid="stChatMessage"] h2,
+div[data-testid="stChatMessage"] h3,
+div[data-testid="stChatMessage"] h4,
+div[data-testid="stChatMessage"] h5,
+div[data-testid="stChatMessage"] h6,
+div[data-testid="stChatMessage"] p,
+div[data-testid="stChatMessage"] li,
+div[data-testid="stChatMessage"] td,
+div[data-testid="stChatMessage"] th,
+div[data-testid="stChatMessage"] span,
+div[data-testid="stChatMessage"] strong,
+div[data-testid="stChatMessage"] em {
+    font-family:'Sarabun',sans-serif !important;
+}
+/* ขนาดหัวข้อในคำตอบให้พอดี ไม่ใหญ่เกิน */
+div[data-testid="stChatMessage"] h1 { font-size:20px !important; font-weight:700 !important; }
+div[data-testid="stChatMessage"] h2 { font-size:17px !important; font-weight:700 !important; }
+div[data-testid="stChatMessage"] h3 { font-size:15px !important; font-weight:600 !important; text-transform:none !important; letter-spacing:normal !important; }
+div[data-testid="stChatMessage"] h4 { font-size:14px !important; font-weight:600 !important; text-transform:none !important; letter-spacing:normal !important; }
+div[data-testid="stChatMessage"] p,
+div[data-testid="stChatMessage"] li { font-size:15px !important; line-height:1.7 !important; }
 .stChatInput textarea,
 .stChatInput input,
 [data-testid="stChatInput"] textarea,
